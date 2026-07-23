@@ -352,10 +352,25 @@
     systemRole: 'member',
     authUserId: null,
     authDisplayName: '',
-    authProfessionalRole: ''
+    authProfessionalRole: '',
+    cloudReady: false,
+    cloudCaseIds: [],
+    cloudTaskIds: [],
+    cloudTrackingIds: [],
+    syncTimer: null,
+    syncing: false,
+    syncQueued: false,
+    syncErrorShown: false
   };
 
-  function uid(){ return Math.random().toString(36).slice(2,10); }
+  function uid(){
+    return (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(ch){
+          var r = Math.random()*16|0, v = ch==='x' ? r : (r&3|8);
+          return v.toString(16);
+        });
+  }
   function todayStr(){
     var d = new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -868,49 +883,19 @@
   }
 
   function loadData(){
-    try{
-      var c = localStorage.getItem('bridge:cases');
-      state.cases = c ? JSON.parse(c) : [];
-    }catch(e){ state.cases = []; }
-    try{
-      var t = localStorage.getItem('bridge:tasks');
-      state.tasks = t ? JSON.parse(t) : [];
-    }catch(e){ state.tasks = []; }
-    try{
-      var m = localStorage.getItem('bridge:members');
-      state.members = m ? JSON.parse(m) : [];
-    }catch(e){ state.members = []; }
-
-    var migrated = false;
-    state.members.forEach(function(mem){ if(mem.role==='manager'){ mem.role='case_manager'; migrated=true; } });
-    state.cases.forEach(function(cs){ if(cs.initiator==='manager'){ cs.initiator='case_manager'; migrated=true; } });
-    state.tasks.forEach(function(tk){ if(tk.role==='manager'){ tk.role='case_manager'; migrated=true; } });
-    if(migrated){ saveMembers(); saveCases(); saveTasks(); }
-
-    if(state.members.length===0){
-      state.members = [
-        {id: uid(), name:'', role:'case_manager'}
-      ];
-      saveMembers();
-    }
-    state.currentMemberId = state.members[0].id;
-    state.identity = state.members[0].role;
-    state.loaded = true;
+    state.loaded = false;
+    state.cases = [];
+    state.tasks = [];
+    state.members = [];
     render();
   }
-  function saveCases(){
-    try{ localStorage.setItem('bridge:cases', JSON.stringify(state.cases)); }catch(e){}
-  }
-  function saveTasks(){
-    try{ localStorage.setItem('bridge:tasks', JSON.stringify(state.tasks)); }catch(e){}
-  }
-  function saveMembers(){
-    try{ localStorage.setItem('bridge:members', JSON.stringify(state.members)); }catch(e){}
-  }
+
   function roleKeyFromProfessional(role){
     var map = {
       '個管師':'case_manager',
+      '個案管理師':'case_manager',
       '醫師':'physician',
+      '主治醫師':'physician',
       '物理治療師':'pt',
       '營養師':'rd',
       '藥師':'ph',
@@ -918,7 +903,225 @@
     };
     return map[role] || 'case_manager';
   }
-  function applyAuthIdentity(detail){
+
+  function cloudClient(){
+    return window.hfbSupabaseClient || null;
+  }
+
+  function cleanDate(value){
+    var normalized = normalizeDateKey(value);
+    return normalized || null;
+  }
+
+  function caseToCloudRow(c){
+    var data = JSON.parse(JSON.stringify(c || {}));
+    delete data.trackingRecords;
+    return {
+      id: c.id,
+      patient_name: c.name || '',
+      medical_record_number: c.mrn || '',
+      case_date: cleanDate(c.caseDate),
+      hf_type: c.hfType || '',
+      patient_data: {
+        birthday: c.birthday || '',
+        idnumber: c.idnumber || '',
+        ward: c.ward || '',
+        admissionDate: c.admissionDate || ''
+      },
+      clinical_data: data,
+      follow_up_data: c.followUp || {},
+      is_discharged: !!c.discharged,
+      updated_by: state.authUserId,
+      deleted_at: null
+    };
+  }
+
+  function taskToCloudRow(t){
+    return {
+      id: t.id,
+      case_id: t.caseId,
+      target_role: t.role,
+      title: t.title || '',
+      scheduled_at: t.scheduledAt || null,
+      status: t.cancelled ? 'cancelled' : (t.status || 'pending'),
+      response: t.response || '',
+      responded_by: t.respondedBy ? state.authUserId : null,
+      responded_at: t.respondedAt || null,
+      task_data: JSON.parse(JSON.stringify(t || {})),
+      updated_at: new Date().toISOString(),
+      deleted_at: null
+    };
+  }
+
+  function trackingToCloudRows(){
+    var rows = [];
+    state.cases.forEach(function(c){
+      (c.trackingRecords || []).forEach(function(rec){
+        if(!rec.recordId) rec.recordId = uid();
+        rows.push({
+          id: rec.recordId,
+          case_id: c.id,
+          record_data: JSON.parse(JSON.stringify(rec)),
+          updated_by: state.authUserId,
+          deleted_at: null
+        });
+      });
+    });
+    return rows;
+  }
+
+  function cloudCaseFromRow(row){
+    var c = Object.assign({}, row.clinical_data || {});
+    c.id = row.id;
+    c.name = c.name || row.patient_name || '';
+    c.mrn = c.mrn || row.medical_record_number || '';
+    c.caseDate = c.caseDate || row.case_date || '';
+    c.hfType = c.hfType || row.hf_type || '';
+    c.followUp = Object.assign({}, c.followUp || {}, row.follow_up_data || {});
+    c.discharged = !!row.is_discharged;
+    c.trackingRecords = [];
+    return c;
+  }
+
+  function cloudTaskFromRow(row){
+    var t = Object.assign({}, row.task_data || {});
+    t.id = row.id;
+    t.caseId = row.case_id;
+    t.role = t.role || row.target_role;
+    t.title = t.title || row.title || '';
+    t.scheduledAt = t.scheduledAt || row.scheduled_at || '';
+    t.status = row.status || t.status || 'pending';
+    t.cancelled = row.status === 'cancelled';
+    t.response = row.response || t.response || '';
+    t.respondedAt = row.responded_at || t.respondedAt || null;
+    return t;
+  }
+
+  function reportCloudError(prefix, error){
+    console.error(prefix, error);
+    if(state.syncErrorShown) return;
+    state.syncErrorShown = true;
+    window.alert(prefix + '。資料尚未成功同步，請先不要重複輸入，並將畫面截圖提供給管理員。');
+  }
+
+  async function loadCloudData(){
+    var client = cloudClient();
+    if(!client){
+      reportCloudError('找不到 Supabase 連線', {});
+      return;
+    }
+    state.cloudReady = false;
+    state.loaded = false;
+    render();
+
+    var results = await Promise.all([
+      client.from('cases').select('*').is('deleted_at', null).order('case_date', {ascending:false}),
+      client.from('tasks').select('*').is('deleted_at', null).order('created_at', {ascending:true}),
+      client.from('tracking_records').select('*').is('deleted_at', null).order('created_at', {ascending:false})
+    ]);
+    var caseResult = results[0], taskResult = results[1], trackingResult = results[2];
+    var firstError = caseResult.error || taskResult.error || trackingResult.error;
+    if(firstError){
+      state.loaded = true;
+      render();
+      reportCloudError('無法讀取 Supabase 資料', firstError);
+      return;
+    }
+
+    state.cases = (caseResult.data || []).map(cloudCaseFromRow);
+    state.tasks = (taskResult.data || []).map(cloudTaskFromRow);
+    var caseMap = {};
+    state.cases.forEach(function(c){ caseMap[c.id] = c; });
+    (trackingResult.data || []).forEach(function(row){
+      var c = caseMap[row.case_id];
+      if(!c) return;
+      var rec = Object.assign({}, row.record_data || {});
+      rec.recordId = row.id;
+      c.trackingRecords.push(rec);
+    });
+    state.cases.forEach(function(c){
+      c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
+    });
+
+    state.cloudCaseIds = state.cases.map(function(c){ return c.id; });
+    state.cloudTaskIds = state.tasks.map(function(t){ return t.id; });
+    state.cloudTrackingIds = (trackingResult.data || []).map(function(r){ return r.id; });
+    state.cloudReady = true;
+    state.loaded = true;
+    state.syncErrorShown = false;
+    render();
+  }
+
+  function scheduleCloudSync(){
+    if(!state.cloudReady) return;
+    clearTimeout(state.syncTimer);
+    state.syncTimer = setTimeout(syncCloudData, 350);
+  }
+
+  async function syncCloudData(){
+    if(!state.cloudReady) return;
+    if(state.syncing){
+      state.syncQueued = true;
+      return;
+    }
+    state.syncing = true;
+    state.syncQueued = false;
+    var client = cloudClient();
+    try{
+      var caseRows = state.cases.map(caseToCloudRow);
+      var taskRows = state.tasks.map(taskToCloudRow);
+      var trackingRows = trackingToCloudRows();
+
+      if(caseRows.length){
+        var caseUpsert = await client.from('cases').upsert(caseRows);
+        if(caseUpsert.error) throw caseUpsert.error;
+      }
+      if(taskRows.length){
+        var taskUpsert = await client.from('tasks').upsert(taskRows);
+        if(taskUpsert.error) throw taskUpsert.error;
+      }
+      if(trackingRows.length){
+        var trackingUpsert = await client.from('tracking_records').upsert(trackingRows);
+        if(trackingUpsert.error) throw trackingUpsert.error;
+      }
+
+      var currentCaseIds = caseRows.map(function(r){ return r.id; });
+      var currentTaskIds = taskRows.map(function(r){ return r.id; });
+      var currentTrackingIds = trackingRows.map(function(r){ return r.id; });
+      var removedCases = state.cloudCaseIds.filter(function(id){ return currentCaseIds.indexOf(id)<0; });
+      var removedTasks = state.cloudTaskIds.filter(function(id){ return currentTaskIds.indexOf(id)<0; });
+      var removedTracking = state.cloudTrackingIds.filter(function(id){ return currentTrackingIds.indexOf(id)<0; });
+
+      if(removedTracking.length){
+        var delTracking = await client.from('tracking_records').delete().in('id', removedTracking);
+        if(delTracking.error) throw delTracking.error;
+      }
+      if(removedTasks.length){
+        var delTasks = await client.from('tasks').delete().in('id', removedTasks);
+        if(delTasks.error) throw delTasks.error;
+      }
+      if(removedCases.length){
+        var delCases = await client.from('cases').delete().in('id', removedCases);
+        if(delCases.error) throw delCases.error;
+      }
+
+      state.cloudCaseIds = currentCaseIds;
+      state.cloudTaskIds = currentTaskIds;
+      state.cloudTrackingIds = currentTrackingIds;
+      state.syncErrorShown = false;
+    }catch(error){
+      reportCloudError('Supabase 儲存失敗', error);
+    }finally{
+      state.syncing = false;
+      if(state.syncQueued) scheduleCloudSync();
+    }
+  }
+
+  function saveCases(){ scheduleCloudSync(); }
+  function saveTasks(){ scheduleCloudSync(); }
+  function saveMembers(){}
+
+  async function applyAuthIdentity(detail){
     if(!detail || !detail.profile) return;
     var profile = detail.profile;
     var roleKey = roleKeyFromProfessional(profile.professional_role);
@@ -935,8 +1138,7 @@
     state.authDisplayName = profile.display_name || '';
     state.authProfessionalRole = profile.professional_role || '';
     state.showMemberManager = false;
-    state.loaded = true;
-    render();
+    await loadCloudData();
   }
   window.addEventListener('hfb-auth-ready', function(event){
     applyAuthIdentity(event.detail);
@@ -2199,6 +2401,7 @@
   }
 
   var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  window.hfbSupabaseClient = client;
 
   window.hfbLogout = async function(){
     await client.auth.signOut();
