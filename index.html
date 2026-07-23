@@ -429,6 +429,7 @@
         '<button type="button" class="hdate-btn" onclick="var d=document.getElementById(\'hdetail-'+idx+'\'); var open=d.style.display===\'block\'; d.style.display = open ? \'none\' : \'block\'; document.getElementById(\'hitem-'+idx+'\').classList.toggle(\'expanded\', !open);">'+esc(timeLabel)+'</button>'+
         '<div class="hdetail" id="hdetail-'+idx+'">'+
           '<div class="hline">血壓 '+esc(r.sbp||'—')+'/'+esc(r.dbp||'—')+' mmHg ・ 心跳 '+esc(r.hr||'—')+' bpm ・ 體重 '+esc(r.weight||'—')+' kg ・ 水腫 '+esc(r.edema||'—')+' ・ 呼吸喘 '+esc(r.dyspnea||'—')+(r.nyha?' ・ NYHA '+esc(r.nyha):'')+'</div>'+
+          '<div class="hline">LVEF '+esc(r.lvef||'—')+(r.lvef?'%':'')+(r.lvefDate?'（'+esc(r.lvefDate)+'）':'')+' ・ 6分鐘行走測試 '+esc(r.sixMwt||'—')+(r.sixMwt?' m':'')+(r.sixMwtDate?'（'+esc(r.sixMwtDate)+'）':'')+'</div>'+
           (r.recordedByName ? '<div class="hline"><span class="hlabel">評估者</span>'+esc(r.recordedByName)+(r.recordedByRole?' '+esc(r.recordedByRole):'')+'</div>' : '')+
           '<div class="hline hmeds"><span class="hlabel">抽血</span></div>'+
           '<div class="mp-list mp-list-2col">'+labsRowsHtmlFromEntry(r)+'</div>'+
@@ -471,6 +472,8 @@
           '<div class="past-row"><span class="past-label">水腫</span><span class="past-value">'+esc(rec.edema||'—')+'</span></div>'+
           '<div class="past-row"><span class="past-label">呼吸喘</span><span class="past-value">'+esc(rec.dyspnea||'—')+'</span></div>'+
           '<div class="past-row"><span class="past-label">NYHA</span><span class="past-value">'+esc(rec.nyha||'—')+'</span></div>'+
+          '<div class="past-row"><span class="past-label">LVEF</span><span class="past-value">'+esc(rec.lvef||'—')+(rec.lvef?'%':'')+(rec.lvefDate?'（'+esc(rec.lvefDate)+'）':'')+'</span></div>'+
+          '<div class="past-row"><span class="past-label">6MWT</span><span class="past-value">'+esc(rec.sixMwt||'—')+(rec.sixMwt?' m':'')+(rec.sixMwtDate?'（'+esc(rec.sixMwtDate)+'）':'')+'</span></div>'+
           '</div>'+
           '<div class="past-row"><span class="past-label">抽血</span></div>'+
           '<div class="mp-list mp-list-2col">'+labsRowsHtmlFromEntry(rec)+'</div>'+
@@ -484,15 +487,17 @@
       pastPanelHtml = '<div class="empty">尚無過去紀錄可比對</div>';
     }
 
+    var latestLvefRecord = history.find(function(r){ return r.lvef; });
+    var latestSixMwtRecord = history.find(function(r){ return r.sixMwt; });
     var sixMwtTask = state.tasks
       .filter(function(t){ return t.caseId===c.id && t.role==='pt' && t.status==='done' && t.title.indexOf('六分鐘')>=0; })
       .sort(function(a,b){ return (b.respondedAt||'').localeCompare(a.respondedAt||''); })[0];
     var quickRefHtml = '<div class="quickref">'+
       '<div class="qr-item"><span class="qr-label">最近一次六分鐘行走測試</span><span class="qr-value">'+
-        (sixMwtTask ? esc(sixMwtTask.response||'—')+'<span class="qr-date">('+esc(fmt(sixMwtTask.respondedAt))+')</span>' : '尚無紀錄')+
+        (latestSixMwtRecord ? esc(latestSixMwtRecord.sixMwt)+' m'+(latestSixMwtRecord.sixMwtDate?'<span class="qr-date">('+esc(latestSixMwtRecord.sixMwtDate)+')</span>':'') : (sixMwtTask ? esc(sixMwtTask.response||'—')+'<span class="qr-date">('+esc(fmt(sixMwtTask.respondedAt))+')</span>' : '尚無紀錄'))+
       '</span></div>'+
       '<div class="qr-item"><span class="qr-label">最近一次LVEF</span><span class="qr-value">'+
-        (c.lvef ? esc(c.lvef)+'%' : '尚無紀錄')+
+        (latestLvefRecord ? esc(latestLvefRecord.lvef)+'%'+(latestLvefRecord.lvefDate?'<span class="qr-date">('+esc(latestLvefRecord.lvefDate)+')</span>':'') : (c.lvef ? esc(c.lvef)+'%' : '尚無紀錄'))+
       '</span></div>'+
     '</div>';
 
@@ -536,7 +541,10 @@
         '.empty{font-size:17px; color:#B39EC5;}'+
         'label.field-label{display:block; font-size:19px; color:#5B4A6E; margin:18px 0 7px; font-weight:700;}'+
         '.field-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}'+
+        '.vitals-grid{grid-template-columns:repeat(3,1fr);}'+
         '.lab-grid{grid-template-columns:repeat(3,1fr);}'+
+        '.cardiac-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px 18px;}'+
+        '.cardiac-pair{display:grid; grid-template-columns:1fr 1fr; gap:10px;}'+
         '.tri-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 18px; margin-bottom:6px;}'+
         '.tri-item label.field-label{margin:0 0 7px;}'+
         'input, select, textarea{width:100%; box-sizing:border-box; border:1px solid #E3D5F0; border-radius:9px; padding:14px 16px; font-size:19px; font-family:inherit;}'+
@@ -584,7 +592,7 @@
         '.edu-chip:hover{background:#F1E5FA;}'+
         '.edu-chip.on:hover{background:#663F87;}'+
         '.tkm-row input, .tkm-row select{padding:10px 11px; font-size:16px;}'+
-        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row,.lab-grid,.mp-list-2col,.tk-appointment-row{grid-template-columns:1fr;} }'+
+        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row,.vitals-grid,.lab-grid,.mp-list-2col,.tk-appointment-row,.cardiac-grid{grid-template-columns:1fr;} }'+
       '</style></head><body>'+
       '<h1>'+esc(c.name)+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
       '<div class="sub">個管師追蹤事項・獨立視窗</div>'+
@@ -607,11 +615,16 @@
             '<label class="field-label">追蹤日期時間</label>'+
             '<input type="datetime-local" id="tk-time">'+
             '<label class="field-label">當次生命徵象</label>'+
-            '<div class="field-grid">'+
+            '<div class="field-grid vitals-grid">'+
               '<input type="number" id="tk-sbp" placeholder="收縮壓 (mmHg)">'+
               '<input type="number" id="tk-dbp" placeholder="舒張壓 (mmHg)">'+
               '<input type="number" id="tk-hr" placeholder="心跳 (bpm)">'+
               '<input type="number" id="tk-weight" placeholder="體重 (kg)" step="0.1">'+
+            '</div>'+
+            '<label class="field-label">心功能評估</label>'+
+            '<div class="cardiac-grid">'+
+              '<div class="cardiac-pair"><input type="number" id="tk-lvef" placeholder="LVEF (%)" step="0.1"><input type="date" id="tk-lvef-date" title="LVEF檢查日期"></div>'+
+              '<div class="cardiac-pair"><input type="number" id="tk-sixmwt" placeholder="6分鐘行走測試 (m)" step="0.1"><input type="date" id="tk-sixmwt-date" title="6分鐘行走測試日期"></div>'+
             '</div>'+
             '<div class="tri-row">'+
               '<div class="tri-item"><label class="field-label">NYHA Fc</label><select id="tk-nyha">'+nyhaOptsForm+'</select></div>'+
@@ -674,6 +687,10 @@
             'dbp: document.getElementById("tk-dbp").value,'+
             'hr: document.getElementById("tk-hr").value,'+
             'weight: document.getElementById("tk-weight").value,'+
+            'lvef: document.getElementById("tk-lvef").value,'+
+            'lvefDate: document.getElementById("tk-lvef-date").value,'+
+            'sixMwt: document.getElementById("tk-sixmwt").value,'+
+            'sixMwtDate: document.getElementById("tk-sixmwt-date").value,'+
             'edema: document.getElementById("tk-edema").value,'+
             'dyspnea: document.getElementById("tk-dyspnea").value,'+
             'nyha: document.getElementById("tk-nyha").value,'+
@@ -724,6 +741,7 @@
     c.followUp.session = entry.followUpSession || '';
     c.followUp.doctor = entry.followUpDoctor || '';
     c.followUp.trackingDone = false;
+    if(entry.lvef) c.lvef = entry.lvef;
     c.trackingRecords.push(entry);
     c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
     c.trackingRecords = c.trackingRecords.slice(0,2);
