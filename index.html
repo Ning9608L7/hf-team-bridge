@@ -125,6 +125,11 @@
   .hfb-role-badge{font-size:20px; font-weight:700; padding:2px 8px; border-radius:6px; display:inline-block;}
   .hfb-task-title{font-size:23px; font-weight:500; margin:6px 0 2px; color:var(--ink-soft);}
   .hfb-task-meta{font-size:20px; color:var(--ink-mute);}
+  .hfb-task-date-editor{display:flex; align-items:center; gap:7px; margin-top:5px; flex-wrap:wrap;}
+  .hfb-task-date-editor input{font-size:17px; padding:4px 7px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:var(--surface);}
+  .hfb-task-date-save{font-size:16px; padding:5px 10px; border:1px solid var(--primary); border-radius:7px; color:#fff; background:var(--primary); font-weight:600;}
+  .hfb-task-date-save:hover{background:var(--primary-deep);}
+  .hfb-task-date-saved{font-size:15px; color:var(--primary-deep);}
   .hfb-status-pill{font-size:20px; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0;}
   .hfb-status-pill.is-pending{font-size:22.5px; font-weight:700; animation:hfb-blink 1.1s ease-in-out infinite;}
   @keyframes hfb-blink{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
@@ -1254,11 +1259,16 @@
     var st = STATUS[t.status];
     var pillClass = 'hfb-status-pill'+(t.status==='pending' ? ' is-pending' : '');
     var pillLabel = t.status==='done' ? '✓ '+st.label : st.label;
+    var member = currentMember();
+    var canEditTaskDate = !!(member && t.assignedByMemberId && member.id===t.assignedByMemberId);
+    var taskDateHtml = canEditTaskDate
+      ? '<div class="hfb-task-date-editor"><label for="task-date-'+t.id+'">指派日期</label><input type="datetime-local" id="task-date-'+t.id+'" data-task-date="'+t.id+'" value="'+esc(t.scheduledAt||nowLocalStr())+'"><button type="button" class="hfb-task-date-save" data-save-task-date="'+t.id+'">儲存日期</button><span class="hfb-task-date-saved" id="task-date-saved-'+t.id+'"></span></div>'
+      : '<div class="hfb-task-meta">指派日期 '+fmt(t.scheduledAt||t.createdAt)+'</div>';
     var html = '<div class="hfb-task-card" style="--role-color:'+role.color+'">'+
       '<div class="hfb-task-top">'+
         '<div><span class="hfb-role-badge" style="background:'+role.tint+'; color:'+role.color+'">'+role.label+'</span>'+
         '<div class="hfb-task-title">'+esc(t.title)+'</div>'+
-        '<div class="hfb-task-meta">指派日期 '+fmt(t.scheduledAt||t.createdAt)+'</div></div>'+
+        taskDateHtml+'</div>'+
         '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
       '</div>';
 
@@ -1830,6 +1840,9 @@
               id: uid(), caseId: cid, role: r,
               title: draft[r].text.trim(),
               scheduledAt: draft[r].date || nowLocalStr(),
+              assignedByMemberId: state.currentMemberId,
+              assignedByRole: state.identity,
+              assignedByName: (currentMember() && currentMember().name) || '',
               status: 'pending', response:'', respondedBy:'', respondedAt:null,
               createdAt: Date.now()
             });
@@ -1842,6 +1855,28 @@
           saveTasks();
         }
         render();
+      };
+    });
+
+    root.querySelectorAll('[data-save-task-date]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-save-task-date');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        var member = currentMember();
+        if(!t || !member || !t.assignedByMemberId || t.assignedByMemberId!==member.id){
+          window.alert('僅限發出此指派的人員修改日期。');
+          render();
+          return;
+        }
+        var inp = document.querySelector('[data-task-date="'+id+'"]');
+        if(!inp || !inp.value) return;
+        t.scheduledAt = inp.value;
+        saveTasks();
+        var msg = document.getElementById('task-date-saved-'+id);
+        if(msg){
+          msg.textContent = '已儲存';
+          setTimeout(function(){ if(msg) msg.textContent=''; }, 1800);
+        }
       };
     });
 
