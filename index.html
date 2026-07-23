@@ -310,6 +310,12 @@
     var d = new Date();
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
+  function normalizeDateKey(value){
+    if(!value) return '';
+    var m = String(value).trim().match(/^(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+    if(!m) return '';
+    return m[1]+'-'+String(Number(m[2])).padStart(2,'0')+'-'+String(Number(m[3])).padStart(2,'0');
+  }
   function nowLocalStr(){
     var d = new Date();
     var p = function(n){ return String(n).padStart(2,'0'); };
@@ -881,10 +887,11 @@
     }
     var myTaskCount = state.tasks.filter(function(t){ return t.role===state.identity && t.status!=='done'; }).length;
 
-    var today = todayStr();
-    var followUpCount = state.cases.filter(function(c){
-      return !!(c.followUp && c.followUp.nextVisitDate===today);
-    }).length;
+    var today = normalizeDateKey(todayStr());
+    var followUpCount = state.cases.reduce(function(total,c){
+      var nextVisitDate = c.followUp ? normalizeDateKey(c.followUp.nextVisitDate) : '';
+      return total + (nextVisitDate && nextVisitDate===today ? 1 : 0);
+    },0);
 
     var html = '';
     html += topbar();
