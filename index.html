@@ -270,7 +270,7 @@
     {key:'lpa', label:'Lp(a)', unit:'mg/dL'}
   ];
   var NYHA_OPTIONS = ['I','II','III','IV'];
-  var EDUCATION_OPTIONS = ['加強指導飲水控制觀念','加強指導飲食控制觀念','加強症狀評估','提供心肺復健資訊'];
+  var EDUCATION_OPTIONS = ['加強飲食及水分控制觀念','加強症狀評估','提供心肺復健資訊'];
   var SUGGESTIONS = {
     case_manager: ['居家衛教', '個案追蹤與回診提醒', '轉介資源協調', '出院準備進度追蹤'],
     physician: ['調整心衰竭藥物治療', '評估是否需裝置/介入治療', '複核相關檢驗報告'],
@@ -544,13 +544,13 @@
         '.msg{font-size:16px; color:#7A4C9E; margin-top:12px; display:none; align-items:center; gap:12px;}'+
         '.tk-refresh-btn{margin-top:0; padding:8px 16px; font-size:15px; background:#A0398A;}'+
         '.tk-refresh-btn:hover{background:#832C6F;}'+
-        '.tk-save-row{display:flex; align-items:flex-end; gap:12px; margin-top:18px; flex-wrap:wrap;}'+
-        '.tk-nextvisit-wrap{flex:1; min-width:190px;}'+
-        '.tk-nextvisit-wrap label.field-label{margin:0 0 7px;}'+
-        '.tk-nextvisit-wrap input, .tk-nextvisit-wrap select{padding:12px 14px;}'+
-        '.tk-nextvisit-wrap .tk-doctor-label, .tk-nextvisit-wrap .tk-session-label{margin-top:12px;}'+
-        '.tk-date-line{display:flex; align-items:center; gap:10px;}'+
-        '.tk-date-line input{flex:1;}'+
+        '.tk-save-row{display:flex; flex-direction:column; align-items:flex-end; gap:12px; margin-top:18px;}'+
+        '.tk-appointment-row{display:grid; grid-template-columns:1.35fr .7fr 1fr; gap:12px; width:100%; align-items:end;}'+
+        '.tk-appointment-field{min-width:0;}'+
+        '.tk-appointment-field label.field-label{margin:0 0 7px;}'+
+        '.tk-appointment-field input, .tk-appointment-field select{padding:12px 14px;}'+
+        '.tk-date-line{display:flex; align-items:center; gap:8px;}'+
+        '.tk-date-line input{flex:1; min-width:0;}'+
         '.tk-weekday{font-size:18px; color:#7A4C9E; font-weight:700; white-space:nowrap; min-width:42px;}'+
         '.tk-save-row #tk-save{margin-top:0; flex:0 0 auto;}'+
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
@@ -577,7 +577,7 @@
         '.edu-chip:hover{background:#F1E5FA;}'+
         '.edu-chip.on:hover{background:#663F87;}'+
         '.tkm-row input, .tkm-row select{padding:10px 11px; font-size:16px;}'+
-        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row,.lab-grid,.mp-list-2col{grid-template-columns:1fr;} }'+
+        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row,.lab-grid,.mp-list-2col,.tk-appointment-row{grid-template-columns:1fr;} }'+
       '</style></head><body>'+
       '<h1>'+esc(c.name)+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
       '<div class="sub">個管師追蹤事項・獨立視窗</div>'+
@@ -634,10 +634,10 @@
             '<label class="field-label">追蹤備註</label>'+
             '<textarea id="tk-note" placeholder="其他觀察與衛教內容…"></textarea>'+
             '<div class="tk-save-row">'+
-              '<div class="tk-nextvisit-wrap">'+
-                '<label class="field-label" for="tk-nextvisit">下次門診</label><div class="tk-date-line"><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'"><span class="tk-weekday" id="tk-weekday"></span></div>'+
-                '<label class="field-label tk-session-label" for="tk-session">看診時段</label><select id="tk-session">'+trackingSessionOpts+'</select>'+
-                '<label class="field-label tk-doctor-label" for="tk-doctor">追蹤醫師</label><select id="tk-doctor">'+trackingDoctorOpts+'</select>'+
+              '<div class="tk-appointment-row">'+
+                '<div class="tk-appointment-field"><label class="field-label" for="tk-nextvisit">下次門診</label><div class="tk-date-line"><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'"><span class="tk-weekday" id="tk-weekday"></span></div></div>'+
+                '<div class="tk-appointment-field"><label class="field-label" for="tk-session">看診時段</label><select id="tk-session">'+trackingSessionOpts+'</select></div>'+
+                '<div class="tk-appointment-field"><label class="field-label" for="tk-doctor">追蹤醫師</label><select id="tk-doctor">'+trackingDoctorOpts+'</select></div>'+
               '</div>'+
               '<button id="tk-save">儲存追蹤事項</button>'+
             '</div>'+
