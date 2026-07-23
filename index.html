@@ -31,23 +31,23 @@
   .hfb-auth-logout:hover{background:rgba(255,255,255,.24)}
 </style>
 <div id="hfb-auth-shell">
-  <form class="hfb-auth-card" id="hfb-login-form">
+  <form class="hfb-auth-card" id="hfb-login-form" autocomplete="off">
     <div class="hfb-auth-logo">♥</div>
     <h1 class="hfb-auth-title">心臟衰竭照護平台</h1>
     <div class="hfb-auth-field">
       <label for="hfb-login-email">電子郵件</label>
       <div class="hfb-auth-email-wrap">
-        <input id="hfb-login-email" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" aria-label="院內電子郵件帳號" required>
+        <input id="hfb-login-email" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" aria-label="院內電子郵件帳號" required>
         <span class="hfb-auth-email-domain">@chimei.org.tw</span>
       </div>
     </div>
     <div class="hfb-auth-field">
       <label for="hfb-login-password">密碼</label>
-      <input id="hfb-login-password" type="password" autocomplete="current-password" required>
+      <input id="hfb-login-password" type="password" autocomplete="new-password" required>
     </div>
     <button class="hfb-auth-button" id="hfb-login-submit" type="submit">登入系統</button>
     <div class="hfb-auth-message" id="hfb-login-message" role="alert"></div>
-    <div class="hfb-auth-notice">本系統僅供授權之醫療團隊成員使用。<br>如需協助，請聯絡管理員：<a href="mailto:9608L7@chimei.org.tw" style="color:inherit">9608L7@chimei.org.tw</a></div>
+    <div class="hfb-auth-notice">本系統僅供授權之醫療團隊成員使用。閒置 10 分鐘將自動登出。<br>如需協助，請聯絡管理員：<a href="mailto:9608L7@chimei.org.tw" style="color:inherit">9608L7@chimei.org.tw</a></div>
   </form>
 </div>
 <!-- 心衰竭多專科團隊協作平台 -->
@@ -2471,13 +2471,63 @@
     return;
   }
 
-  var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: true,
+      detectSessionInUrl: false
+    }
+  });
   window.hfbSupabaseClient = client;
 
-  window.hfbLogout = async function(){
-    await client.auth.signOut();
-    window.location.reload();
+  var INACTIVITY_LIMIT = 10 * 60 * 1000;
+  var lastActivityAt = Date.now();
+  var sessionActive = false;
+  var signingOut = false;
+
+  function clearLoginFields(){
+    emailInput.value = '';
+    passwordInput.value = '';
+  }
+
+  async function secureLogout(showIdleMessage){
+    if(signingOut) return;
+    signingOut = true;
+    sessionActive = false;
+    appRoot.style.display = 'none';
+    clearLoginFields();
+    if(showIdleMessage) window.alert('系統已閒置 10 分鐘，為保護資料安全已自動登出。');
+    try{ await client.auth.signOut({scope:'local'}); }catch(error){ console.error(error); }
+    window.location.replace(window.location.pathname + window.location.search);
+  }
+
+  window.hfbLogout = function(){
+    secureLogout(false);
   };
+
+  function registerActivity(){
+    if(sessionActive) lastActivityAt = Date.now();
+  }
+
+  function checkInactivity(){
+    if(sessionActive && Date.now() - lastActivityAt >= INACTIVITY_LIMIT){
+      secureLogout(true);
+    }
+  }
+
+  ['pointerdown','keydown','touchstart','scroll'].forEach(function(eventName){
+    window.addEventListener(eventName, registerActivity, {passive:true});
+  });
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) checkInactivity();
+  });
+  window.addEventListener('pagehide', function(){
+    appRoot.style.display = 'none';
+  });
+  window.addEventListener('pageshow', function(event){
+    if(event.persisted) window.location.reload();
+  });
+  setInterval(checkInactivity, 15000);
 
   function friendlyError(error){
     var text = (error && error.message) || '';
@@ -2508,6 +2558,9 @@
     window.dispatchEvent(new CustomEvent('hfb-auth-ready', {
       detail: { userId: user.id, profile: result.data }
     }));
+    lastActivityAt = Date.now();
+    sessionActive = true;
+    clearLoginFields();
     authShell.style.display = 'none';
     appRoot.style.display = 'flex';
   }
@@ -2543,12 +2596,14 @@
     await openApp(result.data.user);
   });
 
+  clearLoginFields();
   client.auth.getSession().then(function(result){
     var session = result.data && result.data.session;
     if(session && session.user){
       openApp(session.user);
     } else {
       authShell.style.display = 'flex';
+      clearLoginFields();
       emailInput.focus();
     }
   });
