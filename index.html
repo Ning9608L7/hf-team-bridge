@@ -450,6 +450,11 @@
       var selected = c.followUp && c.followUp.doctor===d ? ' selected' : '';
       trackingDoctorOpts += '<option value="'+esc(d)+'"'+selected+'>'+esc(d)+'</option>';
     });
+    var trackingSessionOpts = '<option value="">請選擇時段</option>';
+    SESSION_OPTIONS.forEach(function(session){
+      var selected = c.followUp && c.followUp.session===session ? ' selected' : '';
+      trackingSessionOpts += '<option value="'+esc(session)+'"'+selected+'>'+esc(session)+'</option>';
+    });
 
     var pastPanelHtml = '';
     if(history.length){
@@ -543,7 +548,10 @@
         '.tk-nextvisit-wrap{flex:1; min-width:190px;}'+
         '.tk-nextvisit-wrap label.field-label{margin:0 0 7px;}'+
         '.tk-nextvisit-wrap input, .tk-nextvisit-wrap select{padding:12px 14px;}'+
-        '.tk-nextvisit-wrap .tk-doctor-label{margin-top:12px;}'+
+        '.tk-nextvisit-wrap .tk-doctor-label, .tk-nextvisit-wrap .tk-session-label{margin-top:12px;}'+
+        '.tk-date-line{display:flex; align-items:center; gap:10px;}'+
+        '.tk-date-line input{flex:1;}'+
+        '.tk-weekday{font-size:18px; color:#7A4C9E; font-weight:700; white-space:nowrap; min-width:42px;}'+
         '.tk-save-row #tk-save{margin-top:0; flex:0 0 auto;}'+
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
         '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
@@ -626,7 +634,8 @@
             '<textarea id="tk-note" placeholder="其他觀察與衛教內容…"></textarea>'+
             '<div class="tk-save-row">'+
               '<div class="tk-nextvisit-wrap">'+
-                '<label class="field-label" for="tk-nextvisit">下次門診</label><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'">'+
+                '<label class="field-label" for="tk-nextvisit">下次門診</label><div class="tk-date-line"><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'"><span class="tk-weekday" id="tk-weekday"></span></div>'+
+                '<label class="field-label tk-session-label" for="tk-session">看診時段</label><select id="tk-session">'+trackingSessionOpts+'</select>'+
                 '<label class="field-label tk-doctor-label" for="tk-doctor">追蹤醫師</label><select id="tk-doctor">'+trackingDoctorOpts+'</select>'+
               '</div>'+
               '<button id="tk-save">儲存追蹤事項</button>'+
@@ -637,6 +646,8 @@
       '</div>'+
       '<script>'+
         'document.getElementById("tk-time").value = (function(){var d=new Date();function p(n){return String(n).padStart(2,"0");}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());})();'+
+        'function updateTkWeekday(){var v=document.getElementById("tk-nextvisit").value;var el=document.getElementById("tk-weekday");if(!v){el.textContent="";return;}var p=v.split("-");var d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));el.textContent="（"+["日","一","二","三","四","五","六"][d.getDay()]+"）";}'+
+        'document.getElementById("tk-nextvisit").onchange=updateTkWeekday;updateTkWeekday();'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
           'var meds = {};'+
@@ -671,6 +682,7 @@
             'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
             'note: document.getElementById("tk-note").value,'+
             'nextVisitDate: document.getElementById("tk-nextvisit").value,'+
+            'followUpSession: document.getElementById("tk-session").value,'+
             'followUpDoctor: document.getElementById("tk-doctor").value'+
           '};'+
           'if(window.opener){ window.opener.postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
@@ -698,6 +710,7 @@
     entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
     if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:'', trackingDone:false};
     c.followUp.nextVisitDate = entry.nextVisitDate || '';
+    c.followUp.session = entry.followUpSession || '';
     c.followUp.doctor = entry.followUpDoctor || '';
     c.followUp.trackingDone = false;
     c.trackingRecords.push(entry);
@@ -745,6 +758,14 @@
   function fmt(d){
     var dt = new Date(d);
     return (dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+  }
+  function formatDateWithWeekday(dateStr){
+    if(!dateStr) return '';
+    var p = String(dateStr).split('-');
+    if(p.length!==3) return String(dateStr);
+    var d = new Date(Number(p[0]), Number(p[1])-1, Number(p[2]));
+    if(isNaN(d.getTime())) return String(dateStr);
+    return dateStr+'（'+['日','一','二','三','四','五','六'][d.getDay()]+'）';
   }
 
   function loadData(){
@@ -991,7 +1012,7 @@
       rows += '<tr data-followup-case="'+c.id+'">'+
         '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+' ・ '+esc(c.ward||'—')+'</div></td>'+
         '<td class="pmeta">'+esc(c.dischargeDate||'—')+'</td>'+
-        '<td class="pmeta">'+esc(fu.nextVisitDate||'—')+'</td>'+
+        '<td class="pmeta">'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+'</td>'+
         '<td class="pmeta">'+(fu.doctor?esc(fu.doctor)+(fu.session?' ('+esc(fu.session)+')':''):'—')+'</td>'+
         '<td class="pmeta">'+noteHtml+'</td>'+
         '<td><label class="hfb-fu-done"><input type="checkbox" data-fu-done="'+c.id+'"'+(fu.trackingDone?' checked':'')+'> 完成</label></td>'+
