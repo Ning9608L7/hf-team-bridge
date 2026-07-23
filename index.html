@@ -1006,6 +1006,21 @@
     window.alert(prefix + '。資料尚未成功同步，請先不要重複輸入，並將畫面截圖提供給管理員。');
   }
 
+  async function runTaskRpc(functionName, parameters){
+    var client = cloudClient();
+    if(!client){
+      reportCloudError('找不到 Supabase 連線', {});
+      return false;
+    }
+    var result = await client.rpc(functionName, parameters);
+    if(result.error){
+      reportCloudError('任務操作失敗', result.error);
+      return false;
+    }
+    await loadCloudData();
+    return true;
+  }
+
   async function loadCloudData(){
     var client = cloudClient();
     if(!client){
@@ -1019,10 +1034,11 @@
     var results = await Promise.all([
       client.from('cases').select('*').is('deleted_at', null).order('case_date', {ascending:false}),
       client.from('tasks').select('*').is('deleted_at', null).order('created_at', {ascending:true}),
-      client.from('tracking_records').select('*').is('deleted_at', null).order('created_at', {ascending:false})
+      client.from('tracking_records').select('*').is('deleted_at', null).order('created_at', {ascending:false}),
+      client.from('profiles').select('id, display_name, professional_role').eq('is_active', true)
     ]);
-    var caseResult = results[0], taskResult = results[1], trackingResult = results[2];
-    var firstError = caseResult.error || taskResult.error || trackingResult.error;
+    var caseResult = results[0], taskResult = results[1], trackingResult = results[2], profileResult = results[3];
+    var firstError = caseResult.error || taskResult.error || trackingResult.error || profileResult.error;
     if(firstError){
       state.loaded = true;
       render();
@@ -1032,6 +1048,20 @@
 
     state.cases = (caseResult.data || []).map(cloudCaseFromRow);
     state.tasks = (taskResult.data || []).map(cloudTaskFromRow);
+    var profileMap = {};
+    (profileResult.data || []).forEach(function(profile){ profileMap[profile.id] = profile; });
+    state.tasks.forEach(function(t){
+      var assigner = profileMap[t.assignedByMemberId];
+      if(assigner){
+        t.assignedByName = assigner.display_name || t.assignedByName || '';
+        t.assignedByRole = roleKeyFromProfessional(assigner.professional_role);
+      }
+      var responder = profileMap[t.respondedByMemberId];
+      if(responder){
+        t.respondedByName = responder.display_name || t.respondedByName || '';
+        t.respondedBy = roleKeyFromProfessional(responder.professional_role);
+      }
+    });
     var caseMap = {};
     state.cases.forEach(function(c){ caseMap[c.id] = c; });
     (trackingResult.data || []).forEach(function(row){
@@ -2337,10 +2367,16 @@
     });
 
     root.querySelectorAll('[data-start-task]').forEach(function(b){
-      b.onclick = function(){
+      b.onclick = async function(){
         var id = this.getAttribute('data-start-task');
-        var t = state.tasks.find(function(x){ return x.id===id; });
-        if(t){ t.status='in_progress'; saveTasks(); render(); }
+        var button = this;
+        button.disabled = true;
+        button.textContent = '處理中…';
+        var ok = await runTaskRpc('start_task', {p_task_id:id});
+        if(!ok){
+          button.disabled = false;
+          button.textContent = '標記處理中';
+        }
       };
     });
 
@@ -2354,20 +2390,20 @@
     });
 
     root.querySelectorAll('[data-submit-response]').forEach(function(b){
-      b.onclick = function(){
+      b.onclick = async function(){
         var id = this.getAttribute('data-submit-response');
         var t = state.tasks.find(function(x){ return x.id===id; });
         if(!t) return;
         var val = (t.draft||'').trim();
-        if(!val){ return; }
-        t.response = val;
-        t.status = 'done';
-        t.respondedBy = state.identity;
-        t.respondedByMemberId = state.authUserId;
-        t.respondedByName = (currentMember() && currentMember().name) || '';
-        t.respondedAt = t.responseTimeDraft || nowLocalStr();
-        saveTasks();
-        render();
+        if(!val) return;
+        var button = this;
+        button.disabled = true;
+        button.textContent = '送出中…';
+        var ok = await runTaskRpc('respond_to_task', {p_task_id:id, p_response:val});
+        if(!ok){
+          button.disabled = false;
+          button.textContent = '送出回覆';
+        }
       };
     });
   }
