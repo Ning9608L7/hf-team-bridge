@@ -767,6 +767,14 @@
   function currentMember(){
     return state.members.find(function(m){ return m.id===state.currentMemberId; }) || null;
   }
+  function canManageTask(t){
+    var member = currentMember();
+    if(!member || !t) return false;
+    if(t.assignedByMemberId) return t.assignedByMemberId===member.id;
+    var c = state.cases.find(function(x){ return x.id===t.caseId; });
+    if(!c || c.initiator!==member.role) return false;
+    return !c.initiatorName || !member.name || c.initiatorName===member.name;
+  }
 
   function tasksForCase(caseId){ return state.tasks.filter(function(t){ return t.caseId===caseId; }); }
   function progressOf(caseId){
@@ -1262,8 +1270,7 @@
     var st = STATUS[t.status];
     var pillClass = 'hfb-status-pill'+(t.status==='pending' ? ' is-pending' : '');
     var pillLabel = t.status==='done' ? '✓ '+st.label : st.label;
-    var member = currentMember();
-    var canEditTaskDate = !!(member && t.assignedByMemberId && member.id===t.assignedByMemberId);
+    var canEditTaskDate = canManageTask(t);
     var taskDateHtml = canEditTaskDate
       ? '<div class="hfb-task-date-editor"><label for="task-date-'+t.id+'">指派日期</label><input type="datetime-local" id="task-date-'+t.id+'" data-task-date="'+t.id+'" value="'+esc(t.scheduledAt||nowLocalStr())+'"><button type="button" class="hfb-task-date-save" data-save-task-date="'+t.id+'">儲存日期</button><span class="hfb-task-date-saved" id="task-date-saved-'+t.id+'"></span></div>'
       : '<div class="hfb-task-meta">指派日期 '+fmt(t.scheduledAt||t.createdAt)+'</div>';
@@ -1866,8 +1873,7 @@
       b.onclick = function(){
         var id = this.getAttribute('data-delete-task');
         var t = state.tasks.find(function(x){ return x.id===id; });
-        var member = currentMember();
-        if(!t || !member || !t.assignedByMemberId || t.assignedByMemberId!==member.id){
+        if(!canManageTask(t)){
           window.alert('僅限發出此指派的人員刪除。');
           render();
           return;
@@ -1884,8 +1890,7 @@
       b.onclick = function(){
         var id = this.getAttribute('data-save-task-date');
         var t = state.tasks.find(function(x){ return x.id===id; });
-        var member = currentMember();
-        if(!t || !member || !t.assignedByMemberId || t.assignedByMemberId!==member.id){
+        if(!canManageTask(t)){
           window.alert('僅限發出此指派的人員修改日期。');
           render();
           return;
