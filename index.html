@@ -445,6 +445,11 @@
     EDEMA_OPTIONS.forEach(function(e){ edemaOpts += '<option value="'+e+'">'+e+'</option>'; });
     var nyhaOptsForm = '<option value="">選擇</option>';
     NYHA_OPTIONS.forEach(function(n){ nyhaOptsForm += '<option value="'+n+'">'+n+'</option>'; });
+    var trackingDoctorOpts = '<option value="">請選擇醫師</option>';
+    DOCTOR_OPTIONS.forEach(function(d){
+      var selected = c.followUp && c.followUp.doctor===d ? ' selected' : '';
+      trackingDoctorOpts += '<option value="'+esc(d)+'"'+selected+'>'+esc(d)+'</option>';
+    });
 
     var pastPanelHtml = '';
     if(history.length){
@@ -537,7 +542,8 @@
         '.tk-save-row{display:flex; align-items:flex-end; gap:12px; margin-top:18px; flex-wrap:wrap;}'+
         '.tk-nextvisit-wrap{flex:1; min-width:190px;}'+
         '.tk-nextvisit-wrap label.field-label{margin:0 0 7px;}'+
-        '.tk-nextvisit-wrap input{padding:12px 14px;}'+
+        '.tk-nextvisit-wrap input, .tk-nextvisit-wrap select{padding:12px 14px;}'+
+        '.tk-nextvisit-wrap .tk-doctor-label{margin-top:12px;}'+
         '.tk-save-row #tk-save{margin-top:0; flex:0 0 auto;}'+
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
         '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
@@ -619,7 +625,10 @@
             '<label class="field-label">追蹤備註</label>'+
             '<textarea id="tk-note" placeholder="其他觀察與衛教內容…"></textarea>'+
             '<div class="tk-save-row">'+
-              '<div class="tk-nextvisit-wrap"><label class="field-label" for="tk-nextvisit">下次門診</label><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'"></div>'+
+              '<div class="tk-nextvisit-wrap">'+
+                '<label class="field-label" for="tk-nextvisit">下次門診</label><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'">'+
+                '<label class="field-label tk-doctor-label" for="tk-doctor">追蹤醫師</label><select id="tk-doctor">'+trackingDoctorOpts+'</select>'+
+              '</div>'+
               '<button id="tk-save">儲存追蹤事項</button>'+
             '</div>'+
             '<div class="msg" id="tk-msg">已送出,可關閉此視窗 <button type="button" id="tk-refresh" class="tk-refresh-btn">立即更新頁面</button></div>'+
@@ -661,7 +670,8 @@
             'meds: meds,'+
             'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
             'note: document.getElementById("tk-note").value,'+
-            'nextVisitDate: document.getElementById("tk-nextvisit").value'+
+            'nextVisitDate: document.getElementById("tk-nextvisit").value,'+
+            'followUpDoctor: document.getElementById("tk-doctor").value'+
           '};'+
           'if(window.opener){ window.opener.postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
           'document.getElementById("tk-msg").style.display = "flex";'+
@@ -688,6 +698,7 @@
     entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
     if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:'', trackingDone:false};
     c.followUp.nextVisitDate = entry.nextVisitDate || '';
+    c.followUp.doctor = entry.followUpDoctor || '';
     c.followUp.trackingDone = false;
     c.trackingRecords.push(entry);
     c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
