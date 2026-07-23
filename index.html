@@ -869,7 +869,15 @@
     return !c.initiatorName || !member.name || c.initiatorName===member.name;
   }
 
-  function tasksForCase(caseId){ return state.tasks.filter(function(t){ return t.caseId===caseId; }); }
+  function isTaskActive(t){
+    if(!t || t.cancelled) return false;
+    var c = state.cases.find(function(x){ return x.id===t.caseId; });
+    if(c && c.discharged && t.status!=='done') return false;
+    return true;
+  }
+  function tasksForCase(caseId){
+    return state.tasks.filter(function(t){ return t.caseId===caseId && isTaskActive(t); });
+  }
   function progressOf(caseId){
     var ts = tasksForCase(caseId);
     if(ts.length===0) return {done:0,total:0};
@@ -885,7 +893,9 @@
       app.innerHTML = '<div class="hfb-placeholder">載入中…</div>';
       return;
     }
-    var myTaskCount = state.tasks.filter(function(t){ return t.role===state.identity && t.status!=='done'; }).length;
+    var myTaskCount = state.tasks.filter(function(t){
+      return t.role===state.identity && t.status!=='done' && isTaskActive(t);
+    }).length;
 
     var today = normalizeDateKey(todayStr());
     var followUpCount = state.cases.reduce(function(total,c){
@@ -1399,7 +1409,7 @@
   }
 
   function myTasksView(){
-    var myTasks = state.tasks.filter(function(t){ return t.role===state.identity; })
+    var myTasks = state.tasks.filter(function(t){ return t.role===state.identity && isTaskActive(t); })
       .sort(function(a,b){
         var order = {pending:0, in_progress:1, done:2};
         return order[a.status]-order[b.status] || a.createdAt-b.createdAt;
@@ -1582,6 +1592,14 @@
         if(c.discharged){
           c.dischargeDate = c.dischargeDate || todayStr();
           if(c.followUp) c.followUp.trackingDone = false;
+          state.tasks.forEach(function(t){
+            if(t.caseId===c.id && t.status!=='done' && !t.cancelled){
+              t.cancelled = true;
+              t.cancelledAt = nowLocalStr();
+              t.cancelReason = '個案已出院';
+            }
+          });
+          saveTasks();
           saveCases();
           state.activeCaseId = c.id;
           state.showFollowUp[c.id] = true;
