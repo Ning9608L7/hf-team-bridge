@@ -1,0 +1,1878 @@
+<!-- 心衰竭多專科團隊協作平台 -->
+<style>
+  #hfb-root{
+    --bg:#F3FAF9; --surface:#FFFFFF; --line:#C7E3DE;
+    --ink:#152D2A; --ink-soft:#4A6E69; --ink-mute:#6B8F88;
+    --primary:#2F9E94; --primary-deep:#1F7A70; --primary-tint:#DFF5F1;
+    --secondary:#5FB8D6; --secondary-deep:#3D96B5; --secondary-tint:#E3F5FA;
+    --pt:#5C6BAA; --pt-tint:#E7E9F5;
+    --rd:#7A8B3F; --rd-tint:#EFF3E1;
+    --ph:#B5653D; --ph-tint:#F7EAE1;
+    --np:#C25666; --np-tint:#F8E4E7;
+    --status-pending-ink:#FFFFFF; --status-pending-bg:#E63946;
+    --status-progress-ink:#B5772A; --status-progress-bg:#FBEEDD;
+    --status-done-ink:#1F7A70; --status-done-bg:#DFF5F1;
+    background:var(--bg); color:var(--ink);
+    font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",-apple-system,BlinkMacSystemFont,sans-serif;
+    font-size:24px;
+    border-radius:14px; overflow:hidden; border:1px solid var(--line);
+    display:flex; flex-direction:column; min-height:640px;
+  }
+  #hfb-root *{box-sizing:border-box;}
+  #hfb-root button{font-family:inherit; cursor:pointer;}
+  #hfb-root input, #hfb-root textarea, #hfb-root select{font-family:inherit;}
+
+  .hfb-topbar{position:relative; overflow:hidden; background:linear-gradient(120deg, var(--primary-deep), var(--primary) 55%, #5FB8D6 100%); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  @keyframes hfb-heartbeat{ 0%,100%{transform:scale(1);} 12%{transform:scale(1.16);} 24%{transform:scale(1);} 36%{transform:scale(1.1);} 48%{transform:scale(1);} }
+  .hfb-brand-mark{width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.18); display:flex; align-items:center; justify-content:center; font-size:30px; color:#fff; animation:hfb-heartbeat 1.6s ease-in-out infinite;}
+  .hfb-topbar > *{position:relative; z-index:1;}
+  .hfb-brand{display:flex; align-items:center; gap:10px;}
+  .hfb-brand-text h1{font-size:24px; font-weight:500; margin:0;}
+  .hfb-brand-text p{font-size:20px; margin:1px 0 0; color:rgba(255,255,255,0.65);}
+  .hfb-brand-text p.hfb-clock{font-size:18.5px; font-weight:500; letter-spacing:0.5px; color:rgba(255,255,255,0.7); margin:1px 0 0;}
+  .hfb-daily-msg{color:#fff; font-size:22.5px; font-weight:600; letter-spacing:0.3px; text-align:center; padding:7px 16px; animation:hfb-blink 1.8s ease-in-out infinite;}
+  .hfb-identity{display:flex; align-items:center; gap:8px; font-size:21px; color:rgba(255,255,255,0.75);}
+  .hfb-identity select{background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:21.5px;}
+  .hfb-manage-btn{font-size:19.5px; padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.35); background:rgba(255,255,255,0.1); color:#fff;}
+  .hfb-manage-btn:hover{background:rgba(255,255,255,0.2);}
+  .hfb-member-panel{background:var(--surface); border-bottom:1px solid var(--line); padding:14px 20px;}
+  .hfb-member-row{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--line);}
+  .hfb-member-name{font-size:22px; font-weight:500; flex:1;}
+  .hfb-member-add{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .hfb-member-add input{border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:21.5px; flex:1; min-width:160px;}
+  .hfb-member-add select{border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:21.5px;}
+  .hfb-identity select option{color:#111;}
+
+  .hfb-tabs{display:flex; gap:4px; padding:10px 20px 0; background:var(--surface); border-bottom:1px solid var(--line);}
+  .hfb-tab{padding:9px 14px; font-size:22px; color:var(--ink-soft); border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px;}
+  .hfb-tab.active{color:var(--primary-deep); border-bottom-color:var(--primary); font-weight:500;}
+  .hfb-tab .hfb-count{display:inline-block; margin-left:5px; font-size:19.5px; background:var(--np-tint); color:var(--status-progress-ink); border-radius:10px; padding:1px 6px;}
+
+  .hfb-body{display:flex; flex:1; min-height:0;}
+  .hfb-main{flex:1; overflow-y:auto; padding:22px 26px; min-width:0;}
+
+  .hfb-new-case-btn{font-size:21px; padding:8px 14px; border-radius:8px; border:1px solid var(--secondary); color:#fff; background:var(--secondary); font-weight:500;}
+  .hfb-new-case-btn:hover{background:var(--secondary-deep);}
+  .hfb-empty-side{padding:24px 16px; font-size:21.5px; color:var(--ink-mute); text-align:center;}
+
+  .hfb-overview-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
+  .hfb-overview-head h2{font-size:29px; font-weight:500; margin:0; color:var(--ink);}
+  .hfb-table-wrap{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .hfb-table{width:100%; border-collapse:collapse;}
+  .hfb-table thead th{text-align:left; font-size:19.5px; color:var(--ink-mute); font-weight:500; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--bg);}
+  .hfb-table tbody tr{cursor:pointer; border-bottom:1px solid var(--line);}
+  .hfb-table tbody tr:last-child{border-bottom:none;}
+  .hfb-table tbody tr:hover{background:var(--primary-tint);}
+  .hfb-table td{padding:12px 14px; font-size:21.5px; vertical-align:middle;}
+  .hfb-table .pname{font-weight:500; font-size:22.5px;}
+  .hfb-table .pmeta{font-size:19px; color:var(--ink-mute); margin-top:2px;}
+  .hfb-role-dots{display:flex; gap:6px;}
+  .hfb-role-dot{width:16px; height:16px; border-radius:50%; background:var(--dot-color); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; font-size:10px; line-height:1;}
+  .hfb-role-dot.done{opacity:1;}
+  .hfb-role-dot.pending{opacity:0.45;}
+  .hfb-role-dot.in_progress{opacity:0.75;}
+  .hfb-role-dot.none{opacity:0.22;}
+  .hfb-mini-progress{width:90px; height:6px; background:var(--line); border-radius:4px; overflow:hidden;}
+  .hfb-mini-progress-fill{height:100%; background:linear-gradient(90deg, var(--primary), var(--secondary));}
+  .hfb-td-nowrap{white-space:nowrap;}
+  .hfb-fu-done{display:inline-flex; align-items:center; gap:6px; font-size:17px; color:var(--ink-soft); cursor:pointer; white-space:nowrap;}
+  .hfb-note-done{text-decoration:line-through; color:var(--ink-mute);}
+  .hfb-fu-done input{width:19px; height:19px; accent-color:var(--primary); cursor:pointer;}
+  .hfb-discharge-btn{font-size:17px; font-weight:700; padding:6px 12px; border-radius:20px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-mute); cursor:pointer; transition:background .15s,color .15s,border-color .15s;}
+  .hfb-discharge-btn.on{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .hfb-discharge-tag{font-size:16.5px; font-weight:700; color:var(--primary-deep); background:var(--primary-tint); padding:4px 10px; border-radius:20px;}
+  .hfb-locked-tag{font-size:16.5px; font-weight:700; color:var(--status-pending-ink); background:var(--status-pending-bg); padding:4px 12px; border-radius:20px;}
+  .hfb-delete-btn{font-size:28px; width:auto; height:auto; padding:4px; border-radius:8px; border:none; background:transparent; cursor:pointer; line-height:1; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s;}
+  .hfb-delete-btn:hover{transform:scale(1.15) rotate(-6deg);}
+
+  .hfb-back-btn{font-size:20.5px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); margin-bottom:14px; display:inline-flex; align-items:center; gap:4px;}
+  .hfb-back-btn:hover{background:var(--bg); color:var(--ink);}
+
+  .hfb-role-groups{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:6px;}
+  @media (max-width:640px){
+    .hfb-role-groups{grid-template-columns:1fr;}
+    .hfb-table{font-size:18.5px;}
+  }
+  .hfb-role-group{background:var(--surface); border:1px solid var(--line); border-top:4px solid var(--role-color); border-radius:12px; padding:14px 16px;}
+  .hfb-role-group-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .hfb-role-group-head .rname{font-size:23px; font-weight:700; color:var(--role-color);}
+  .hfb-role-group-summary{font-size:19px; color:var(--ink-mute); margin-bottom:10px;}
+  .hfb-role-group-empty{font-size:19.5px; color:var(--ink-mute); padding:14px 0; text-align:center;}
+
+  .hfb-case-header{border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:18px;}
+  .hfb-case-header h2{font-size:29px; font-weight:500; margin:0 0 4px;}
+  .hfb-case-header .sub{font-size:21.5px; color:var(--ink-soft);}
+  .hfb-case-header .note{font-size:21.5px; color:var(--ink-soft); margin-top:10px; background:var(--bg); padding:8px 10px; border-radius:8px; line-height:1.6;}
+  .hfb-info-cols{display:grid; grid-template-columns:1.1fr 1.1fr 1fr; gap:8px 26px; margin-top:12px;}
+  .hfb-info-col{display:flex; flex-direction:column; gap:8px;}
+  .hfb-info-item{font-size:21.5px; display:flex; gap:8px; align-items:baseline;}
+  .hfb-info-label{color:var(--ink-mute); flex-shrink:0; min-width:88px;}
+  .hfb-info-value{color:var(--ink); font-weight:600;}
+  .hfb-info-note{flex-direction:column; align-items:flex-start; gap:3px;}
+  .hfb-info-note .hfb-info-value{font-weight:500; background:var(--bg); padding:8px 10px; border-radius:8px; width:100%;}
+  @media (max-width:700px){ .hfb-info-cols{grid-template-columns:1fr;} }
+  .hfb-locked-note{font-size:18.5px; color:var(--ink-mute); margin-top:9px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .hfb-edit-btn{font-size:16.5px; padding:4px 11px; border-radius:7px; border:1px solid var(--primary); color:var(--primary-deep); background:var(--primary-tint); font-weight:600;}
+  .hfb-edit-btn:hover{background:var(--primary); color:#fff;}
+  .hfb-edit-note{font-size:16.5px; color:var(--secondary-deep); background:var(--secondary-tint); padding:6px 10px; border-radius:8px; margin-bottom:10px;}
+
+  .hfb-section-title{font-size:21.5px; font-weight:500; color:var(--ink-soft); margin:20px 0 10px; display:flex; align-items:center; justify-content:space-between;}
+  .hfb-assign-btn{font-size:21px; padding:6px 12px; border-radius:8px; border:1px solid var(--secondary); color:#fff; background:var(--secondary); font-weight:500;}
+  .hfb-assign-btn:hover{background:var(--secondary-deep);}
+
+  .hfb-task-card{background:var(--surface); border:1px solid var(--line); border-left:3px solid var(--role-color, var(--primary)); border-radius:10px; padding:12px 14px; margin-bottom:10px;}
+  .hfb-task-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}
+  .hfb-role-badge{font-size:20px; font-weight:700; padding:2px 8px; border-radius:6px; display:inline-block;}
+  .hfb-task-title{font-size:23px; font-weight:500; margin:6px 0 2px; color:var(--ink-soft);}
+  .hfb-task-meta{font-size:20px; color:var(--ink-mute);}
+  .hfb-status-pill{font-size:20px; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0;}
+  .hfb-status-pill.is-pending{font-size:22.5px; font-weight:700; animation:hfb-blink 1.1s ease-in-out infinite;}
+  @keyframes hfb-blink{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  .hfb-task-response{margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); font-size:21.5px; color:var(--primary-deep); font-weight:700;}
+  .hfb-task-response .who{color:var(--ink-mute); font-size:20px; margin-top:4px;}
+  .hfb-task-actions{margin-top:9px; padding-top:9px; border-top:1px dashed var(--line);}
+  .hfb-task-actions textarea{width:100%; min-height:56px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:21.5px; resize:vertical;}
+  .hfb-task-actions .row{display:flex; gap:8px; margin-top:8px; align-items:center;}
+  .hfb-btn-sm{font-size:21px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink);}
+  .hfb-btn-sm:hover{background:var(--bg);}
+  .hfb-btn-primary-sm{font-size:21px; padding:6px 12px; border-radius:8px; border:1px solid var(--primary); background:var(--primary); color:#fff;}
+  .hfb-btn-primary-sm:hover{background:var(--primary-deep);}
+
+  .hfb-mytasks-item{background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 14px; margin-bottom:10px;}
+  .hfb-discharged-note{margin-top:10px; padding-top:10px; border-top:1px dashed var(--line); display:flex; align-items:center; justify-content:flex-start; gap:14px; flex-wrap:wrap; font-size:18px; color:var(--status-progress-ink); font-weight:600;}
+  .hfb-dismiss-btn{font-size:16.5px; font-weight:700; padding:6px 16px; border-radius:8px; border:none; background:var(--secondary); color:#fff;}
+  .hfb-dismiss-btn:hover{background:var(--secondary-deep);}
+  .hfb-mytasks-item .patient{font-size:21px; color:var(--ink-mute); margin-bottom:4px;}
+
+  .hfb-placeholder{display:flex; align-items:center; justify-content:center; height:100%; color:var(--ink-mute); font-size:22px; flex-direction:column; gap:6px; padding:60px 20px; text-align:center;}
+
+  .hfb-modal-mask{position:relative; background:rgba(15,25,22,0.35); border-radius:12px; padding:18px; margin:6px 0 18px;}
+  .hfb-modal{background:var(--surface); border-radius:12px; border:1px solid var(--line); padding:16px 18px;}
+  .hfb-modal h3{font-size:24px; font-weight:500; margin:0 0 12px;}
+  .hfb-hftype-group{display:flex; gap:8px; flex-wrap:wrap;}
+  .hfb-hftype-btn{padding:7px 16px; border-radius:20px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-mute); font-size:19.5px; font-weight:700;}
+  .hfb-hftype-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .hfb-hftype-tag{font-size:18px; font-weight:700; padding:2px 9px; border-radius:20px; background:var(--primary-tint); color:var(--primary-deep); margin-left:8px; vertical-align:middle;}
+  .hfb-meds-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:6px;}
+  .hfb-clinical-cols{display:flex; gap:18px; align-items:flex-start;}
+  .hfb-clinical-col{flex:1; min-width:0;}
+  .hfb-clinical-row{display:flex; gap:16px; margin-bottom:14px; flex-wrap:wrap;}
+  .hfb-clinical-row .hfb-field{flex:1; min-width:140px;}
+  .hfb-clinical-row .hfb-field label{font-size:24px; font-weight:600;}
+  .hfb-clinical-row .hfb-field input, .hfb-clinical-row .hfb-field select{font-size:24px; padding:11px 14px;}
+  .hfb-lab-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px 12px;}
+  .hfb-lab-field{display:flex; flex-direction:column; gap:3px;}
+  .hfb-lab-field label{font-size:14px; color:var(--ink-mute); font-weight:600;}
+  .hfb-lab-field input{padding:7px 9px; font-size:16px; border:1px solid var(--line); border-radius:7px;}
+  .hfb-lab-field input:disabled{background:var(--bg); color:var(--ink-mute);}
+  @media (max-width:900px){ .hfb-clinical-cols{flex-direction:column;} }
+  .hfb-med-row{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;}
+  .hfb-med-row:last-child{margin-bottom:0;}
+  .hfb-med-toggle{flex:0 0 190px; padding:9px 10px; border-radius:8px; border:none; font-size:20px; font-weight:700; background:var(--line); color:var(--ink-mute); cursor:pointer; transition:background .15s,color .15s;}
+  .hfb-med-toggle.on{background:var(--primary); color:#fff;}
+  .hfb-med-toggle:disabled{cursor:not-allowed;}
+  .hfb-med-drug{flex:1.4; min-width:150px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:20.5px;}
+  .hfb-med-drug-lg{padding:11px 12px; font-size:22px; flex:1.8;}
+  .hfb-med-drug:disabled{background:var(--bg); color:var(--ink-mute);}
+  .hfb-med-dose, .hfb-med-freq{flex:0 0 110px; border:1px solid var(--line); border-radius:8px; padding:8px 8px; font-size:19.5px; background:var(--surface); color:var(--ink);}
+  .hfb-med-dose:disabled, .hfb-med-freq:disabled{background:var(--bg); color:var(--ink-mute);}
+  .hfb-field{margin-bottom:10px;}
+  .hfb-field label{font-size:21px; color:var(--ink-soft); display:block; margin-bottom:4px;}
+  .hfb-field input, .hfb-field textarea, .hfb-field select{width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:22px;}
+  .hfb-field textarea{min-height:50px; resize:vertical;}
+  .hfb-doctor-row{display:flex; gap:8px;}
+  .hfb-fu-layout{display:flex; gap:22px; align-items:flex-start;}
+  .hfb-fu-form{flex:1.3; min-width:0;}
+  .hfb-fu-reminder{flex:1; background:var(--np-tint); border:1.5px solid var(--np); border-radius:12px; padding:16px 18px; align-self:stretch;}
+  .hfb-fu-reminder-title{font-size:19px; font-weight:700; color:#9C6B23; margin-bottom:10px;}
+  .hfb-fu-reminder-body{font-size:19px; color:var(--ink); line-height:1.6; white-space:pre-wrap;}
+  .hfb-fu-reminder-meta{font-size:16px; color:var(--ink-mute); margin-top:12px; padding-top:10px; border-top:1px dashed var(--np);}
+  @media (max-width:760px){ .hfb-fu-layout{flex-direction:column;} }
+  .hfb-doctor-row select{flex:1; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:22px; background:var(--surface); color:var(--ink);}
+  #hfb-root input[type="date"], #hfb-root input[type="datetime-local"]{position:relative; padding-left:38px !important;}
+  #hfb-root input[type="date"]::-webkit-calendar-picker-indicator, #hfb-root input[type="datetime-local"]::-webkit-calendar-picker-indicator{position:absolute; left:8px; cursor:pointer;}
+
+  .hfb-role-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px;}
+  .hfb-role-pick{border:1px solid var(--line); border-radius:10px; padding:9px 10px; cursor:pointer;}
+  .hfb-role-pick.on{border-color:var(--role-color); background:var(--role-tint);}
+  .hfb-role-pick .rt{font-size:21.5px; font-weight:700; display:flex; align-items:center; gap:6px;}
+  .hfb-role-pick .rc{width:8px; height:8px; border-radius:50%; background:var(--role-color);}
+  .hfb-role-pick .chips{display:flex; flex-wrap:wrap; gap:4px; margin-top:7px;}
+  .hfb-chip{font-size:19.5px; padding:2px 7px; border-radius:20px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft);}
+  .hfb-chip:hover{border-color:var(--role-color); color:var(--ink);}
+  .hfb-role-pick textarea{width:100%; margin-top:7px; font-size:21px; min-height:40px; border:1px solid var(--line); border-radius:7px; padding:6px 8px; resize:vertical;}
+  .hfb-date-label{display:block; font-size:18px; color:var(--ink-mute); margin-top:8px; margin-bottom:3px;}
+  .hfb-role-pick input[type="date"], .hfb-role-pick input[type="datetime-local"]{width:100%; font-size:19.5px; border:1px solid var(--line); border-radius:7px; padding:5px 8px;}
+
+  .hfb-footer-note{font-size:19.5px; color:var(--ink-mute); text-align:center; padding:8px 0 2px;}
+  .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);}
+</style>
+
+<div id="hfb-root">
+  <h2 class="sr-only">心衰竭多專科團隊協作平台:個管師建立個案並指派任務給物理治療師、營養師、藥師、專科護理師,各職類於平台上回覆評估結果。</h2>
+  <div id="hfb-app"></div>
+</div>
+
+<script>
+(function(){
+  var ROLES = {
+    case_manager: {label:'個管師', color:'#7A5D74', tint:'#EFE7ED'},
+    physician: {label:'醫師', color:'#C98A3D', tint:'#FBEEDB'},
+    pt: {label:'物理治療師', color:'#5C6BAA', tint:'#E7E9F5'},
+    rd: {label:'營養師', color:'#7A8B3F', tint:'#EFF3E1'},
+    ph: {label:'藥師', color:'#B5653D', tint:'#F7EAE1'},
+    np: {label:'專科護理師', color:'#C25666', tint:'#F8E4E7'}
+  };
+  var TASKABLE_ROLES = ['case_manager','physician','pt','rd','ph','np'];
+  var INITIATOR_ROLES = ['case_manager','physician'];
+  function isInitiator(role){ return INITIATOR_ROLES.indexOf(role)>=0; }
+  var MED_CLASSES = [
+    {key:'acei', label:'ACEI/ARB/ARNI'},
+    {key:'bb', label:'β-Blocker'},
+    {key:'mra', label:'MRA'},
+    {key:'sglt2', label:'SGLT2i'},
+    {key:'other', label:'其他'}
+  ];
+  var LAB_FIELDS = [
+    {key:'ntprobnp', label:'NT-proBNP', unit:'pg/mL'},
+    {key:'bun', label:'BUN', unit:'mg/dL'},
+    {key:'cr', label:'Cr', unit:'mg/dL'},
+    {key:'egfr', label:'eGFR', unit:'mL/min'},
+    {key:'na', label:'Na', unit:'mmol/L'},
+    {key:'k', label:'K', unit:'mmol/L'},
+    {key:'hba1c', label:'HbA1c', unit:'%'},
+    {key:'glucose', label:'Glucose', unit:'mg/dL'},
+    {key:'hb', label:'Hb', unit:'g/dL'},
+    {key:'wbc', label:'WBC', unit:'10³/µL'},
+    {key:'crp', label:'CRP', unit:'mg/L'},
+    {key:'tg', label:'TG', unit:'mg/dL'},
+    {key:'ua', label:'UA', unit:'mg/dL'},
+    {key:'hdl', label:'HDL', unit:'mg/dL'},
+    {key:'ldl', label:'LDL', unit:'mg/dL'},
+    {key:'fe', label:'Fe', unit:'µg/dL'},
+    {key:'tibc', label:'TIBC', unit:'µg/dL'},
+    {key:'ferritin', label:'Ferritin', unit:'ng/mL'},
+    {key:'albumin', label:'Albumin', unit:'g/dL'},
+    {key:'got', label:'GOT', unit:'U/L'},
+    {key:'gpt', label:'GPT', unit:'U/L'},
+    {key:'tsh', label:'TSH', unit:'µIU/mL'},
+    {key:'t4', label:'T4', unit:'µg/dL'},
+    {key:'uacr', label:'UACR', unit:'mg/g'},
+    {key:'lpa', label:'Lp(a)', unit:'mg/dL'}
+  ];
+  var NYHA_OPTIONS = ['I','II','III','IV'];
+  var EDUCATION_OPTIONS = ['加強指導飲水控制觀念','加強指導飲食控制觀念','加強症狀評估','提供心肺復健資訊'];
+  var SUGGESTIONS = {
+    case_manager: ['居家衛教', '個案追蹤與回診提醒', '轉介資源協調', '出院準備進度追蹤'],
+    physician: ['調整心衰竭藥物治療', '評估是否需裝置/介入治療', '複核相關檢驗報告'],
+    pt: ['六分鐘行走測試 (6MWT)', '肌握力', '心肺功能評估', '居家運動處方'],
+    rd: ['飲食型態評估', '個別化飲食衛教', '水分/鈉攝取衛教'],
+    ph: ['用藥適當性審查', 'GDMT劑量調整建議', '藥物交互作用檢核'],
+    np: ['整體治療計畫覆核', '自我照護衛教', '出院準備評估']
+  };
+  var STATUS = {
+    pending:{label:'待處理', ink:'var(--status-pending-ink)', bg:'var(--status-pending-bg)'},
+    in_progress:{label:'處理中', ink:'var(--status-progress-ink)', bg:'var(--status-progress-bg)'},
+    done:{label:'已完成', ink:'var(--status-done-ink)', bg:'var(--status-done-bg)'}
+  };
+
+  var state = {
+    identity: 'case_manager',
+    view: 'cases',
+    activeCaseId: null,
+    cases: [],
+    tasks: [],
+    members: [],
+    currentMemberId: null,
+    showMemberManager: false,
+    newMemberDraft: {name:'', role:'case_manager'},
+    showNewCase: false,
+    editingCaseId: null,
+    showFollowUp: {},
+    followUpHfFilter: '',
+    showAssign: {},
+    newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr()},
+    assignDraft: {},
+    loaded: false
+  };
+
+  function uid(){ return Math.random().toString(36).slice(2,10); }
+  function todayStr(){
+    var d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function nowLocalStr(){
+    var d = new Date();
+    var p = function(n){ return String(n).padStart(2,'0'); };
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+  }
+  function calcAge(birthday){
+    if(!birthday) return null;
+    var b = new Date(birthday);
+    if(isNaN(b.getTime())) return null;
+    var t = new Date();
+    var age = t.getFullYear() - b.getFullYear();
+    var m = t.getMonth() - b.getMonth();
+    if(m<0 || (m===0 && t.getDate()<b.getDate())) age--;
+    return age>=0 ? age : null;
+  }
+  function genderFromId(id){
+    if(!id) return '';
+    var m = id.trim().match(/^[A-Za-z](\d)/);
+    if(!m) return '';
+    if(m[1]==='1') return '男';
+    if(m[1]==='2') return '女';
+    return '';
+  }
+
+  var EDEMA_OPTIONS = ['無','1+','2+','3+','4+'];
+
+  function openTrackingWindow(c){
+    var w = window.open('', '_blank');
+    if(!w){ return; }
+    var age = calcAge(c.birthday);
+    var gender = genderFromId(c.idnumber);
+    var meds = c.meds || emptyMeds();
+    var medsHtml = '';
+    var medsSummaryParts = [];
+    MED_CLASSES.forEach(function(cls){
+      var m = meds[cls.key] || {on:false,drug:'',dose:'',freq:''};
+      if(!m.on) return;
+      medsHtml += '<div class="mrow"><span class="mtag">'+cls.label+'</span><span>'+esc(m.drug||'—')+(m.dose?' ・ '+esc(m.dose)+'顆':'')+(m.freq?' ・ '+esc(m.freq):'')+'</span></div>';
+      medsSummaryParts.push((m.drug||cls.label)+(m.dose?' '+m.dose+'顆':'')+(m.freq?' '+m.freq:''));
+    });
+    if(!medsHtml) medsHtml = '<div class="empty">尚無用藥資料</div>';
+    var medsSummaryText = medsSummaryParts.join('、');
+
+    var history = (c.trackingRecords||[]).slice().sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
+    var latestMeds = (history.length && history[0].meds) ? history[0].meds : meds;
+
+    var tkmRowsHtml = '';
+    MED_CLASSES.forEach(function(cls){
+      var m = latestMeds[cls.key] || {on:false,drug:'',dose:'',freq:''};
+      var doseOptsC = '<option value="">顆數</option>';
+      DOSE_OPTIONS.forEach(function(d){ doseOptsC += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>'; });
+      var freqOptsC = '<option value="">頻次</option>';
+      FREQ_OPTIONS.forEach(function(f){ freqOptsC += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>'; });
+      tkmRowsHtml += '<div class="tkm-row">'+
+        '<button type="button" id="tkm-toggle-'+cls.key+'" class="tkm-toggle'+(m.on?' on':'')+'" onclick="this.classList.toggle(\'on\')">'+cls.label+'</button>'+
+        '<input class="tkm-drug" id="tkm-drug-'+cls.key+'" value="'+esc(m.drug||'')+'" placeholder="藥物名稱">'+
+        '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select>'+
+        '<select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>'+
+      '</div>';
+    });
+
+    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', other:'其他'};
+    function medsRowsHtmlFromEntry(r){
+      var medsObj = r.meds || null;
+      if(!medsObj){
+        return r.medsNote ? '<div class="mp-plain">'+esc(r.medsNote)+'</div>' : '<div class="empty">—</div>';
+      }
+      var rows = '';
+      MED_CLASSES.forEach(function(cls){
+        var m = medsObj[cls.key];
+        if(!m || !m.on) return;
+        rows += '<div class="mp-row">'+
+          '<span class="mp-pill">'+(MED_SHORT_LABEL[cls.key]||cls.label)+'</span>'+
+          '<span class="mp-drug">'+esc(m.drug||cls.label)+'</span>'+
+          '<span class="mp-dose">'+esc(m.dose?m.dose+'顆':'—')+'</span>'+
+          '<span class="mp-freq">'+esc(m.freq||'—')+'</span>'+
+        '</div>';
+      });
+      return rows || '<div class="empty">—</div>';
+    }
+    var LAB_LABELS = {ntprobnp:'NT-proBNP', bun:'BUN', cr:'Cr', egfr:'eGFR', na:'Na', k:'K', ldl:'LDL', hba1c:'HbA1c'};
+    function labsRowsHtmlFromEntry(r){
+      if(!r.labs) return '<div class="empty">—</div>';
+      var rows = '';
+      Object.keys(LAB_LABELS).forEach(function(k){
+        if(!r.labs[k]) return;
+        rows += '<div class="mp-row">'+
+          '<span class="mp-pill">'+LAB_LABELS[k]+'</span>'+
+          '<span class="mp-drug">'+esc(r.labs[k])+'</span>'+
+        '</div>';
+      });
+      return rows || '<div class="empty">—</div>';
+    }
+    var historyHtml = '';
+    history.forEach(function(r, idx){
+      var timeLabel = (r.recordedAt||'').replace('T',' ');
+      historyHtml += '<div class="hitem" id="hitem-'+idx+'">'+
+        '<button type="button" class="hdate-btn" onclick="var d=document.getElementById(\'hdetail-'+idx+'\'); var open=d.style.display===\'block\'; d.style.display = open ? \'none\' : \'block\'; document.getElementById(\'hitem-'+idx+'\').classList.toggle(\'expanded\', !open);">'+esc(timeLabel)+'</button>'+
+        '<div class="hdetail" id="hdetail-'+idx+'">'+
+          '<div class="hline">血壓 '+esc(r.sbp||'—')+'/'+esc(r.dbp||'—')+' mmHg ・ 心跳 '+esc(r.hr||'—')+' bpm ・ 體重 '+esc(r.weight||'—')+' kg ・ 水腫 '+esc(r.edema||'—')+' ・ 呼吸喘 '+esc(r.dyspnea||'—')+(r.nyha?' ・ NYHA '+esc(r.nyha):'')+'</div>'+
+          (r.recordedByName ? '<div class="hline"><span class="hlabel">評估者</span>'+esc(r.recordedByName)+(r.recordedByRole?' '+esc(r.recordedByRole):'')+'</div>' : '')+
+          '<div class="hline hmeds"><span class="hlabel">抽血</span></div>'+
+          '<div class="mp-list mp-list-2col">'+labsRowsHtmlFromEntry(r)+'</div>'+
+          '<div class="hline hmeds"><span class="hlabel">藥物</span></div>'+
+          '<div class="mp-list">'+medsRowsHtmlFromEntry(r)+'</div>'+
+          '<div class="hline hnote"><span class="hlabel">衛教</span>'+esc((r.education&&r.education.length)?r.education.join('、'):'—')+'</div>'+
+          '<div class="hline hnote"><span class="hlabel">備註</span>'+esc(r.note||'—')+'</div>'+
+        '</div>'+
+      '</div>';
+    });
+    if(!historyHtml) historyHtml = '<div class="empty">尚無追蹤紀錄</div>';
+
+    var edemaOpts = '<option value="">選擇</option>';
+    EDEMA_OPTIONS.forEach(function(e){ edemaOpts += '<option value="'+e+'">'+e+'</option>'; });
+    var nyhaOptsForm = '<option value="">選擇</option>';
+    NYHA_OPTIONS.forEach(function(n){ nyhaOptsForm += '<option value="'+n+'">'+n+'</option>'; });
+
+    var pastPanelHtml = '';
+    if(history.length){
+      history.slice(0,2).forEach(function(rec, i){
+        pastPanelHtml += (i>0 ? '<div class="past-divider"></div>' : '') +
+          '<div class="past-time">'+esc((rec.recordedAt||'').replace('T',' '))+
+            (rec.recordedByName ? '<span class="past-recorder">評估者:'+esc(rec.recordedByName)+(rec.recordedByRole?' '+esc(rec.recordedByRole):'')+'</span>' : '')+
+          '</div>'+
+          '<div class="past-rows">'+
+          '<div class="past-row"><span class="past-label">血壓</span><span class="past-value">'+esc(rec.sbp||'—')+'/'+esc(rec.dbp||'—')+' mmHg</span></div>'+
+          '<div class="past-row"><span class="past-label">心跳</span><span class="past-value">'+esc(rec.hr||'—')+' bpm</span></div>'+
+          '<div class="past-row"><span class="past-label">體重</span><span class="past-value">'+esc(rec.weight||'—')+' kg</span></div>'+
+          '<div class="past-row"><span class="past-label">水腫</span><span class="past-value">'+esc(rec.edema||'—')+'</span></div>'+
+          '<div class="past-row"><span class="past-label">呼吸喘</span><span class="past-value">'+esc(rec.dyspnea||'—')+'</span></div>'+
+          '<div class="past-row"><span class="past-label">NYHA</span><span class="past-value">'+esc(rec.nyha||'—')+'</span></div>'+
+          '</div>'+
+          '<div class="past-row"><span class="past-label">抽血</span></div>'+
+          '<div class="mp-list mp-list-2col">'+labsRowsHtmlFromEntry(rec)+'</div>'+
+          '<div class="past-row"><span class="past-label">藥物</span></div>'+
+          '<div class="mp-list">'+medsRowsHtmlFromEntry(rec)+'</div>'+
+          '<div class="past-row"><span class="past-label">衛教</span><span class="past-value">'+esc((rec.education&&rec.education.length)?rec.education.join('、'):'—')+'</span></div>'+
+          '<div class="past-row"><span class="past-label">備註</span><span class="past-value">'+esc(rec.note||'—')+'</span></div>';
+      });
+    } else {
+      pastPanelHtml = '<div class="empty">尚無過去紀錄可比對</div>';
+    }
+
+    var sixMwtTask = state.tasks
+      .filter(function(t){ return t.caseId===c.id && t.role==='pt' && t.status==='done' && t.title.indexOf('六分鐘')>=0; })
+      .sort(function(a,b){ return (b.respondedAt||'').localeCompare(a.respondedAt||''); })[0];
+    var quickRefHtml = '<div class="quickref">'+
+      '<div class="qr-item"><span class="qr-label">最近一次六分鐘行走測試</span><span class="qr-value">'+
+        (sixMwtTask ? esc(sixMwtTask.response||'—')+'<span class="qr-date">('+esc(fmt(sixMwtTask.respondedAt))+')</span>' : '尚無紀錄')+
+      '</span></div>'+
+      '<div class="qr-item"><span class="qr-label">最近一次LVEF</span><span class="qr-value">'+
+        (c.lvef ? esc(c.lvef)+'%' : '尚無紀錄')+
+      '</span></div>'+
+    '</div>';
+
+    var html = '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8">'+
+      '<title>個管師追蹤事項 - '+esc(c.name)+'</title>'+
+      '<style>'+
+        'body{font-family:"PingFang TC","Microsoft JhengHei",sans-serif; background:#FAF7FC; color:#3A2E44; padding:38px 50px; max-width:1320px; margin:0 auto; font-size:19px;}'+
+        'h1{font-size:30px; margin:0 0 4px; display:flex; align-items:center; gap:12px;}'+
+        '.tag{font-size:17px; font-weight:700; color:#7A4C9E; background:#F1E5FA; padding:3px 12px; border-radius:20px;}'+
+        '.sub{color:#8B7A9E; font-size:17px; margin-bottom:16px;}'+
+        '.quickref{display:flex; gap:16px; flex-wrap:wrap; margin-bottom:24px;}'+
+        '.qr-item{background:#FDF1FA; border:1.5px solid #F0C9E8; border-radius:10px; padding:12px 18px; flex:1; min-width:220px;}'+
+        '.qr-label{display:block; font-size:15px; color:#B0459E; font-weight:700; margin-bottom:4px;}'+
+        '.qr-value{font-size:19px; font-weight:700; color:#4A2E52;}'+
+        '.qr-date{font-size:14px; font-weight:500; color:#B0459E; margin-left:6px;}'+
+        '.card{background:#fff; border:1px solid #E3D5F0; border-radius:14px; padding:26px 28px; margin-bottom:22px;}'+
+        '.card h2{font-size:21px; margin:0 0 18px; color:#7A4C9E;}'+
+        '.info-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:9px 22px;}'+
+        '.row{display:flex; gap:10px; font-size:19px; align-items:baseline;}'+
+        '.label{color:#8B7A9E; min-width:104px; flex-shrink:0;}'+
+        '.value{font-weight:700;}'+
+        '.mrow{font-size:19px; margin-bottom:10px;}'+
+        '.mtag{display:inline-block; min-width:150px; font-weight:700; color:#7A4C9E;}'+
+        '.mgrid{display:grid; grid-template-columns:1fr 1fr; gap:6px 24px;}'+
+        '.hlist{display:flex; flex-wrap:wrap; gap:10px;}'+
+        '.hitem{padding:0;}'+
+        '.hitem.expanded{flex-basis:100%;}'+
+        '.hdate-btn{background:#F1E5FA; color:#6B3F8C; border:1px solid #D9BEEF; border-radius:8px; padding:10px 18px; font-size:17px; font-weight:700; font-family:inherit; cursor:pointer;}'+
+        '.hdate-btn:hover{background:#E5D3F5;}'+
+        '.hdetail{display:none; margin-top:10px; padding:14px 16px; background:#FAF7FC; border-radius:9px;}'+
+        '.hline{font-size:17px; color:#4A3B5A; margin-bottom:4px;}'+
+        '.hlabel{color:#8B7A9E; margin-right:8px;}'+
+        '.mp-list{display:flex; flex-direction:column; gap:6px; margin:4px 0 10px;}'+
+        '.mp-list-2col{display:grid; grid-template-columns:1fr 1fr; gap:6px 16px;}'+
+        '.mp-row{display:flex; align-items:center; gap:10px; font-size:17px;}'+
+        '.mp-pill{display:inline-block; min-width:64px; text-align:center; background:#6B3F8C; color:#fff; font-weight:700; font-size:14px; padding:4px 11px; border-radius:20px; flex-shrink:0;}'+
+        '.mp-drug{font-weight:600; color:#3A2E44; flex:1;}'+
+        '.mp-dose{color:#5B4A6E; flex:0 0 54px;}'+
+        '.mp-freq{color:#5B4A6E; flex:0 0 54px;}'+
+        '.mp-plain{font-size:17px; color:#5B4A6E;}'+
+        '.empty{font-size:17px; color:#B39EC5;}'+
+        'label.field-label{display:block; font-size:19px; color:#5B4A6E; margin:18px 0 7px; font-weight:700;}'+
+        '.field-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}'+
+        '.lab-grid{grid-template-columns:1fr 1fr;}'+
+        '.tri-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 18px; margin-bottom:6px;}'+
+        '.tri-item label.field-label{margin:0 0 7px;}'+
+        'input, select, textarea{width:100%; box-sizing:border-box; border:1px solid #E3D5F0; border-radius:9px; padding:14px 16px; font-size:19px; font-family:inherit;}'+
+        'textarea{min-height:95px; resize:vertical;}'+
+        'button{margin-top:22px; background:#7A4C9E; color:#fff; border:none; padding:15px 32px; border-radius:9px; font-size:19px; font-weight:700; cursor:pointer;}'+
+        'button:hover{background:#663F87;}'+
+        '.msg{font-size:16px; color:#7A4C9E; margin-top:12px; display:none; align-items:center; gap:12px;}'+
+        '.tk-refresh-btn{margin-top:0; padding:8px 16px; font-size:15px; background:#A0398A;}'+
+        '.tk-refresh-btn:hover{background:#832C6F;}'+
+        '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
+        '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
+        '.tk-past-title{font-size:19px; font-weight:700; color:#6B3F8C; margin-bottom:12px;}'+
+        '.past-time{font-size:17px; font-weight:700; color:#4A2E52; margin-bottom:10px;}'+
+        '.past-recorder{font-size:14px; font-weight:600; color:#A0398A; margin-left:10px;}'+
+        '.past-rows{display:grid; grid-template-columns:1fr 1fr; gap:4px 16px;}'+
+        '.past-row{display:flex; gap:8px; font-size:18px; margin-bottom:4px;}'+
+        '.past-label{color:#8B6FA3; min-width:56px; flex-shrink:0;}'+
+        '.past-value{font-weight:600; color:#4A2E52;}'+
+        '.past-divider{border-top:1.5px dashed #D9BEEF; margin:14px 0;}'+
+        '.tk-current{flex:1.15; background:#FBEFF7; border:1.5px solid #EBB8DC; border-radius:12px; padding:22px 24px;}'+
+        '.tk-current-title{font-size:19px; font-weight:700; color:#A0398A; margin-bottom:4px;}'+
+        '.tkm-wrap{background:#fff; border-radius:9px; padding:4px 0;}'+
+        '.tkm-row{display:flex; gap:8px; margin-bottom:8px; align-items:center; flex-wrap:wrap;}'+
+        '.tkm-toggle{flex:0 0 150px; padding:11px 8px; border-radius:8px; border:none; font-size:15.5px; font-weight:700; background:#E4D9EE; color:#7A6690; cursor:pointer; font-family:inherit;}'+
+        '.tkm-toggle.on{background:#7A4C9E; color:#fff;}'+
+        '.tkm-drug{flex:1.3; min-width:120px;}'+
+        '.tkm-row select{flex:0 0 92px;}'+
+        '.edu-chips{display:flex; flex-wrap:wrap; gap:9px;}'+
+        '.edu-chip{margin-top:0; flex:0 0 auto; width:auto; background:#fff; color:#7A4C9E; border:1.5px solid #D9BEEF; padding:10px 16px; font-size:16px; font-weight:600; border-radius:20px;}'+
+        '.edu-chip.on{background:#7A4C9E; color:#fff; border-color:#7A4C9E;}'+
+        '.edu-chip:hover{background:#F1E5FA;}'+
+        '.edu-chip.on:hover{background:#663F87;}'+
+        '.tkm-row input, .tkm-row select{padding:10px 11px; font-size:16px;}'+
+        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row{grid-template-columns:1fr;} }'+
+      '</style></head><body>'+
+      '<h1>'+esc(c.name)+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
+      '<div class="sub">個管師追蹤事項・獨立視窗</div>'+
+      quickRefHtml+
+      '<div class="card"><div class="info-grid">'+
+        '<div class="row"><span class="label">病歷號</span><span class="value">'+esc(c.mrn||'—')+'</span></div>'+
+        '<div class="row"><span class="label">床號</span><span class="value">'+esc(c.ward||'—')+'</span></div>'+
+        '<div class="row"><span class="label">身分證字號</span><span class="value">'+esc(c.idnumber||'—')+(gender?' ('+gender+')':'')+'</span></div>'+
+        '<div class="row"><span class="label">住院日期</span><span class="value">'+esc(c.admissionDate||'—')+'</span></div>'+
+        '<div class="row"><span class="label">生日</span><span class="value">'+esc(c.birthday||'—')+(age!==null?' ('+age+'歲)':'')+'</span></div>'+
+        '<div class="row"><span class="label">收案人</span><span class="value">'+(c.initiatorName?esc(c.initiatorName)+'・':'')+esc(ROLES[c.initiator]?ROLES[c.initiator].label:'')+'</span></div>'+
+      '</div></div>'+
+      '<div class="card"><h2>出院時用藥</h2><div class="mgrid">'+medsHtml+'</div></div>'+
+      '<div class="card"><h2>過往追蹤紀錄</h2><div class="hlist">'+historyHtml+'</div></div>'+
+      '<div class="card">'+
+        '<h2>個管師追蹤事項</h2>'+
+        '<div class="tk-layout">'+
+          '<div class="tk-past"><div class="tk-past-title">↩ 上次評估</div>'+pastPanelHtml+'</div>'+
+          '<div class="tk-current"><div class="tk-current-title">✎ 本次評估</div>'+
+            '<label class="field-label">追蹤日期時間</label>'+
+            '<input type="datetime-local" id="tk-time">'+
+            '<label class="field-label">當次生命徵象</label>'+
+            '<div class="field-grid">'+
+              '<input type="number" id="tk-sbp" placeholder="收縮壓 (mmHg)">'+
+              '<input type="number" id="tk-dbp" placeholder="舒張壓 (mmHg)">'+
+              '<input type="number" id="tk-hr" placeholder="心跳 (bpm)">'+
+              '<input type="number" id="tk-weight" placeholder="體重 (kg)" step="0.1">'+
+            '</div>'+
+            '<div class="tri-row">'+
+              '<div class="tri-item"><label class="field-label">NYHA Fc</label><select id="tk-nyha">'+nyhaOptsForm+'</select></div>'+
+              '<div class="tri-item"><label class="field-label">呼吸喘</label><select id="tk-dyspnea"><option value="">選擇</option><option value="有">有</option><option value="無">無</option></select></div>'+
+              '<div class="tri-item"><label class="field-label">水腫評估</label><select id="tk-edema">'+edemaOpts+'</select></div>'+
+            '</div>'+
+            '<label class="field-label">抽血數據</label>'+
+            '<div class="field-grid lab-grid">'+
+              '<input type="number" id="tk-ntprobnp" placeholder="NT-proBNP (pg/mL)">'+
+              '<input type="number" id="tk-bun" placeholder="BUN (mg/dL)">'+
+              '<input type="number" id="tk-cr" placeholder="Cr (mg/dL)" step="0.01">'+
+              '<input type="number" id="tk-egfr" placeholder="eGFR (mL/min)">'+
+              '<input type="number" id="tk-na" placeholder="Na (mmol/L)">'+
+              '<input type="number" id="tk-k" placeholder="K (mmol/L)" step="0.1">'+
+              '<input type="number" id="tk-ldl" placeholder="LDL (mg/dL)">'+
+              '<input type="number" id="tk-hba1c" placeholder="HbA1c (%)" step="0.1">'+
+            '</div>'+
+            '<label class="field-label">藥物治療(GDMT四大類)</label>'+
+            '<div class="tkm-wrap">'+tkmRowsHtml+'</div>'+
+            '<label class="field-label">衛教內容(可複選)</label>'+
+            '<div class="edu-chips" id="tk-edu-chips">'+
+              EDUCATION_OPTIONS.map(function(opt, i){
+                return '<button type="button" class="edu-chip" id="tk-edu-'+i+'" onclick="this.classList.toggle(\'on\')">'+opt+'</button>';
+              }).join('')+
+            '</div>'+
+            '<label class="field-label">追蹤備註</label>'+
+            '<textarea id="tk-note" placeholder="其他觀察與衛教內容…"></textarea>'+
+            '<button id="tk-save">儲存追蹤事項</button>'+
+            '<div class="msg" id="tk-msg">已送出,可關閉此視窗 <button type="button" id="tk-refresh" class="tk-refresh-btn">立即更新頁面</button></div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<script>'+
+        'document.getElementById("tk-time").value = (function(){var d=new Date();function p(n){return String(n).padStart(2,"0");}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());})();'+
+        'document.getElementById("tk-save").onclick = function(){'+
+          'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
+          'var meds = {};'+
+          'medsKeys.forEach(function(k){'+
+            'meds[k] = {'+
+              'on: document.getElementById("tkm-toggle-"+k).classList.contains("on"),'+
+              'drug: document.getElementById("tkm-drug-"+k).value,'+
+              'dose: document.getElementById("tkm-dose-"+k).value,'+
+              'freq: document.getElementById("tkm-freq-"+k).value'+
+            '};'+
+          '});'+
+          'var entry = {'+
+            'recordedAt: document.getElementById("tk-time").value,'+
+            'sbp: document.getElementById("tk-sbp").value,'+
+            'dbp: document.getElementById("tk-dbp").value,'+
+            'hr: document.getElementById("tk-hr").value,'+
+            'weight: document.getElementById("tk-weight").value,'+
+            'edema: document.getElementById("tk-edema").value,'+
+            'dyspnea: document.getElementById("tk-dyspnea").value,'+
+            'nyha: document.getElementById("tk-nyha").value,'+
+            'labs: {'+
+              'ntprobnp: document.getElementById("tk-ntprobnp").value,'+
+              'bun: document.getElementById("tk-bun").value,'+
+              'cr: document.getElementById("tk-cr").value,'+
+              'egfr: document.getElementById("tk-egfr").value,'+
+              'na: document.getElementById("tk-na").value,'+
+              'k: document.getElementById("tk-k").value,'+
+              'ldl: document.getElementById("tk-ldl").value,'+
+              'hba1c: document.getElementById("tk-hba1c").value'+
+            '},'+
+            'meds: meds,'+
+            'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
+            'note: document.getElementById("tk-note").value'+
+          '};'+
+          'if(window.opener){ window.opener.postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
+          'document.getElementById("tk-msg").style.display = "flex";'+
+        '};'+
+        'document.getElementById("tk-refresh").onclick = function(){'+
+          'if(window.opener && window.opener.reopenTrackingWindow){ window.opener.reopenTrackingWindow('+JSON.stringify(c.id)+'); window.close(); }'+
+          'else { alert("找不到原始視窗,請手動重新開啟。"); }'+
+        '};'+
+      '<\/script>'+
+      '</body></html>';
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+
+  window.addEventListener('message', function(e){
+    var data = e.data;
+    if(!data || data.type!=='hf-tracking-save') return;
+    var c = state.cases.find(function(x){ return x.id===data.caseId; });
+    if(!c) return;
+    if(!c.trackingRecords) c.trackingRecords = [];
+    var entry = data.entry;
+    entry.recordedByName = (currentMember() && currentMember().name) || '';
+    entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
+    c.trackingRecords.push(entry);
+    c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
+    c.trackingRecords = c.trackingRecords.slice(0,2);
+    saveCases();
+    if(state.loaded) render();
+  });
+
+  window.reopenTrackingWindow = function(caseId){
+    var c = state.cases.find(function(x){ return x.id===caseId; });
+    if(c) openTrackingWindow(c);
+  };
+
+  var DAILY_MESSAGES = [
+    '每一次會診,都是為病人多爭取一分穩定。',
+    '你今天的一則回覆,可能就是病人不用再住院的關鍵。',
+    '心衰竭照護是長期戰,謝謝你一直都在。',
+    '專業不必單打獨鬥,今天也請多多互相支援。',
+    '把每個個案當成自己家人來照顧,團隊會一起補上你顧不到的地方。',
+    '一個好的照護計畫,是由每個職類的細心堆疊而成。',
+    '謝謝你願意花時間看完每一份任務,那都是被需要的證明。',
+    '病人的每一次穩定回診,都有你的一份功勞。',
+    '溝通清楚一點,病人就能少走一點冤枉路。',
+    '團隊分工不是分散責任,而是把照護做得更完整。',
+    '今天也辛苦了,團隊因為有你更完整。',
+    '照護沒有最好,只有更多人一起努力。',
+    '你的專業意見,是醫療團隊做決定時最重要的拼圖。',
+    '慢一點沒關係,把每個評估做確實比什麼都重要。',
+    '心衰竭的路很長,謝謝你陪病人走過每一段。',
+    '互相補位、互相提醒,是這個團隊最溫暖的地方。',
+    '你的回覆,團隊都會認真看見。',
+    '今天,也請對自己的專業有信心。',
+    '每個小小的建議,累積起來就是病人更好的生活品質。',
+    '謝謝你把病人的事,當成自己的事。'
+  ];
+  function dailyMessage(){
+    var d = new Date();
+    var start = new Date(d.getFullYear(), 0, 0);
+    var diff = d - start;
+    var dayOfYear = Math.floor(diff / 86400000);
+    return DAILY_MESSAGES[dayOfYear % DAILY_MESSAGES.length];
+  }
+  function now(){ return new Date(); }
+  function fmt(d){
+    var dt = new Date(d);
+    return (dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+  }
+
+  function loadData(){
+    try{
+      var c = localStorage.getItem('bridge:cases');
+      state.cases = c ? JSON.parse(c) : [];
+    }catch(e){ state.cases = []; }
+    try{
+      var t = localStorage.getItem('bridge:tasks');
+      state.tasks = t ? JSON.parse(t) : [];
+    }catch(e){ state.tasks = []; }
+    try{
+      var m = localStorage.getItem('bridge:members');
+      state.members = m ? JSON.parse(m) : [];
+    }catch(e){ state.members = []; }
+
+    var migrated = false;
+    state.members.forEach(function(mem){ if(mem.role==='manager'){ mem.role='case_manager'; migrated=true; } });
+    state.cases.forEach(function(cs){ if(cs.initiator==='manager'){ cs.initiator='case_manager'; migrated=true; } });
+    state.tasks.forEach(function(tk){ if(tk.role==='manager'){ tk.role='case_manager'; migrated=true; } });
+    if(migrated){ saveMembers(); saveCases(); saveTasks(); }
+
+    if(state.members.length===0){
+      state.members = [
+        {id: uid(), name:'', role:'case_manager'}
+      ];
+      saveMembers();
+    }
+    state.currentMemberId = state.members[0].id;
+    state.identity = state.members[0].role;
+    state.loaded = true;
+    render();
+  }
+  function saveCases(){
+    try{ localStorage.setItem('bridge:cases', JSON.stringify(state.cases)); }catch(e){}
+  }
+  function saveTasks(){
+    try{ localStorage.setItem('bridge:tasks', JSON.stringify(state.tasks)); }catch(e){}
+  }
+  function saveMembers(){
+    try{ localStorage.setItem('bridge:members', JSON.stringify(state.members)); }catch(e){}
+  }
+  function currentMember(){
+    return state.members.find(function(m){ return m.id===state.currentMemberId; }) || null;
+  }
+
+  function tasksForCase(caseId){ return state.tasks.filter(function(t){ return t.caseId===caseId; }); }
+  function progressOf(caseId){
+    var ts = tasksForCase(caseId);
+    if(ts.length===0) return {done:0,total:0};
+    var done = ts.filter(function(t){ return t.status==='done'; }).length;
+    return {done:done, total:ts.length};
+  }
+
+  function el(html){ var d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+
+  function render(){
+    var app = document.getElementById('hfb-app');
+    if(!state.loaded){
+      app.innerHTML = '<div class="hfb-placeholder">載入中…</div>';
+      return;
+    }
+    var myTaskCount = state.tasks.filter(function(t){ return t.role===state.identity && t.status!=='done'; }).length;
+
+    var followUpCount = state.cases.filter(function(c){ return c.discharged || (c.followUp && (c.followUp.nextVisitDate||c.followUp.doctor||c.followUp.note)); }).length;
+
+    var html = '';
+    html += topbar();
+    if(state.showMemberManager){
+      html += memberManagerPanel();
+    }
+    html += '<div class="hfb-tabs">';
+    html += tabBtn('cases','個案總覽');
+    html += tabBtn('mytasks','我的任務', myTaskCount);
+    if(state.identity==='case_manager'){
+      html += tabBtn('followup','門診追蹤', followUpCount);
+    }
+    html += '</div>';
+    html += '<div class="hfb-body"><div class="hfb-main">';
+    if(state.view==='followup' && state.identity!=='case_manager'){
+      state.view = 'cases';
+    }
+    if(state.view==='cases'){
+      if(state.showNewCase){
+        html += newCaseForm();
+      } else if(state.activeCaseId){
+        html += caseDetailPage();
+      } else {
+        html += overviewPage();
+      }
+    } else if(state.view==='followup'){
+      html += followUpOverviewPage();
+    } else {
+      html += myTasksView();
+    }
+    html += '</div></div>';
+    html += '<div class="hfb-footer-note">♡ 心臟功能強化中心</div>';
+
+    app.innerHTML = html;
+    bindEvents();
+    updateClock();
+  }
+
+  function tabBtn(view,label,count){
+    var active = state.view===view ? ' active' : '';
+    return '<button class="hfb-tab'+active+'" data-view="'+view+'">'+label+(count?'<span class="hfb-count">'+count+'</span>':'')+'</button>';
+  }
+
+  function topbar(){
+    var opts = '<option value="" disabled>選擇目前操作的成員</option>';
+    state.members.forEach(function(m){
+      var label = (m.name ? m.name : '(未命名成員)') + ' ・ ' + ROLES[m.role].label;
+      opts += '<option value="'+m.id+'"'+(state.currentMemberId===m.id?' selected':'')+'>'+esc(label)+'</option>';
+    });
+    return '<div class="hfb-topbar">'+
+      '<div class="hfb-brand"><div class="hfb-brand-mark">♥</div>'+
+      '<div class="hfb-brand-text"><h1>心臟衰竭照護平台</h1><p class="hfb-clock" id="hfb-clock"></p></div></div>'+
+      '<div class="hfb-daily-msg">'+esc(dailyMessage())+'</div>'+
+      '<div class="hfb-identity">目前身份 <select id="hfb-identity-select">'+opts+'</select>'+
+      (isInitiator(state.identity) ? '<button class="hfb-manage-btn" id="hfb-export-csv">匯出Excel</button>' : '') +
+      '<button class="hfb-manage-btn" id="hfb-toggle-members">'+(state.showMemberManager?'關閉管理':'管理成員')+'</button></div>'+
+    '</div>';
+  }
+
+  function memberManagerPanel(){
+    var d = state.newMemberDraft;
+    var roleOpts = '';
+    ['case_manager','physician','pt','rd','ph','np'].forEach(function(r){
+      roleOpts += '<option value="'+r+'"'+(d.role===r?' selected':'')+'>'+ROLES[r].label+'</option>';
+    });
+    var listHtml = '';
+    if(state.members.length===0){
+      listHtml = '<div class="hfb-empty-side">尚未設定任何成員</div>';
+    } else {
+      state.members.forEach(function(m){
+        var role = ROLES[m.role];
+        listHtml += '<div class="hfb-member-row">'+
+          '<span class="hfb-role-badge" style="background:'+role.tint+'; color:'+role.color+'">'+role.label+'</span>'+
+          '<span class="hfb-member-name">'+(m.name?esc(m.name):'(未命名)')+'</span>'+
+          '<button class="hfb-btn-sm" data-remove-member="'+m.id+'">移除</button>'+
+        '</div>';
+      });
+    }
+    return '<div class="hfb-member-panel">'+
+      '<div class="hfb-section-title" style="margin-top:0;"><span>團隊成員名單</span></div>'+
+      listHtml+
+      '<div class="hfb-member-add">'+
+        '<input id="mm-name" placeholder="姓名,例如:陳雅婷" value="'+esc(d.name)+'">'+
+        '<select id="mm-role">'+roleOpts+'</select>'+
+        '<button class="hfb-btn-primary-sm" id="mm-add">新增成員</button>'+
+      '</div>'+
+    '</div>';
+  }
+
+  function overviewPage(){
+    var newBtn = isInitiator(state.identity) ? '<button class="hfb-new-case-btn" id="hfb-open-newcase">+ 新增個案</button>' : '';
+    var head = '<div class="hfb-overview-head"><h2>個案總覽</h2>'+newBtn+'</div>';
+
+    if(state.cases.length===0){
+      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">尚無個案'+
+        (isInitiator(state.identity) ? '・點擊「+ 新增個案」開始收案' : '') + '</div></div>';
+    }
+
+    var rows = '';
+    state.cases.slice().sort(function(a,b){ return b.createdAt-a.createdAt; }).forEach(function(c){
+      var p = progressOf(c.id);
+      var pct = p.total ? Math.round(p.done/p.total*100) : 0;
+      var dots = '';
+      TASKABLE_ROLES.forEach(function(r){
+        var roleTasks = tasksForCase(c.id).filter(function(t){ return t.role===r; });
+        var cls = 'none';
+        var mark = '';
+        if(roleTasks.length){
+          cls = 'pending';
+          if(roleTasks.every(function(t){ return t.status==='done'; })){ cls='done'; mark='✓'; }
+          else if(roleTasks.some(function(t){ return t.status!=='pending'; })) cls='in_progress';
+        }
+        dots += '<span class="hfb-role-dot '+cls+'" style="--dot-color:'+ROLES[r].color+'" title="'+ROLES[r].label+(roleTasks.length?'':'・尚未指派')+'">'+mark+'</span>';
+      });
+      var canManage = isInitiator(state.identity);
+      var dischargeBtn = canManage
+        ? '<button type="button" class="hfb-discharge-btn'+(c.discharged?' on':'')+'" data-discharge="'+c.id+'">'+(c.discharged?'已出院':'出院')+'</button>'
+        : (c.discharged ? '<span class="hfb-discharge-tag">已出院</span>' : '—');
+      var deleteBtn = canManage
+        ? '<button type="button" class="hfb-delete-btn" data-delete-case="'+c.id+'" title="刪除個案">🗑️</button>'
+        : '';
+      rows += '<tr data-case="'+c.id+'">'+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+
+          (function(){ var a=calcAge(c.birthday); var g=genderFromId(c.idnumber); var extra=[]; if(a!==null) extra.push(a+'歲'); if(g) extra.push(g); return extra.length ? ' ・ '+extra.join(' '):''; })()+
+        '</div></td>'+
+        '<td>'+esc(c.ward||'—')+'</td>'+
+        '<td>'+(c.initiatorName?esc(c.initiatorName):ROLES[c.initiator].label)+'</td>'+
+        '<td class="pmeta">'+esc(c.caseDate||fmt(c.createdAt))+'</td>'+
+        '<td><div class="hfb-role-dots">'+dots+'</div></td>'+
+        '<td><div class="hfb-mini-progress"><div class="hfb-mini-progress-fill" style="width:'+pct+'%"></div></div>'+
+          '<div class="pmeta">'+p.done+'/'+p.total+' 已完成</div></td>'+
+        '<td class="hfb-td-nowrap">'+dischargeBtn+'</td>'+
+        '<td class="hfb-td-nowrap">'+deleteBtn+'</td>'+
+      '</tr>';
+    });
+
+    return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
+      '<thead><tr><th>個案</th><th>床號</th><th>收案人</th><th>收案日期</th><th>各職類狀態</th><th>整體進度</th><th>出院</th><th></th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function followUpOverviewPage(){
+    var hfTypesForFilter = ['全部','HFpEF','HFmrEF','HFrEF'];
+    var filterBtns = '';
+    hfTypesForFilter.forEach(function(ht){
+      var isAll = ht==='全部';
+      var active = (isAll ? !state.followUpHfFilter : state.followUpHfFilter===ht) ? ' active' : '';
+      filterBtns += '<button type="button" class="hfb-hftype-btn'+active+'" data-followup-filter="'+(isAll?'':ht)+'">'+ht+'</button>';
+    });
+    var head = '<div class="hfb-overview-head"><h2>門診追蹤</h2><div class="hfb-hftype-group">'+filterBtns+'</div></div>';
+    var list = state.cases.filter(function(c){
+      var hasFollowUp = c.discharged || (c.followUp && (c.followUp.nextVisitDate||c.followUp.doctor||c.followUp.note));
+      if(!hasFollowUp) return false;
+      if(state.followUpHfFilter && c.hfType!==state.followUpHfFilter) return false;
+      return true;
+    });
+    if(list.length===0){
+      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">目前沒有已出院或有追蹤紀錄的個案<br>個案出院後會自動出現在這裡</div></div>';
+    }
+    var rows = '';
+    list.slice().sort(function(a,b){
+      var da = (a.followUp && a.followUp.nextVisitDate) || '9999-99-99';
+      var db = (b.followUp && b.followUp.nextVisitDate) || '9999-99-99';
+      return da.localeCompare(db);
+    }).forEach(function(c){
+      var fu = c.followUp || {};
+      var noteText = fu.note ? (fu.note.length>20 ? fu.note.slice(0,20)+'…' : fu.note) : '—';
+      var noteHtml = fu.trackingDone
+        ? '<span class="hfb-note-done">'+esc(noteText)+'</span>'
+        : esc(noteText);
+      rows += '<tr data-followup-case="'+c.id+'">'+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+' ・ '+esc(c.ward||'—')+'</div></td>'+
+        '<td class="pmeta">'+esc(c.dischargeDate||'—')+'</td>'+
+        '<td class="pmeta">'+esc(fu.nextVisitDate||'—')+'</td>'+
+        '<td class="pmeta">'+(fu.doctor?esc(fu.doctor)+(fu.session?' ('+esc(fu.session)+')':''):'—')+'</td>'+
+        '<td class="pmeta">'+noteHtml+'</td>'+
+        '<td><label class="hfb-fu-done"><input type="checkbox" data-fu-done="'+c.id+'"'+(fu.trackingDone?' checked':'')+'> 完成</label></td>'+
+      '</tr>';
+    });
+    return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
+      '<thead><tr><th>個案</th><th>出院日期</th><th>下次門診</th><th>追蹤醫師</th><th>追蹤備註</th><th>完成</th></tr></thead>'+
+      '<tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function caseDetailPage(){
+    var c = state.cases.find(function(x){ return x.id===state.activeCaseId; });
+    if(!c){
+      state.activeCaseId = null;
+      return overviewPage();
+    }
+    var ts = tasksForCase(c.id);
+    var age = calcAge(c.birthday);
+    var gender = genderFromId(c.idnumber);
+    var leftRows = [
+      ['病歷號', esc(c.mrn||'—')],
+      ['身分證字號', c.idnumber ? esc(c.idnumber)+(gender?' ('+gender+')':'') : '—'],
+      ['生日', c.birthday ? esc(c.birthday)+(age!==null?' ('+age+'歲)':'') : '—']
+    ];
+    var midRows = [
+      ['床號', esc(c.ward||'—')],
+      ['住院日期', esc(c.admissionDate||'—')],
+      ['收案日期', esc(c.caseDate||fmt(c.createdAt))],
+      ['收案人', (c.initiatorName?esc(c.initiatorName)+'・':'')+ROLES[c.initiator].label]
+    ];
+    var colHtml = function(rows){
+      var h = '';
+      rows.forEach(function(row){
+        h += '<div class="hfb-info-item"><span class="hfb-info-label">'+row[0]+'</span><span class="hfb-info-value">'+row[1]+'</span></div>';
+      });
+      return h;
+    };
+    var infoGridHtml = '<div class="hfb-info-cols">'+
+      '<div class="hfb-info-col">'+colHtml(leftRows)+'</div>'+
+      '<div class="hfb-info-col">'+colHtml(midRows)+'</div>'+
+      '<div class="hfb-info-col">'+(c.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">收案備註</span><span class="hfb-info-value">'+esc(c.note)+'</span></div>' : '')+'</div>'+
+    '</div>';
+
+    var body = '<button class="hfb-back-btn" id="hfb-back-overview">← 返回總覽</button>';
+    body += '<div class="hfb-case-header">'+
+      '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</h2>'+
+      infoGridHtml+
+      '<div class="hfb-locked-note">🔒 基本資料一般職類無法修改'+
+        (isInitiator(state.identity) ? '<button class="hfb-edit-btn" id="hfb-edit-case">編輯基本資料</button>' : '・如需更正請聯繫個管師或醫師') +
+      '</div>'+
+    '</div>';
+
+    body += followUpSection(c);
+
+    body += '<div class="hfb-clinical-cols"><div class="hfb-clinical-col">'+medsSection(c)+'</div><div class="hfb-clinical-col">'+labsSection(c)+'</div></div>';
+
+    body += '<div class="hfb-section-title"><span>各職類任務狀態</span>'+
+      (c.discharged ? '<span class="hfb-locked-tag">🔒 已出院,無法再指派任務</span>' :
+        (isInitiator(state.identity) ? '<button class="hfb-assign-btn" data-toggle-assign="'+c.id+'">'+(state.showAssign[c.id]?'收合':'+ 指派任務')+'</button>' : '')) +
+    '</div>';
+
+    if(state.showAssign[c.id] && !c.discharged){
+      body += assignForm(c.id);
+    }
+
+    body += '<div class="hfb-role-groups">';
+    TASKABLE_ROLES.forEach(function(r){
+      body += roleGroupCard(r, ts.filter(function(t){ return t.role===r; }));
+    });
+    body += '</div>';
+    return body;
+  }
+
+  var DOSE_OPTIONS = ['0.5','1','1.5','2','2.5','3','3.5','4'];
+  var DOCTOR_OPTIONS = ['吳文憲','李威杰','林志憲','周銘霆','施志遠','洪俊聲','陳志成','黃沛頡','曾冠叡','曾宣靈','蔣俊彥'];
+  var SESSION_OPTIONS = ['上午','下午'];
+  var FREQ_OPTIONS = ['QD','Bid','Tid','Qid','Q8H','Q12H'];
+  function emptyMeds(){
+    return {
+      acei:{on:false,drug:'',dose:'',freq:''},
+      bb:{on:false,drug:'',dose:'',freq:''},
+      mra:{on:false,drug:'',dose:'',freq:''},
+      sglt2:{on:false,drug:'',dose:'',freq:''},
+      other:{on:false,drug:'',dose:'',freq:''}
+    };
+  }
+
+  function medsSection(c){
+    var canEdit = isInitiator(state.identity);
+    if(!c.meds){ c.meds = emptyMeds(); }
+    var html = '<div class="hfb-section-title"><span>藥物治療(GDMT四大類)</span></div>'+
+      '<div class="hfb-meds-card">';
+    MED_CLASSES.forEach(function(cls){
+      var m = c.meds[cls.key] || {on:false, drug:'', dose:'', freq:''};
+      var doseOpts = '<option value="">顆數</option>';
+      DOSE_OPTIONS.forEach(function(d){
+        doseOpts += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>';
+      });
+      var freqOpts = '<option value="">頻次</option>';
+      FREQ_OPTIONS.forEach(function(f){
+        freqOpts += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>';
+      });
+      var isOther = cls.key==='other';
+      html += '<div class="hfb-med-row">'+
+        '<button type="button" class="hfb-med-toggle'+(m.on?' on':'')+'" data-med-toggle="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+cls.label+'</button>'+
+        '<input class="hfb-med-drug'+(isOther?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="藥物名稱"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">'+
+        (isOther ? '' :
+          '<select class="hfb-med-dose" data-med-dose="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+doseOpts+'</select>'+
+          '<select class="hfb-med-freq" data-med-freq="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+freqOpts+'</select>'
+        ) +
+      '</div>';
+    });
+    html += (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:12px;">'+
+        '<button class="hfb-btn-primary-sm" data-confirm-meds="'+c.id+'">確認</button>'+
+        '<span class="hfb-meds-saved-msg" id="meds-saved-'+c.id+'" style="display:none; color:var(--status-done-ink); font-size:17px; font-weight:600;">✓ 已儲存</span>'+
+      '</div>' : '<div class="hfb-role-group-empty">僅個管師/醫師可編輯藥物治療資訊</div>') +
+    '</div>';
+    return html;
+  }
+
+  function emptyLabs(){
+    var obj = {};
+    LAB_FIELDS.forEach(function(f){ obj[f.key] = ''; });
+    return obj;
+  }
+
+  function labsSection(c){
+    var canEdit = isInitiator(state.identity);
+    if(!c.labs){ c.labs = emptyLabs(); }
+    var nyhaOpts = '<option value="">選擇</option>';
+    NYHA_OPTIONS.forEach(function(n){
+      nyhaOpts += '<option value="'+n+'"'+(c.nyha===n?' selected':'')+'>'+n+'</option>';
+    });
+    var html = '<div class="hfb-section-title"><span>臨床評估與抽血數據</span></div>'+
+      '<div class="hfb-meds-card">'+
+        '<div class="hfb-clinical-row">'+
+          '<div class="hfb-field" style="margin-bottom:0;"><label>NYHA Fc 評估</label><select data-nyha="'+c.id+'"'+(canEdit?'':' disabled')+'>'+nyhaOpts+'</select></div>'+
+          '<div class="hfb-field" style="margin-bottom:0;"><label>LVEF (%)</label><input type="number" data-lvef="'+c.id+'" value="'+esc(c.lvef||'')+'" placeholder="例如:35"'+(canEdit?'':' disabled')+'></div>'+
+        '</div>'+
+        '<div class="hfb-lab-grid">';
+    LAB_FIELDS.forEach(function(f){
+      var val = c.labs[f.key] || '';
+      html += '<div class="hfb-lab-field"><label>'+f.label+'</label><input type="number" step="0.01" data-lab-key="'+f.key+'" data-case="'+c.id+'" value="'+esc(val)+'" placeholder="'+f.unit+'"'+(canEdit?'':' disabled')+'></div>';
+    });
+    html += '</div>'+
+      (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:14px;">'+
+        '<button class="hfb-btn-primary-sm" data-confirm-labs="'+c.id+'">確認</button>'+
+        '<span class="hfb-meds-saved-msg" id="labs-saved-'+c.id+'" style="display:none; color:var(--status-done-ink); font-size:17px; font-weight:600;">✓ 已儲存</span>'+
+      '</div>' : '<div class="hfb-role-group-empty">僅個管師/醫師可編輯臨床數據</div>') +
+    '</div>';
+    return html;
+  }
+
+  function followUpSection(c){
+    var canEdit = isInitiator(state.identity);
+    var open = !!state.showFollowUp[c.id];
+    var fu = c.followUp || {nextVisitDate:'', doctor:'', session:'', note:''};
+    var html = '<div class="hfb-section-title"><span>門診追蹤記錄'+(c.discharged?'<span class="hfb-discharge-tag" style="margin-left:8px;">已出院</span>':'')+'</span>'+
+      (canEdit ? '<button class="hfb-assign-btn" data-toggle-followup="'+c.id+'">'+(open?'收合':(c.dischargeDate||fu.nextVisitDate?'編輯追蹤':'+ 門診追蹤'))+'</button>' : '') +
+    '</div>';
+
+    if(open){
+      var doctorOpts = '<option value="">選擇醫師</option>';
+      DOCTOR_OPTIONS.forEach(function(d){
+        doctorOpts += '<option value="'+d+'"'+(fu.doctor===d?' selected':'')+'>'+d+'</option>';
+      });
+      var sessionOpts = '<option value="">選擇時段</option>';
+      SESSION_OPTIONS.forEach(function(s){
+        sessionOpts += '<option value="'+s+'"'+(fu.session===s?' selected':'')+'>'+s+'</option>';
+      });
+      var reminderHtml = fu.note ? (
+        '<div class="hfb-fu-reminder">'+
+          '<div class="hfb-fu-reminder-title">⚠️ 已有追蹤備註,請留意</div>'+
+          '<div class="hfb-fu-reminder-body">'+esc(fu.note)+'</div>'+
+          (fu.nextVisitDate ? '<div class="hfb-fu-reminder-meta">下次門診:'+esc(fu.nextVisitDate)+(fu.doctor?' ・ '+esc(fu.doctor):'')+(fu.session?' ('+esc(fu.session)+')':'')+'</div>' : '')+
+        '</div>'
+      ) : '';
+      html += '<div class="hfb-modal-mask"><div class="hfb-modal"><div class="hfb-fu-layout"><div class="hfb-fu-form">'+
+        '<div class="hfb-field"><label>出院日期</label><input type="date" id="fu-dischargedate" data-case="'+c.id+'" value="'+esc(c.dischargeDate||'')+'"></div>'+
+        '<div class="hfb-field"><label>下次門診追蹤日期</label><input type="date" id="fu-nextvisit" data-case="'+c.id+'" value="'+esc(fu.nextVisitDate||'')+'"></div>'+
+        '<div class="hfb-field"><label>追蹤門診醫師/時段</label><div class="hfb-doctor-row">'+
+          '<select id="fu-doctor" data-case="'+c.id+'">'+doctorOpts+'</select>'+
+          '<select id="fu-session" data-case="'+c.id+'">'+sessionOpts+'</select>'+
+        '</div></div>'+
+        '<div class="hfb-field"><label>追蹤重點備註</label><textarea id="fu-note" data-case="'+c.id+'" placeholder="例如:返家後每日量體重、水分限制、用藥遵從性追蹤…">'+esc(fu.note||'')+'</textarea></div>'+
+        '<div class="row" style="display:flex; gap:8px;">'+
+          '<button class="hfb-btn-primary-sm" data-save-followup="'+c.id+'">儲存追蹤紀錄</button>'+
+          '<button class="hfb-btn-sm" data-cancel-followup="'+c.id+'">收合</button>'+
+        '</div>'+
+      '</div>'+reminderHtml+'</div></div></div>';
+    } else if(c.dischargeDate || fu.nextVisitDate || fu.doctor || fu.note){
+      html += '<div class="hfb-meds-card">'+
+        (c.dischargeDate ? '<div class="hfb-info-item"><span class="hfb-info-label">出院日期</span><span class="hfb-info-value">'+esc(c.dischargeDate)+'</span></div>' : '')+
+        (fu.nextVisitDate ? '<div class="hfb-info-item"><span class="hfb-info-label">下次門診</span><span class="hfb-info-value">'+esc(fu.nextVisitDate)+'</span></div>' : '')+
+        (fu.doctor ? '<div class="hfb-info-item"><span class="hfb-info-label">追蹤醫師</span><span class="hfb-info-value">'+esc(fu.doctor)+(fu.session?' ・ '+esc(fu.session):'')+'</span></div>' : '')+
+        (fu.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">追蹤備註</span><span class="hfb-info-value">'+esc(fu.note)+'</span></div>' : '')+
+      '</div>';
+    }
+    return html;
+  }
+
+  function roleGroupCard(role, tasks){
+    var roleInfo = ROLES[role];
+    var done = tasks.filter(function(t){ return t.status==='done'; }).length;
+    var pending = tasks.filter(function(t){ return t.status==='pending'; }).length;
+    var progressCnt = tasks.filter(function(t){ return t.status==='in_progress'; }).length;
+    var summary = tasks.length===0 ? '尚未指派任務' :
+      '已完成 '+done+' ・ 處理中 '+progressCnt+' ・ 待處理 '+pending;
+    var html = '<div class="hfb-role-group" style="--role-color:'+roleInfo.color+'">'+
+      '<div class="hfb-role-group-head"><span class="rname">'+roleInfo.label+'</span></div>'+
+      '<div class="hfb-role-group-summary">'+summary+'</div>';
+    if(tasks.length===0){
+      html += '<div class="hfb-role-group-empty">尚未指派此職類任務</div>';
+    } else {
+      tasks.slice().sort(function(a,b){return a.createdAt-b.createdAt;}).forEach(function(t){
+        html += taskCard(t);
+      });
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function newCaseForm(){
+    var editing = !!state.editingCaseId;
+    var hfTypes = ['HFpEF','HFmrEF','HFrEF'];
+    var hfBtns = '';
+    hfTypes.forEach(function(ht){
+      var active = state.newCaseDraft.hfType===ht ? ' active' : '';
+      hfBtns += '<button type="button" class="hfb-hftype-btn'+active+'" data-pick-hftype="'+ht+'">'+ht+'</button>';
+    });
+    return '<div class="hfb-modal-mask"><div class="hfb-modal">'+
+      '<h3>'+(editing?'編輯個案基本資料':'建立新個案')+'</h3>'+
+      (editing ? '<div class="hfb-edit-note">🔐 此為個管師/醫師專用的管理入口,一般職類無法進入編輯</div>' : '') +
+      '<div class="hfb-field"><label>個案姓名</label><input id="nc-name" value="'+esc(state.newCaseDraft.name)+'" placeholder="王小明"></div>'+
+      '<div class="hfb-field"><label>病歷號</label><input id="nc-mrn" value="'+esc(state.newCaseDraft.mrn)+'" placeholder="1234567"></div>'+
+      '<div class="hfb-field"><label>生日</label><input type="date" id="nc-birthday" value="'+esc(state.newCaseDraft.birthday)+'"></div>'+
+      '<div class="hfb-field"><label>身分證字號</label><input id="nc-idnumber" value="'+esc(state.newCaseDraft.idnumber)+'" placeholder="A123456789"></div>'+
+      '<div class="hfb-field"><label>床號</label><input id="nc-ward" value="'+esc(state.newCaseDraft.ward)+'" placeholder="9059A"></div>'+
+      '<div class="hfb-field"><label>心衰竭分類</label><div class="hfb-hftype-group">'+hfBtns+'</div></div>'+
+      '<div class="hfb-field"><label>住院日期</label><input type="date" id="nc-admdate" value="'+esc(state.newCaseDraft.admissionDate)+'"></div>'+
+      '<div class="hfb-field"><label>收案日期</label><input type="date" id="nc-date" value="'+esc(state.newCaseDraft.date)+'"></div>'+
+      '<div class="hfb-field"><label>收案備註(選填)</label><textarea id="nc-note" placeholder="EF 30%,近期因心衰竭急性惡化入院…">'+esc(state.newCaseDraft.note)+'</textarea></div>'+
+      '<div class="row" style="display:flex; gap:8px; margin-top:4px;">'+
+        '<button class="hfb-btn-primary-sm" id="nc-submit">'+(editing?'儲存修改':'建立個案')+'</button>'+
+        '<button class="hfb-btn-sm" id="nc-cancel">取消</button>'+
+      '</div>'+
+    '</div></div>';
+  }
+
+  function assignForm(caseId){
+    var draft = state.assignDraft[caseId] || {};
+    var html = '<div class="hfb-modal-mask"><div class="hfb-modal">'+
+      '<h3>選擇要指派的職類與任務內容</h3>'+
+      '<div class="hfb-role-grid">';
+    TASKABLE_ROLES.forEach(function(r){
+      var role = ROLES[r];
+      var on = !!(draft[r] && draft[r].on);
+      var text = (draft[r] && draft[r].text) || '';
+      var date = (draft[r] && draft[r].date) || nowLocalStr();
+      html += '<div class="hfb-role-pick'+(on?' on':'')+'" data-pick-role="'+r+'" data-case="'+caseId+'" style="--role-color:'+role.color+'; --role-tint:'+role.tint+'">'+
+        '<div class="rt"><span class="rc"></span>'+role.label+'</div>';
+      if(on){
+        html += '<div class="chips">';
+        SUGGESTIONS[r].forEach(function(s){
+          html += '<span class="hfb-chip" data-chip="'+encodeURIComponent(s)+'" data-case="'+caseId+'" data-role="'+r+'" style="--role-color:'+role.color+'">'+s+'</span>';
+        });
+        html += '</div>';
+        html += '<textarea data-role-text="'+r+'" data-case="'+caseId+'" placeholder="任務內容,例如:'+SUGGESTIONS[r][0]+'">'+esc(text)+'</textarea>';
+        html += '<label class="hfb-date-label">指派日期時間</label><input type="datetime-local" data-role-date="'+r+'" data-case="'+caseId+'" value="'+esc(date)+'">';
+      }
+      html += '</div>';
+    });
+    html += '</div>'+
+      '<div class="row" style="display:flex; gap:8px; margin-top:14px;">'+
+        '<button class="hfb-btn-primary-sm" data-submit-assign="'+caseId+'">送出指派</button>'+
+        '<button class="hfb-btn-sm" data-cancel-assign="'+caseId+'">取消</button>'+
+      '</div>'+
+    '</div></div>';
+    return html;
+  }
+
+  function responseFormHtml(t){
+    var timeVal = t.responseTimeDraft || nowLocalStr();
+    var html = '<div class="hfb-task-actions">'+
+      '<textarea data-response-input="'+t.id+'" placeholder="輸入評估結果與建議…">'+esc(t.draft||'')+'</textarea>'+
+      '<label class="hfb-date-label">回覆日期時間</label>'+
+      '<input type="datetime-local" data-response-time="'+t.id+'" value="'+esc(timeVal)+'">'+
+      '<div class="row">';
+    if(t.status==='pending'){
+      html += '<button class="hfb-btn-sm" data-start-task="'+t.id+'">標記處理中</button>';
+    }
+    html += '<button class="hfb-btn-primary-sm" data-submit-response="'+t.id+'">送出回覆</button>'+
+      '</div></div>';
+    return html;
+  }
+
+  function taskCard(t){
+    var role = ROLES[t.role];
+    var st = STATUS[t.status];
+    var pillClass = 'hfb-status-pill'+(t.status==='pending' ? ' is-pending' : '');
+    var pillLabel = t.status==='done' ? '✓ '+st.label : st.label;
+    var html = '<div class="hfb-task-card" style="--role-color:'+role.color+'">'+
+      '<div class="hfb-task-top">'+
+        '<div><span class="hfb-role-badge" style="background:'+role.tint+'; color:'+role.color+'">'+role.label+'</span>'+
+        '<div class="hfb-task-title">'+esc(t.title)+'</div>'+
+        '<div class="hfb-task-meta">指派日期 '+fmt(t.scheduledAt||t.createdAt)+'</div></div>'+
+        '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
+      '</div>';
+
+    if(t.status==='done'){
+      html += '<div class="hfb-task-response">'+esc(t.response)+
+        '<div class="who">回覆人:'+(t.respondedByName?esc(t.respondedByName)+'・':'')+role.label+' ・ '+fmt(t.respondedAt)+'</div></div>';
+    } else if(state.identity===t.role){
+      html += responseFormHtml(t);
+    } else if(t.status==='in_progress'){
+      html += '<div class="hfb-task-response" style="color:var(--ink-mute);">'+role.label+'處理中,尚未送出回覆。</div>';
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function myTasksView(){
+    var myTasks = state.tasks.filter(function(t){ return t.role===state.identity; })
+      .sort(function(a,b){
+        var order = {pending:0, in_progress:1, done:2};
+        return order[a.status]-order[b.status] || a.createdAt-b.createdAt;
+      });
+    if(myTasks.length===0){
+      return '<div class="hfb-placeholder">目前沒有指派給您的任務</div>';
+    }
+    var html = '<div class="hfb-section-title"><span>我的任務('+myTasks.length+')</span></div>';
+    myTasks.forEach(function(t){
+      var c = state.cases.find(function(x){ return x.id===t.caseId; });
+      var st = STATUS[t.status];
+      var pillClass = 'hfb-status-pill'+(t.status==='pending' ? ' is-pending' : '');
+      var pillLabel = t.status==='done' ? '✓ '+st.label : st.label;
+      html += '<div class="hfb-mytasks-item">'+
+        '<div class="patient">'+(c?esc(c.name)+' ・ '+esc(c.mrn||''):'')+'</div>'+
+        '<div class="hfb-task-top">'+
+          '<div class="hfb-task-title" style="margin-top:0;">'+esc(t.title)+'</div>'+
+          '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
+        '</div>';
+      if(t.status==='done'){
+        html += '<div class="hfb-task-response">'+esc(t.response)+'<div class="who">'+(t.respondedByName?esc(t.respondedByName)+' ・ ':'')+fmt(t.respondedAt)+'</div></div>';
+      } else if(c && c.discharged){
+        html += '<div class="hfb-discharged-note">'+
+          '<span>⚠️ 病人已出院,此任務無法再回覆</span>'+
+          '<button type="button" class="hfb-dismiss-btn" data-dismiss-task="'+t.id+'">確認</button>'+
+        '</div>';
+      } else {
+        html += responseFormHtml(t);
+      }
+      html += '</div>';
+    });
+    return html;
+  }
+
+  function esc(s){
+    s = s==null ? '' : String(s);
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function bindEvents(){
+    var root = document.getElementById('hfb-app');
+
+    var idSel = document.getElementById('hfb-identity-select');
+    if(idSel) idSel.onchange = function(){
+      state.currentMemberId = this.value;
+      var m = currentMember();
+      state.identity = m ? m.role : 'case_manager';
+      state.view = 'cases';
+      render();
+    };
+
+    var toggleMembers = document.getElementById('hfb-toggle-members');
+    if(toggleMembers) toggleMembers.onclick = function(){
+      state.showMemberManager = !state.showMemberManager;
+      render();
+    };
+
+    var exportCsvBtn = document.getElementById('hfb-export-csv');
+    if(exportCsvBtn) exportCsvBtn.onclick = function(){
+      function csvCell(v){
+        v = v==null ? '' : String(v);
+        if(/[",\n]/.test(v)) v = '"'+v.replace(/"/g,'""')+'"';
+        return v;
+      }
+      function medsSummary(m){
+        if(!m || !m.on) return '';
+        return (m.drug||'')+(m.dose?' '+m.dose+'顆':'')+(m.freq?' '+m.freq:'');
+      }
+      var headers = ['姓名','病歷號','身分證字號','性別','生日','年齡','床號','住院日期','收案日期','心衰竭分類','收案人',
+        'NYHA','LVEF(%)','ACEI/ARB/ARNI','β-Blocker','MRA','SGLT2i','其他用藥',
+        '出院狀態','出院日期','下次門診','追蹤醫師','追蹤時段','追蹤備註','收案備註'];
+      var rows = [headers.map(csvCell).join(',')];
+      state.cases.forEach(function(c){
+        var meds = c.meds || {};
+        var fu = c.followUp || {};
+        var age = calcAge(c.birthday);
+        var gender = genderFromId(c.idnumber);
+        var initiatorLabel = (c.initiatorName?c.initiatorName+' ':'')+(ROLES[c.initiator]?ROLES[c.initiator].label:'');
+        var row = [
+          c.name, c.mrn, c.idnumber, gender, c.birthday, (age!==null?age:''), c.ward, c.admissionDate, c.caseDate, c.hfType, initiatorLabel,
+          c.nyha, c.lvef,
+          medsSummary(meds.acei), medsSummary(meds.bb), medsSummary(meds.mra), medsSummary(meds.sglt2), medsSummary(meds.other),
+          (c.discharged?'已出院':'未出院'), (c.dischargeDate||''), (fu.nextVisitDate||''), (fu.doctor||''), (fu.session||''), (fu.note||''), (c.note||'')
+        ];
+        rows.push(row.map(csvCell).join(','));
+      });
+      var csvStr = '\ufeff' + rows.join('\r\n');
+      var blob = new Blob([csvStr], {type: 'text/csv;charset=utf-8;'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      var d = new Date();
+      var p = function(n){ return String(n).padStart(2,'0'); };
+      a.href = url;
+      a.download = 'hf-team-bridge-cases-'+d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'-'+p(d.getHours())+p(d.getMinutes())+'.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
+    var mmAdd = document.getElementById('mm-add');
+    if(mmAdd) mmAdd.onclick = function(){
+      var nameInput = document.getElementById('mm-name');
+      var roleSelect = document.getElementById('mm-role');
+      var name = nameInput.value.trim();
+      if(!name){ nameInput.focus(); return; }
+      var newMember = {id: uid(), name: name, role: roleSelect.value};
+      state.members.push(newMember);
+      state.newMemberDraft = {name:'', role:'case_manager'};
+      saveMembers();
+      render();
+    };
+    var mmName = document.getElementById('mm-name');
+    if(mmName) mmName.oninput = function(){ state.newMemberDraft.name = this.value; };
+    var mmRole = document.getElementById('mm-role');
+    if(mmRole) mmRole.onchange = function(){ state.newMemberDraft.role = this.value; };
+
+    root.querySelectorAll('[data-remove-member]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-remove-member');
+        if(state.members.length<=1) return;
+        state.members = state.members.filter(function(m){ return m.id!==id; });
+        if(state.currentMemberId===id){
+          state.currentMemberId = state.members[0].id;
+          state.identity = state.members[0].role;
+        }
+        saveMembers();
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-view]').forEach(function(b){
+      b.onclick = function(){ state.view = this.getAttribute('data-view'); render(); };
+    });
+
+    root.querySelectorAll('tr[data-case]').forEach(function(row){
+      row.onclick = function(){
+        state.activeCaseId = this.getAttribute('data-case');
+        state.showNewCase = false;
+        render();
+      };
+    });
+
+    root.querySelectorAll('tr[data-followup-case]').forEach(function(row){
+      row.onclick = function(){
+        var cid = this.getAttribute('data-followup-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(c) openTrackingWindow(c);
+      };
+    });
+
+    root.querySelectorAll('[data-fu-done]').forEach(function(chk){
+      chk.onclick = function(e){ e.stopPropagation(); };
+      chk.onchange = function(){
+        var cid = this.getAttribute('data-fu-done');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:''};
+        c.followUp.trackingDone = this.checked;
+        saveCases();
+        render();
+      };
+    });
+    root.querySelectorAll('[data-open-tracking]').forEach(function(b){
+      b.onclick = function(e){
+        e.stopPropagation();
+        var cid = this.getAttribute('data-open-tracking');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(c) openTrackingWindow(c);
+      };
+    });
+
+    root.querySelectorAll('[data-discharge]').forEach(function(b){
+      b.onclick = function(e){
+        e.stopPropagation();
+        var cid = this.getAttribute('data-discharge');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        c.discharged = !c.discharged;
+        if(c.discharged){
+          c.dischargeDate = c.dischargeDate || todayStr();
+          if(c.followUp) c.followUp.trackingDone = false;
+          saveCases();
+          state.activeCaseId = c.id;
+          state.showFollowUp[c.id] = true;
+          render();
+        } else {
+          saveCases();
+          render();
+        }
+      };
+    });
+
+    root.querySelectorAll('[data-delete-case]').forEach(function(b){
+      b.onclick = function(e){
+        e.stopPropagation();
+        var cid = this.getAttribute('data-delete-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        var ok = window.confirm('確定要刪除個案「'+c.name+'」嗎?此動作無法復原,相關任務紀錄也會一併刪除。');
+        if(!ok) return;
+        state.cases = state.cases.filter(function(x){ return x.id!==cid; });
+        state.tasks = state.tasks.filter(function(x){ return x.caseId!==cid; });
+        if(state.activeCaseId===cid) state.activeCaseId = null;
+        saveCases();
+        saveTasks();
+        render();
+      };
+    });
+
+    var backBtn = document.getElementById('hfb-back-overview');
+    if(backBtn) backBtn.onclick = function(){ state.activeCaseId = null; render(); };
+
+    var openNew = document.getElementById('hfb-open-newcase');
+    if(openNew) openNew.onclick = function(){
+      state.showNewCase = true;
+      state.editingCaseId = null;
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr()};
+      state.activeCaseId = null;
+      render();
+    };
+
+    var editCaseBtn = document.getElementById('hfb-edit-case');
+    if(editCaseBtn) editCaseBtn.onclick = function(){
+      var c = state.cases.find(function(x){ return x.id===state.activeCaseId; });
+      if(!c) return;
+      state.editingCaseId = c.id;
+      state.newCaseDraft = {
+        name: c.name || '', mrn: c.mrn || '', ward: c.ward || '',
+        note: c.note || '', date: c.caseDate || todayStr(), hfType: c.hfType || '',
+        birthday: c.birthday || '', idnumber: c.idnumber || '', admissionDate: c.admissionDate || todayStr()
+      };
+      state.showNewCase = true;
+      render();
+    };
+    root.querySelectorAll('[data-pick-hftype]').forEach(function(b){
+      b.onclick = function(){
+        state.newCaseDraft.hfType = this.getAttribute('data-pick-hftype');
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-followup-filter]').forEach(function(b){
+      b.onclick = function(){
+        var val = this.getAttribute('data-followup-filter');
+        state.followUpHfFilter = (state.followUpHfFilter===val) ? '' : val;
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-med-toggle]').forEach(function(b){
+      b.onclick = function(){
+        var key = this.getAttribute('data-med-toggle');
+        var cid = this.getAttribute('data-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.meds) c.meds = emptyMeds();
+        c.meds[key].on = !c.meds[key].on;
+        saveCases();
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-med-drug]').forEach(function(inp){
+      inp.oninput = function(){
+        var key = this.getAttribute('data-med-drug');
+        var cid = this.getAttribute('data-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.meds) c.meds = emptyMeds();
+        c.meds[key].drug = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-med-dose]').forEach(function(sel){
+      sel.onchange = function(){
+        var key = this.getAttribute('data-med-dose');
+        var cid = this.getAttribute('data-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.meds) c.meds = emptyMeds();
+        c.meds[key].dose = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-med-freq]').forEach(function(sel){
+      sel.onchange = function(){
+        var key = this.getAttribute('data-med-freq');
+        var cid = this.getAttribute('data-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.meds) c.meds = emptyMeds();
+        c.meds[key].freq = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-confirm-meds]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-confirm-meds');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(c) saveCases();
+        var msg = document.getElementById('meds-saved-'+cid);
+        if(msg){
+          msg.style.display = 'inline';
+          setTimeout(function(){ msg.style.display = 'none'; }, 2000);
+        }
+      };
+    });
+
+    root.querySelectorAll('[data-nyha]').forEach(function(sel){
+      sel.onchange = function(){
+        var cid = this.getAttribute('data-nyha');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        c.nyha = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-lvef]').forEach(function(inp){
+      inp.oninput = function(){
+        var cid = this.getAttribute('data-lvef');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        c.lvef = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-lab-key]').forEach(function(inp){
+      inp.oninput = function(){
+        var key = this.getAttribute('data-lab-key');
+        var cid = this.getAttribute('data-case');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        if(!c.labs) c.labs = emptyLabs();
+        c.labs[key] = this.value;
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-confirm-labs]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-confirm-labs');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(c) saveCases();
+        var msg = document.getElementById('labs-saved-'+cid);
+        if(msg){
+          msg.style.display = 'inline';
+          setTimeout(function(){ msg.style.display = 'none'; }, 2000);
+        }
+      };
+    });
+
+    var ncCancel = document.getElementById('nc-cancel');
+    if(ncCancel) ncCancel.onclick = function(){
+      state.showNewCase = false;
+      state.editingCaseId = null;
+      render();
+    };
+    var ncSubmit = document.getElementById('nc-submit');
+    if(ncSubmit) ncSubmit.onclick = function(){
+      var name = document.getElementById('nc-name').value.trim();
+      if(!name){ document.getElementById('nc-name').focus(); return; }
+      var mrn = document.getElementById('nc-mrn').value.trim();
+      var ward = document.getElementById('nc-ward').value.trim();
+      var note = document.getElementById('nc-note').value.trim();
+      var caseDate = document.getElementById('nc-date').value || todayStr();
+      var hfType = state.newCaseDraft.hfType || '';
+      var birthday = document.getElementById('nc-birthday').value || '';
+      var idnumber = document.getElementById('nc-idnumber').value.trim();
+      var admissionDate = document.getElementById('nc-admdate').value || '';
+
+      if(state.editingCaseId){
+        var existing = state.cases.find(function(x){ return x.id===state.editingCaseId; });
+        if(existing){
+          existing.name = name;
+          existing.mrn = mrn;
+          existing.ward = ward;
+          existing.note = note;
+          existing.caseDate = caseDate;
+          existing.hfType = hfType;
+          existing.birthday = birthday;
+          existing.idnumber = idnumber;
+          existing.admissionDate = admissionDate;
+          saveCases();
+        }
+        state.activeCaseId = state.editingCaseId;
+        state.editingCaseId = null;
+        state.showNewCase = false;
+        render();
+        return;
+      }
+
+      var newCase = {
+        id: uid(),
+        name: name,
+        mrn: mrn,
+        ward: ward,
+        note: note,
+        caseDate: caseDate,
+        hfType: hfType,
+        birthday: birthday,
+        idnumber: idnumber,
+        admissionDate: admissionDate,
+        meds: emptyMeds(),
+        initiator: state.identity,
+        initiatorName: (currentMember() && currentMember().name) || '',
+        createdAt: Date.now(),
+        status: 'active'
+      };
+      state.cases.push(newCase);
+      state.showNewCase = false;
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr()};
+      state.activeCaseId = newCase.id;
+      saveCases();
+      render();
+    };
+    ['nc-name','nc-mrn','nc-ward','nc-note','nc-date','nc-birthday','nc-idnumber'].forEach(function(id){
+      var f = document.getElementById(id);
+      if(f) f.oninput = function(){
+        var key = id.replace('nc-','');
+        state.newCaseDraft[key] = this.value;
+      };
+    });
+    var admDateInput = document.getElementById('nc-admdate');
+    if(admDateInput) admDateInput.oninput = function(){ state.newCaseDraft.admissionDate = this.value; };
+
+    root.querySelectorAll('[data-toggle-assign]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-toggle-assign');
+        state.showAssign[cid] = !state.showAssign[cid];
+        if(!state.assignDraft[cid]) state.assignDraft[cid] = {};
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-toggle-followup]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-toggle-followup');
+        state.showFollowUp[cid] = !state.showFollowUp[cid];
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-cancel-followup]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-cancel-followup');
+        state.showFollowUp[cid] = false;
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-save-followup]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-save-followup');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        var dischargeDateEl = document.getElementById('fu-dischargedate');
+        var nextVisitEl = document.getElementById('fu-nextvisit');
+        var doctorEl = document.getElementById('fu-doctor');
+        var sessionEl = document.getElementById('fu-session');
+        var noteEl = document.getElementById('fu-note');
+        c.dischargeDate = dischargeDateEl ? dischargeDateEl.value : c.dischargeDate;
+        c.followUp = {
+          nextVisitDate: nextVisitEl ? nextVisitEl.value : '',
+          doctor: doctorEl ? doctorEl.value : '',
+          session: sessionEl ? sessionEl.value : '',
+          note: noteEl ? noteEl.value.trim() : '',
+          trackingDone: false
+        };
+        state.showFollowUp[cid] = false;
+        saveCases();
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-pick-role]').forEach(function(el2){
+      el2.onclick = function(e){
+        if(e.target.tagName==='TEXTAREA' || e.target.tagName==='INPUT' || e.target.hasAttribute('data-chip')) return;
+        var r = this.getAttribute('data-pick-role');
+        var cid = this.getAttribute('data-case');
+        if(!state.assignDraft[cid]) state.assignDraft[cid] = {};
+        if(!state.assignDraft[cid][r]) state.assignDraft[cid][r] = {on:false,text:'',date:nowLocalStr()};
+        state.assignDraft[cid][r].on = !state.assignDraft[cid][r].on;
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-chip]').forEach(function(chip){
+      chip.onclick = function(e){
+        e.stopPropagation();
+        var text = decodeURIComponent(this.getAttribute('data-chip'));
+        var r = this.getAttribute('data-role');
+        var cid = this.getAttribute('data-case');
+        state.assignDraft[cid][r].text = text;
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-role-text]').forEach(function(ta){
+      ta.onclick = function(e){ e.stopPropagation(); };
+      ta.oninput = function(){
+        var r = this.getAttribute('data-role-text');
+        var cid = this.getAttribute('data-case');
+        state.assignDraft[cid][r].text = this.value;
+      };
+    });
+
+    root.querySelectorAll('[data-role-date]').forEach(function(inp){
+      inp.onclick = function(e){ e.stopPropagation(); };
+      inp.oninput = function(){
+        var r = this.getAttribute('data-role-date');
+        var cid = this.getAttribute('data-case');
+        state.assignDraft[cid][r].date = this.value;
+      };
+    });
+
+    root.querySelectorAll('[data-cancel-assign]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-cancel-assign');
+        state.showAssign[cid] = false;
+        state.assignDraft[cid] = {};
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-submit-assign]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-submit-assign');
+        var draft = state.assignDraft[cid] || {};
+        var added = 0;
+        TASKABLE_ROLES.forEach(function(r){
+          if(draft[r] && draft[r].on && draft[r].text && draft[r].text.trim()){
+            state.tasks.push({
+              id: uid(), caseId: cid, role: r,
+              title: draft[r].text.trim(),
+              scheduledAt: draft[r].date || nowLocalStr(),
+              status: 'pending', response:'', respondedBy:'', respondedAt:null,
+              createdAt: Date.now()
+            });
+            added++;
+          }
+        });
+        if(added>0){
+          state.showAssign[cid] = false;
+          state.assignDraft[cid] = {};
+          saveTasks();
+        }
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-response-input]').forEach(function(ta){
+      ta.oninput = function(){
+        var id = this.getAttribute('data-response-input');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(t) t.draft = this.value;
+      };
+    });
+
+    root.querySelectorAll('[data-response-time]').forEach(function(inp){
+      inp.oninput = function(){
+        var id = this.getAttribute('data-response-time');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(t) t.responseTimeDraft = this.value;
+      };
+    });
+
+    root.querySelectorAll('[data-start-task]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-start-task');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(t){ t.status='in_progress'; saveTasks(); render(); }
+      };
+    });
+
+    root.querySelectorAll('[data-dismiss-task]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-dismiss-task');
+        state.tasks = state.tasks.filter(function(x){ return x.id!==id; });
+        saveTasks();
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-submit-response]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-submit-response');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(!t) return;
+        var val = (t.draft||'').trim();
+        if(!val){ return; }
+        t.response = val;
+        t.status = 'done';
+        t.respondedBy = state.identity;
+        t.respondedByName = (currentMember() && currentMember().name) || '';
+        t.respondedAt = t.responseTimeDraft || nowLocalStr();
+        saveTasks();
+        render();
+      };
+    });
+  }
+
+  var WEEKDAYS = ['週日','週一','週二','週三','週四','週五','週六'];
+  function updateClock(){
+    var el = document.getElementById('hfb-clock');
+    if(!el) return;
+    var d = new Date();
+    var p = function(n){ return String(n).padStart(2,'0'); };
+    el.textContent = d.getFullYear()+'/'+p(d.getMonth()+1)+'/'+p(d.getDate())+'('+WEEKDAYS[d.getDay()]+') '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+  setInterval(updateClock, 1000);
+
+  loadData();
+})();
+</script>
