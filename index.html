@@ -68,7 +68,7 @@
   #hfb-root button{font-family:inherit; cursor:pointer;}
   #hfb-root input, #hfb-root textarea, #hfb-root select{font-family:inherit;}
 
-  .hfb-topbar{position:relative; overflow:hidden; background:linear-gradient(120deg, var(--primary-deep), var(--primary) 55%, #5FB8D6 100%); color:#fff; padding:14px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;}
+  .hfb-topbar{position:relative; overflow:hidden; background:linear-gradient(120deg, var(--primary-deep), var(--primary) 55%, #5FB8D6 100%); color:#fff; padding:14px 20px; display:grid; grid-template-columns:minmax(300px,auto) minmax(340px,1fr) auto; align-items:center; gap:16px;}
   @keyframes hfb-heartbeat{ 0%,100%{transform:scale(1);} 12%{transform:scale(1.16);} 24%{transform:scale(1);} 36%{transform:scale(1.1);} 48%{transform:scale(1);} }
   .hfb-brand-mark{width:44px; height:44px; border-radius:50%; background:rgba(255,255,255,0.18); display:flex; align-items:center; justify-content:center; font-size:30px; color:#fff; animation:hfb-heartbeat 1.6s ease-in-out infinite;}
   .hfb-topbar > *{position:relative; z-index:1;}
@@ -76,8 +76,24 @@
   .hfb-brand-text h1{font-size:24px; font-weight:500; margin:0;}
   .hfb-brand-text p{font-size:20px; margin:1px 0 0; color:rgba(255,255,255,0.65);}
   .hfb-brand-text p.hfb-clock{font-size:18.5px; font-weight:500; letter-spacing:0.5px; color:rgba(255,255,255,0.7); margin:1px 0 0;}
-  .hfb-daily-msg{color:#fff; font-size:22.5px; font-weight:600; letter-spacing:0.3px; text-align:center; padding:7px 16px; animation:hfb-blink 1.8s ease-in-out infinite;}
-  .hfb-identity{display:flex; align-items:center; gap:8px; font-size:21px; color:rgba(255,255,255,0.75);}
+  .hfb-daily-msg{color:#fff; font-size:22.5px; font-weight:600; letter-spacing:0.3px; text-align:center; padding:7px 16px; animation:hfb-blink 1.8s ease-in-out infinite; justify-self:center; white-space:nowrap;}
+  .hfb-identity{display:flex; align-items:center; justify-self:end; gap:8px; font-size:21px; color:rgba(255,255,255,0.75); white-space:nowrap;}
+  .hfb-admin-badge{font-size:14.5px; font-weight:600; line-height:1; padding:5px 8px; border-radius:6px; background:rgba(255,255,255,.18); color:#fff;}
+  .hfb-export-icon{width:38px; height:38px; padding:6px; border-radius:8px; border:1px solid rgba(255,255,255,.35); background:rgba(255,255,255,.1); color:#fff; display:inline-flex; align-items:center; justify-content:center;}
+  .hfb-export-icon:hover{background:rgba(255,255,255,.2);}
+  .hfb-export-icon svg{width:23px; height:23px; display:block;}
+  @media (max-width:1180px){
+    .hfb-topbar{grid-template-columns:auto auto;}
+    .hfb-daily-msg{grid-column:1 / -1; grid-row:2; justify-self:center; padding-top:2px;}
+    .hfb-identity{grid-column:2; grid-row:1;}
+  }
+  @media (max-width:760px){
+    .hfb-topbar{grid-template-columns:1fr;}
+    .hfb-brand,.hfb-daily-msg,.hfb-identity{grid-column:1; justify-self:start;}
+    .hfb-brand{grid-row:1;}
+    .hfb-daily-msg{grid-row:2; white-space:normal; text-align:left; padding:4px 0;}
+    .hfb-identity{grid-row:3; flex-wrap:wrap; white-space:normal;}
+  }
   .hfb-identity select{background:rgba(255,255,255,0.12); color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:8px; padding:6px 10px; font-size:21.5px;}
   .hfb-manage-btn{font-size:19.5px; padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.35); background:rgba(255,255,255,0.1); color:#fff;}
   .hfb-manage-btn:hover{background:rgba(255,255,255,0.2);}
@@ -1272,14 +1288,14 @@
     var roleLabel = state.authProfessionalRole || (member && ROLES[member.role] ? ROLES[member.role].label : '');
     var identityLabel = esc(name + (roleLabel ? '・' + roleLabel : ''));
     var adminBadge = state.systemRole==='admin'
-      ? '<span class="hfb-role-badge" style="background:rgba(255,255,255,.2);color:#fff">主要管理員</span>'
+      ? '<span class="hfb-admin-badge">管理員</span>'
       : '';
     return '<div class="hfb-topbar">'+
       '<div class="hfb-brand"><div class="hfb-brand-mark">♥</div>'+
       '<div class="hfb-brand-text"><h1>心臟衰竭照護平台</h1><p class="hfb-clock" id="hfb-clock"></p></div></div>'+
       '<div class="hfb-daily-msg">'+esc(dailyMessage())+'</div>'+
       '<div class="hfb-identity">目前身分 <span>'+identityLabel+'</span>'+adminBadge+
-      (state.systemRole==='admin' ? '<button class="hfb-manage-btn" id="hfb-export-csv">匯出Excel</button>' : '')+
+      (state.systemRole==='admin' ? '<button class="hfb-export-icon" id="hfb-export-csv" type="button" title="匯出 Excel" aria-label="匯出 Excel"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 3h10l6 6v12H4V3zm10 1.8V10h5.2L14 4.8zM7.2 12l2.2 3-2.3 3h2.2l1.2-1.8 1.2 1.8h2.2l-2.3-3 2.2-3h-2.1l-1.1 1.7-1.1-1.7H7.2z"/></svg></button>' : '')+
       '<button class="hfb-auth-logout" type="button" onclick="window.hfbLogout && window.hfbLogout()">登出</button></div>'+
     '</div>';
   }
