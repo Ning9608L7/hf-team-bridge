@@ -2455,16 +2455,38 @@
   var passwordInput = document.getElementById('hfb-login-password');
   var submitButton = document.getElementById('hfb-login-submit');
   var message = document.getElementById('hfb-login-message');
+  var passwordFieldActivated = false;
+  var passwordManuallyEntered = false;
 
   function normalizeAccountInput(){
     var value = emailInput.value.trim();
     var normalized = value.replace(/@chimei\.org\.tw$/i, '');
     if(value !== normalized) emailInput.value = normalized;
   }
-  emailInput.addEventListener('input', normalizeAccountInput);
+  emailInput.addEventListener('input', function(){
+    normalizeAccountInput();
+    passwordInput.value = '';
+    passwordFieldActivated = false;
+    passwordManuallyEntered = false;
+  });
   emailInput.addEventListener('change', normalizeAccountInput);
   emailInput.addEventListener('blur', normalizeAccountInput);
-  setTimeout(normalizeAccountInput, 250);
+  passwordInput.addEventListener('pointerdown', function(){ passwordFieldActivated = true; });
+  passwordInput.addEventListener('focus', function(){ passwordFieldActivated = true; });
+  passwordInput.addEventListener('input', function(){
+    if(!passwordFieldActivated){
+      passwordInput.value = '';
+      passwordManuallyEntered = false;
+      return;
+    }
+    passwordManuallyEntered = passwordInput.value.length > 0;
+  });
+  setTimeout(function(){
+    normalizeAccountInput();
+    passwordInput.value = '';
+    passwordFieldActivated = false;
+    passwordManuallyEntered = false;
+  }, 350);
 
   if(!window.supabase){
     message.textContent = '登入元件載入失敗，請重新整理頁面。';
@@ -2488,6 +2510,8 @@
   function clearLoginFields(){
     emailInput.value = '';
     passwordInput.value = '';
+    passwordFieldActivated = false;
+    passwordManuallyEntered = false;
   }
 
   async function secureLogout(showIdleMessage){
@@ -2572,6 +2596,15 @@
     submitButton.textContent = '登入中…';
 
     var account = emailInput.value.trim().toLowerCase().replace(/@chimei\.org\.tw$/i, '');
+    if(!passwordManuallyEntered){
+      submitButton.disabled = false;
+      submitButton.textContent = '登入系統';
+      passwordInput.value = '';
+      message.textContent = '請手動重新輸入此帳號的密碼。';
+      passwordFieldActivated = true;
+      passwordInput.focus();
+      return;
+    }
     if(!account || account.indexOf('@') !== -1){
       submitButton.disabled = false;
       submitButton.textContent = '登入系統';
