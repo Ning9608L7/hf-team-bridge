@@ -1,3 +1,49 @@
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  #hfb-auth-shell{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; background:linear-gradient(135deg,#e8f7f4 0%,#f7fbff 52%,#f9edf5 100%);
+    font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",-apple-system,BlinkMacSystemFont,sans-serif;
+    color:#183d38;
+  }
+  .hfb-auth-card{
+    width:min(440px,100%); background:#fff; border:1px solid #c7e3de;
+    border-radius:20px; padding:34px 32px; box-shadow:0 18px 48px rgba(31,122,112,.14);
+  }
+  .hfb-auth-logo{width:64px;height:64px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1f7a70,#5fb8d6);color:#fff;font-size:36px}
+  .hfb-auth-title{text-align:center;font-size:27px;font-weight:700;margin:0 0 6px}
+  .hfb-auth-subtitle{text-align:center;color:#668a84;font-size:16px;margin:0 0 26px}
+  .hfb-auth-field{margin-bottom:16px}
+  .hfb-auth-field label{display:block;font-size:16px;font-weight:600;margin-bottom:6px}
+  .hfb-auth-field input{width:100%;box-sizing:border-box;border:1px solid #bddbd6;border-radius:10px;padding:12px 14px;font-size:17px;outline:none}
+  .hfb-auth-field input:focus{border-color:#2f9e94;box-shadow:0 0 0 3px rgba(47,158,148,.14)}
+  .hfb-auth-button{width:100%;border:0;border-radius:10px;padding:12px 16px;background:#2f9e94;color:#fff;font-size:18px;font-weight:700;cursor:pointer}
+  .hfb-auth-button:hover{background:#1f7a70}
+  .hfb-auth-button:disabled{opacity:.65;cursor:wait}
+  .hfb-auth-message{min-height:22px;margin-top:12px;text-align:center;font-size:15px;color:#bb3d4a}
+  .hfb-auth-notice{margin-top:18px;padding-top:16px;border-top:1px solid #e1efec;text-align:center;color:#708f89;font-size:13px;line-height:1.6}
+  .hfb-auth-user{display:inline-flex;align-items:center;gap:7px;color:#fff;font-size:17px}
+  .hfb-auth-logout{font-family:inherit;font-size:16px;padding:6px 11px;border-radius:8px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff;cursor:pointer}
+  .hfb-auth-logout:hover{background:rgba(255,255,255,.24)}
+</style>
+<div id="hfb-auth-shell">
+  <form class="hfb-auth-card" id="hfb-login-form">
+    <div class="hfb-auth-logo">♥</div>
+    <h1 class="hfb-auth-title">心臟衰竭照護平台</h1>
+    <p class="hfb-auth-subtitle">請使用已核准的帳號登入</p>
+    <div class="hfb-auth-field">
+      <label for="hfb-login-email">電子郵件</label>
+      <input id="hfb-login-email" type="email" autocomplete="username" required>
+    </div>
+    <div class="hfb-auth-field">
+      <label for="hfb-login-password">密碼</label>
+      <input id="hfb-login-password" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="hfb-auth-button" id="hfb-login-submit" type="submit">登入系統</button>
+    <div class="hfb-auth-message" id="hfb-login-message" role="alert"></div>
+    <div class="hfb-auth-notice">本系統僅供授權之醫療團隊成員使用，請勿共用帳號。</div>
+  </form>
+</div>
 <!-- 心衰竭多專科團隊協作平台 -->
 <style>
   #hfb-root{
@@ -217,7 +263,7 @@
   .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0);}
 </style>
 
-<div id="hfb-root">
+<div id="hfb-root" style="display:none">
   <h2 class="sr-only">心衰竭多專科團隊協作平台:個管師建立個案並指派任務給物理治療師、營養師、藥師、專科護理師,各職類於平台上回覆評估結果。</h2>
   <div id="hfb-app"></div>
 </div>
@@ -2090,5 +2136,111 @@
   setInterval(updateClock, 1000);
 
   loadData();
+})();
+</script>
+
+<script>
+(function(){
+  var SUPABASE_URL = 'https://yitgfsuynikljguwlgrd.supabase.co';
+  var SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_lWPdN9637K0mKLqU2Nq-MA_vj-KzPFJ';
+  var authShell = document.getElementById('hfb-auth-shell');
+  var appRoot = document.getElementById('hfb-root');
+  var form = document.getElementById('hfb-login-form');
+  var emailInput = document.getElementById('hfb-login-email');
+  var passwordInput = document.getElementById('hfb-login-password');
+  var submitButton = document.getElementById('hfb-login-submit');
+  var message = document.getElementById('hfb-login-message');
+
+  if(!window.supabase){
+    message.textContent = '登入元件載入失敗，請重新整理頁面。';
+    return;
+  }
+
+  var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+  function friendlyError(error){
+    var text = (error && error.message) || '';
+    if(/invalid login credentials/i.test(text)) return '電子郵件或密碼不正確。';
+    if(/email not confirmed/i.test(text)) return '此帳號尚未完成電子郵件確認。';
+    if(/rate limit/i.test(text)) return '嘗試次數過多，請稍後再試。';
+    return '登入失敗，請確認帳號密碼後再試。';
+  }
+
+  async function openApp(user){
+    var result = await client
+      .from('profiles')
+      .select('display_name, professional_role, system_role, is_active')
+      .eq('id', user.id)
+      .single();
+
+    if(result.error || !result.data){
+      await client.auth.signOut();
+      message.textContent = '此帳號尚未建立系統成員資料，請聯絡管理員。';
+      return;
+    }
+    if(!result.data.is_active){
+      await client.auth.signOut();
+      message.textContent = '此帳號目前已停用，請聯絡管理員。';
+      return;
+    }
+
+    authShell.style.display = 'none';
+    appRoot.style.display = 'flex';
+
+    var identity = document.querySelector('.hfb-identity');
+    if(identity && !document.getElementById('hfb-auth-logout')){
+      var userBox = document.createElement('span');
+      userBox.className = 'hfb-auth-user';
+      var name = result.data.display_name || user.email || '已登入';
+      var role = result.data.professional_role ? '・' + result.data.professional_role : '';
+      userBox.textContent = name + role;
+
+      var logout = document.createElement('button');
+      logout.id = 'hfb-auth-logout';
+      logout.className = 'hfb-auth-logout';
+      logout.type = 'button';
+      logout.textContent = '登出';
+      logout.onclick = async function(){
+        logout.disabled = true;
+        await client.auth.signOut();
+        window.location.reload();
+      };
+
+      identity.prepend(userBox);
+      identity.appendChild(logout);
+    }
+  }
+
+  form.addEventListener('submit', async function(event){
+    event.preventDefault();
+    message.textContent = '';
+    submitButton.disabled = true;
+    submitButton.textContent = '登入中…';
+
+    var result = await client.auth.signInWithPassword({
+      email: emailInput.value.trim(),
+      password: passwordInput.value
+    });
+
+    submitButton.disabled = false;
+    submitButton.textContent = '登入系統';
+
+    if(result.error){
+      message.textContent = friendlyError(result.error);
+      passwordInput.select();
+      return;
+    }
+    await openApp(result.data.user);
+  });
+
+  client.auth.getSession().then(function(result){
+    var session = result.data && result.data.session;
+    if(session && session.user){
+      openApp(session.user);
+    } else {
+      authShell.style.display = 'flex';
+      emailInput.focus();
+    }
+  });
 })();
 </script>
