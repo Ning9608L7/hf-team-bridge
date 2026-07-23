@@ -130,6 +130,9 @@
   .hfb-task-date-save{font-size:16px; padding:5px 10px; border:1px solid var(--primary); border-radius:7px; color:#fff; background:var(--primary); font-weight:600;}
   .hfb-task-date-save:hover{background:var(--primary-deep);}
   .hfb-task-date-saved{font-size:15px; color:var(--primary-deep);}
+  .hfb-task-top-actions{display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:flex-end;}
+  .hfb-task-delete{font-size:16px; padding:5px 9px; border:1px solid #D85B65; border-radius:7px; color:#B63E49; background:#FFF1F2; font-weight:600;}
+  .hfb-task-delete:hover{color:#fff; background:#D85B65;}
   .hfb-status-pill{font-size:20px; padding:3px 9px; border-radius:20px; white-space:nowrap; flex-shrink:0;}
   .hfb-status-pill.is-pending{font-size:22.5px; font-weight:700; animation:hfb-blink 1.1s ease-in-out infinite;}
   @keyframes hfb-blink{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
@@ -1269,8 +1272,9 @@
         '<div><span class="hfb-role-badge" style="background:'+role.tint+'; color:'+role.color+'">'+role.label+'</span>'+
         '<div class="hfb-task-title">'+esc(t.title)+'</div>'+
         taskDateHtml+'</div>'+
-        '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
-      '</div>';
+        '<div class="hfb-task-top-actions"><span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
+        (canEditTaskDate ? '<button type="button" class="hfb-task-delete" data-delete-task="'+t.id+'">🗑️ 刪除</button>' : '')+
+        '</div></div>';
 
     if(t.status==='done'){
       html += '<div class="hfb-task-response">'+esc(t.response)+
@@ -1854,6 +1858,24 @@
           state.assignDraft[cid] = {};
           saveTasks();
         }
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-delete-task]').forEach(function(b){
+      b.onclick = function(){
+        var id = this.getAttribute('data-delete-task');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        var member = currentMember();
+        if(!t || !member || !t.assignedByMemberId || t.assignedByMemberId!==member.id){
+          window.alert('僅限發出此指派的人員刪除。');
+          render();
+          return;
+        }
+        var ok = window.confirm('確定要刪除這筆指派「'+t.title+'」嗎？刪除後無法復原。');
+        if(!ok) return;
+        state.tasks = state.tasks.filter(function(x){ return x.id!==id; });
+        saveTasks();
         render();
       };
     });
