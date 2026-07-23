@@ -348,7 +348,11 @@
     showAssign: {},
     newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr()},
     assignDraft: {},
-    loaded: false
+    loaded: false,
+    systemRole: 'member',
+    authUserId: null,
+    authDisplayName: '',
+    authProfessionalRole: ''
   };
 
   function uid(){ return Math.random().toString(36).slice(2,10); }
@@ -903,10 +907,46 @@
   function saveMembers(){
     try{ localStorage.setItem('bridge:members', JSON.stringify(state.members)); }catch(e){}
   }
+  function roleKeyFromProfessional(role){
+    var map = {
+      '個管師':'case_manager',
+      '醫師':'physician',
+      '物理治療師':'pt',
+      '營養師':'rd',
+      '藥師':'ph',
+      '專科護理師':'np'
+    };
+    return map[role] || 'case_manager';
+  }
+  function applyAuthIdentity(detail){
+    if(!detail || !detail.profile) return;
+    var profile = detail.profile;
+    var roleKey = roleKeyFromProfessional(profile.professional_role);
+    var member = {
+      id: detail.userId,
+      name: profile.display_name || '',
+      role: roleKey
+    };
+    state.members = [member];
+    state.currentMemberId = member.id;
+    state.identity = roleKey;
+    state.systemRole = profile.system_role || 'member';
+    state.authUserId = detail.userId;
+    state.authDisplayName = profile.display_name || '';
+    state.authProfessionalRole = profile.professional_role || '';
+    state.showMemberManager = false;
+    state.loaded = true;
+    render();
+  }
+  window.addEventListener('hfb-auth-ready', function(event){
+    applyAuthIdentity(event.detail);
+  });
+
   function currentMember(){
     return state.members.find(function(m){ return m.id===state.currentMemberId; }) || null;
   }
   function canManageTask(t){
+    if(state.systemRole==='admin') return true;
     var member = currentMember();
     if(!member || !t) return false;
     if(t.assignedByMemberId) return t.assignedByMemberId===member.id;
@@ -993,18 +1033,20 @@
   }
 
   function topbar(){
-    var opts = '<option value="" disabled>選擇目前操作的成員</option>';
-    state.members.forEach(function(m){
-      var label = (m.name ? m.name : '(未命名成員)') + ' ・ ' + ROLES[m.role].label;
-      opts += '<option value="'+m.id+'"'+(state.currentMemberId===m.id?' selected':'')+'>'+esc(label)+'</option>';
-    });
+    var member = currentMember();
+    var name = state.authDisplayName || (member && member.name) || '已登入';
+    var roleLabel = state.authProfessionalRole || (member && ROLES[member.role] ? ROLES[member.role].label : '');
+    var identityLabel = esc(name + (roleLabel ? '・' + roleLabel : ''));
+    var adminBadge = state.systemRole==='admin'
+      ? '<span class="hfb-role-badge" style="background:rgba(255,255,255,.2);color:#fff">主要管理員</span>'
+      : '';
     return '<div class="hfb-topbar">'+
       '<div class="hfb-brand"><div class="hfb-brand-mark">♥</div>'+
       '<div class="hfb-brand-text"><h1>心臟衰竭照護平台</h1><p class="hfb-clock" id="hfb-clock"></p></div></div>'+
       '<div class="hfb-daily-msg">'+esc(dailyMessage())+'</div>'+
-      '<div class="hfb-identity">目前身份 <select id="hfb-identity-select">'+opts+'</select>'+
-      (isInitiator(state.identity) ? '<button class="hfb-manage-btn" id="hfb-export-csv">匯出Excel</button>' : '') +
-      '<button class="hfb-manage-btn" id="hfb-toggle-members">'+(state.showMemberManager?'關閉管理':'管理成員')+'</button></div>'+
+      '<div class="hfb-identity">目前身分 <span>'+identityLabel+'</span>'+adminBadge+
+      (state.systemRole==='admin' ? '<button class="hfb-manage-btn" id="hfb-export-csv">匯出Excel</button>' : '')+
+      '<button class="hfb-auth-logout" type="button" onclick="window.hfbLogout && window.hfbLogout()">登出</button></div>'+
     '</div>';
   }
 
@@ -2158,6 +2200,11 @@
 
   var client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
 
+  window.hfbLogout = async function(){
+    await client.auth.signOut();
+    window.location.reload();
+  };
+
   function friendlyError(error){
     var text = (error && error.message) || '';
     if(/invalid login credentials/i.test(text)) return '電子郵件或密碼不正確。';
@@ -2184,31 +2231,11 @@
       return;
     }
 
+    window.dispatchEvent(new CustomEvent('hfb-auth-ready', {
+      detail: { userId: user.id, profile: result.data }
+    }));
     authShell.style.display = 'none';
     appRoot.style.display = 'flex';
-
-    var identity = document.querySelector('.hfb-identity');
-    if(identity && !document.getElementById('hfb-auth-logout')){
-      var userBox = document.createElement('span');
-      userBox.className = 'hfb-auth-user';
-      var name = result.data.display_name || user.email || '已登入';
-      var role = result.data.professional_role ? '・' + result.data.professional_role : '';
-      userBox.textContent = name + role;
-
-      var logout = document.createElement('button');
-      logout.id = 'hfb-auth-logout';
-      logout.className = 'hfb-auth-logout';
-      logout.type = 'button';
-      logout.textContent = '登出';
-      logout.onclick = async function(){
-        logout.disabled = true;
-        await client.auth.signOut();
-        window.location.reload();
-      };
-
-      identity.prepend(userBox);
-      identity.appendChild(logout);
-    }
   }
 
   form.addEventListener('submit', async function(event){
