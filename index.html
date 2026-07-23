@@ -945,7 +945,7 @@
       scheduled_at: t.scheduledAt || null,
       status: t.cancelled ? 'cancelled' : (t.status || 'pending'),
       response: t.response || '',
-      responded_by: t.respondedBy ? state.authUserId : null,
+      responded_by: t.respondedByMemberId || null,
       responded_at: t.respondedAt || null,
       task_data: JSON.parse(JSON.stringify(t || {})),
       updated_at: new Date().toISOString(),
@@ -993,6 +993,8 @@
     t.status = row.status || t.status || 'pending';
     t.cancelled = row.status === 'cancelled';
     t.response = row.response || t.response || '';
+    t.assignedByMemberId = t.assignedByMemberId || row.assigned_by || null;
+    t.respondedByMemberId = t.respondedByMemberId || row.responded_by || null;
     t.respondedAt = row.responded_at || t.respondedAt || null;
     return t;
   }
@@ -2361,6 +2363,7 @@
         t.response = val;
         t.status = 'done';
         t.respondedBy = state.identity;
+        t.respondedByMemberId = state.authUserId;
         t.respondedByName = (currentMember() && currentMember().name) || '';
         t.respondedAt = t.responseTimeDraft || nowLocalStr();
         saveTasks();
