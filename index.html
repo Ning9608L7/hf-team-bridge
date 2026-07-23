@@ -459,10 +459,11 @@
     var pastPanelHtml = '';
     if(history.length){
       history.slice(0,2).forEach(function(rec, i){
+        var recordKey = encodeURIComponent(String(rec.recordId || rec.recordedAt || ''));
         pastPanelHtml += (i>0 ? '<div class="past-divider"></div>' : '') +
-          '<div class="past-time">'+esc((rec.recordedAt||'').replace('T',' '))+
+          '<div class="past-time-row"><div class="past-time">'+esc((rec.recordedAt||'').replace('T',' '))+
             (rec.recordedByName ? '<span class="past-recorder">評估者:'+esc(rec.recordedByName)+(rec.recordedByRole?' '+esc(rec.recordedByRole):'')+'</span>' : '')+
-          '</div>'+
+          '</div><button type="button" class="past-delete" data-delete-tracking="'+recordKey+'" title="刪除此筆評估">🗑️</button></div>'+
           '<div class="past-rows">'+
           '<div class="past-row"><span class="past-label">血壓</span><span class="past-value">'+esc(rec.sbp||'—')+'/'+esc(rec.dbp||'—')+' mmHg</span></div>'+
           '<div class="past-row"><span class="past-label">心跳</span><span class="past-value">'+esc(rec.hr||'—')+' bpm</span></div>'+
@@ -556,7 +557,10 @@
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
         '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
         '.tk-past-title{font-size:19px; font-weight:700; color:#6B3F8C; margin-bottom:12px;}'+
+        '.past-time-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}'+
         '.past-time{font-size:17px; font-weight:700; color:#4A2E52; margin-bottom:10px;}'+
+        '.past-delete{margin:0; padding:5px 8px; width:auto; flex:0 0 auto; font-size:18px; line-height:1; color:#B63E49; background:#FFF1F2; border:1px solid #E6A5AB; border-radius:7px;}'+
+        '.past-delete:hover{color:#fff; background:#D85B65;}'+
         '.past-recorder{font-size:14px; font-weight:600; color:#A0398A; margin-left:10px;}'+
         '.past-rows{display:grid; grid-template-columns:1fr 1fr; gap:4px 16px;}'+
         '.past-row{display:flex; gap:8px; font-size:18px; margin-bottom:4px;}'+
@@ -649,6 +653,7 @@
         'document.getElementById("tk-time").value = (function(){var d=new Date();function p(n){return String(n).padStart(2,"0");}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());})();'+
         'function updateTkWeekday(){var v=document.getElementById("tk-nextvisit").value;var el=document.getElementById("tk-weekday");if(!v){el.textContent="";return;}var p=v.split("-");var d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));el.textContent="（"+["日","一","二","三","四","五","六"][d.getDay()]+"）";}'+
         'document.getElementById("tk-nextvisit").onchange=updateTkWeekday;updateTkWeekday();'+
+        'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if(window.opener&&window.opener.deleteTrackingRecord){window.opener.deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
           'var meds = {};'+
@@ -709,6 +714,7 @@
     if(!c.trackingRecords) c.trackingRecords = [];
     var entry = data.entry;
     entry.recordedByName = (currentMember() && currentMember().name) || '';
+    entry.recordId = entry.recordId || uid();
     entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
     if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:'', trackingDone:false};
     c.followUp.nextVisitDate = entry.nextVisitDate || '';
@@ -721,6 +727,20 @@
     saveCases();
     if(state.loaded) render();
   });
+
+  window.deleteTrackingRecord = function(caseId, recordKey){
+    var c = state.cases.find(function(x){ return x.id===caseId; });
+    if(!c || !c.trackingRecords) return false;
+    var idx = c.trackingRecords.findIndex(function(rec){
+      return String(rec.recordId || rec.recordedAt || '')===String(recordKey);
+    });
+    if(idx<0) return false;
+    c.trackingRecords.splice(idx,1);
+    saveCases();
+    if(state.loaded) render();
+    setTimeout(function(){ openTrackingWindow(c); }, 80);
+    return true;
+  };
 
   window.reopenTrackingWindow = function(caseId){
     var c = state.cases.find(function(x){ return x.id===caseId; });
