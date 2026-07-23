@@ -534,6 +534,11 @@
         '.msg{font-size:16px; color:#7A4C9E; margin-top:12px; display:none; align-items:center; gap:12px;}'+
         '.tk-refresh-btn{margin-top:0; padding:8px 16px; font-size:15px; background:#A0398A;}'+
         '.tk-refresh-btn:hover{background:#832C6F;}'+
+        '.tk-save-row{display:flex; align-items:flex-end; gap:12px; margin-top:18px; flex-wrap:wrap;}'+
+        '.tk-nextvisit-wrap{flex:1; min-width:190px;}'+
+        '.tk-nextvisit-wrap label.field-label{margin:0 0 7px;}'+
+        '.tk-nextvisit-wrap input{padding:12px 14px;}'+
+        '.tk-save-row #tk-save{margin-top:0; flex:0 0 auto;}'+
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
         '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
         '.tk-past-title{font-size:19px; font-weight:700; color:#6B3F8C; margin-bottom:12px;}'+
@@ -613,7 +618,10 @@
             '</div>'+
             '<label class="field-label">追蹤備註</label>'+
             '<textarea id="tk-note" placeholder="其他觀察與衛教內容…"></textarea>'+
-            '<button id="tk-save">儲存追蹤事項</button>'+
+            '<div class="tk-save-row">'+
+              '<div class="tk-nextvisit-wrap"><label class="field-label" for="tk-nextvisit">下次門診</label><input type="date" id="tk-nextvisit" value="'+esc((c.followUp&&c.followUp.nextVisitDate)||'')+'"></div>'+
+              '<button id="tk-save">儲存追蹤事項</button>'+
+            '</div>'+
             '<div class="msg" id="tk-msg">已送出,可關閉此視窗 <button type="button" id="tk-refresh" class="tk-refresh-btn">立即更新頁面</button></div>'+
           '</div>'+
         '</div>'+
@@ -652,7 +660,8 @@
             '},'+
             'meds: meds,'+
             'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
-            'note: document.getElementById("tk-note").value'+
+            'note: document.getElementById("tk-note").value,'+
+            'nextVisitDate: document.getElementById("tk-nextvisit").value'+
           '};'+
           'if(window.opener){ window.opener.postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
           'document.getElementById("tk-msg").style.display = "flex";'+
@@ -677,6 +686,9 @@
     var entry = data.entry;
     entry.recordedByName = (currentMember() && currentMember().name) || '';
     entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
+    if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:'', trackingDone:false};
+    c.followUp.nextVisitDate = entry.nextVisitDate || '';
+    c.followUp.trackingDone = false;
     c.trackingRecords.push(entry);
     c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
     c.trackingRecords = c.trackingRecords.slice(0,2);
