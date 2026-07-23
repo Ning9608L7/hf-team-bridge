@@ -460,10 +460,10 @@
     if(history.length){
       history.slice(0,2).forEach(function(rec, i){
         var recordKey = encodeURIComponent(String(rec.recordId || rec.recordedAt || ''));
-        pastPanelHtml += (i>0 ? '<div class="past-divider"></div>' : '') +
+        pastPanelHtml += '<div class="past-record">'+
           '<div class="past-time-row"><div class="past-time">'+esc((rec.recordedAt||'').replace('T',' '))+
             (rec.recordedByName ? '<span class="past-recorder">評估者:'+esc(rec.recordedByName)+(rec.recordedByRole?' '+esc(rec.recordedByRole):'')+'</span>' : '')+
-          '</div><button type="button" class="past-delete" data-delete-tracking="'+recordKey+'" title="刪除此筆評估">🗑️</button></div>'+
+          '</div><button type="button" class="past-delete" data-delete-tracking="'+recordKey+'" title="刪除此筆評估">🗑 刪除</button></div>'+
           '<div class="past-rows">'+
           '<div class="past-row"><span class="past-label">血壓</span><span class="past-value">'+esc(rec.sbp||'—')+'/'+esc(rec.dbp||'—')+' mmHg</span></div>'+
           '<div class="past-row"><span class="past-label">心跳</span><span class="past-value">'+esc(rec.hr||'—')+' bpm</span></div>'+
@@ -477,7 +477,8 @@
           '<div class="past-row"><span class="past-label">藥物</span></div>'+
           '<div class="mp-list">'+medsRowsHtmlFromEntry(rec)+'</div>'+
           '<div class="past-row"><span class="past-label">衛教</span><span class="past-value">'+esc((rec.education&&rec.education.length)?rec.education.join('、'):'—')+'</span></div>'+
-          '<div class="past-row"><span class="past-label">備註</span><span class="past-value">'+esc(rec.note||'—')+'</span></div>';
+          '<div class="past-row"><span class="past-label">備註</span><span class="past-value">'+esc(rec.note||'—')+'</span></div>'+
+          '</div>';
       });
     } else {
       pastPanelHtml = '<div class="empty">尚無過去紀錄可比對</div>';
@@ -557,16 +558,18 @@
         '.tk-layout{display:flex; gap:22px; align-items:flex-start;}'+
         '.tk-past{flex:1; background:#F3EAFB; border:1.5px solid #D9BEEF; border-radius:12px; padding:22px 24px;}'+
         '.tk-past-title{font-size:19px; font-weight:700; color:#6B3F8C; margin-bottom:12px;}'+
-        '.past-time-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px;}'+
+        '.past-record{position:relative; background:rgba(255,255,255,.72); border:1.5px solid #D9BEEF; border-radius:11px; padding:16px 18px; margin-bottom:16px; box-shadow:0 2px 7px rgba(107,63,140,.06);}'+
+        '.past-record:last-child{margin-bottom:0;}'+
+        '.past-time-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding-right:4px;}'+
         '.past-time{font-size:17px; font-weight:700; color:#4A2E52; margin-bottom:10px;}'+
-        '.past-delete{margin:0; padding:5px 8px; width:auto; flex:0 0 auto; font-size:18px; line-height:1; color:#B63E49; background:#FFF1F2; border:1px solid #E6A5AB; border-radius:7px;}'+
+        '.past-delete{margin:0; padding:7px 11px; width:auto; flex:0 0 auto; font-size:15px; line-height:1.1; font-family:inherit; font-weight:700; color:#B63E49; background:#FFF1F2; border:1.5px solid #D85B65; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;}'+
         '.past-delete:hover{color:#fff; background:#D85B65;}'+
         '.past-recorder{font-size:14px; font-weight:600; color:#A0398A; margin-left:10px;}'+
         '.past-rows{display:grid; grid-template-columns:1fr 1fr; gap:4px 16px;}'+
         '.past-row{display:flex; gap:8px; font-size:18px; margin-bottom:4px;}'+
         '.past-label{color:#8B6FA3; min-width:56px; flex-shrink:0;}'+
         '.past-value{font-weight:600; color:#4A2E52;}'+
-        '.past-divider{border-top:1.5px dashed #D9BEEF; margin:14px 0;}'+
+        '.past-divider{display:none;}'+
         '.tk-current{flex:1.15; background:#FBEFF7; border:1.5px solid #EBB8DC; border-radius:12px; padding:22px 24px;}'+
         '.tk-current-title{font-size:19px; font-weight:700; color:#A0398A; margin-bottom:4px;}'+
         '.tkm-wrap{background:#fff; border-radius:9px; padding:4px 0;}'+
