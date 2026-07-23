@@ -409,7 +409,7 @@
       });
       return rows || '<div class="empty">—</div>';
     }
-    var LAB_LABELS = {ntprobnp:'NT-proBNP', bun:'BUN', cr:'Cr', egfr:'eGFR', na:'Na', k:'K', ldl:'LDL', hba1c:'HbA1c'};
+    var LAB_LABELS = {ntprobnp:'NT-proBNP', na:'Na', k:'K', bun:'BUN', cr:'Cr', egfr:'eGFR', ldl:'LDL', hba1c:'HbA1c', other:'其他'};
     function labsRowsHtmlFromEntry(r){
       if(!r.labs) return '<div class="empty">—</div>';
       var rows = '';
@@ -524,7 +524,7 @@
         '.hline{font-size:17px; color:#4A3B5A; margin-bottom:4px;}'+
         '.hlabel{color:#8B7A9E; margin-right:8px;}'+
         '.mp-list{display:flex; flex-direction:column; gap:6px; margin:4px 0 10px;}'+
-        '.mp-list-2col{display:grid; grid-template-columns:1fr 1fr; gap:6px 16px;}'+
+        '.mp-list-2col{display:grid; grid-template-columns:repeat(3,1fr); gap:6px 16px;}'+
         '.mp-row{display:flex; align-items:center; gap:10px; font-size:17px;}'+
         '.mp-pill{display:inline-block; min-width:64px; text-align:center; background:#6B3F8C; color:#fff; font-weight:700; font-size:14px; padding:4px 11px; border-radius:20px; flex-shrink:0;}'+
         '.mp-drug{font-weight:600; color:#3A2E44; flex:1;}'+
@@ -534,7 +534,7 @@
         '.empty{font-size:17px; color:#B39EC5;}'+
         'label.field-label{display:block; font-size:19px; color:#5B4A6E; margin:18px 0 7px; font-weight:700;}'+
         '.field-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}'+
-        '.lab-grid{grid-template-columns:1fr 1fr;}'+
+        '.lab-grid{grid-template-columns:repeat(3,1fr);}'+
         '.tri-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px 18px; margin-bottom:6px;}'+
         '.tri-item label.field-label{margin:0 0 7px;}'+
         'input, select, textarea{width:100%; box-sizing:border-box; border:1px solid #E3D5F0; border-radius:9px; padding:14px 16px; font-size:19px; font-family:inherit;}'+
@@ -577,7 +577,7 @@
         '.edu-chip:hover{background:#F1E5FA;}'+
         '.edu-chip.on:hover{background:#663F87;}'+
         '.tkm-row input, .tkm-row select{padding:10px 11px; font-size:16px;}'+
-        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row{grid-template-columns:1fr;} }'+
+        '@media (max-width:820px){ .tk-layout{flex-direction:column;} .tri-row,.lab-grid,.mp-list-2col{grid-template-columns:1fr;} }'+
       '</style></head><body>'+
       '<h1>'+esc(c.name)+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
       '<div class="sub">個管師追蹤事項・獨立視窗</div>'+
@@ -614,13 +614,14 @@
             '<label class="field-label">抽血數據</label>'+
             '<div class="field-grid lab-grid">'+
               '<input type="number" id="tk-ntprobnp" placeholder="NT-proBNP (pg/mL)">'+
+              '<input type="number" id="tk-na" placeholder="Na (mmol/L)">'+
+              '<input type="number" id="tk-k" placeholder="K (mmol/L)" step="0.1">'+
               '<input type="number" id="tk-bun" placeholder="BUN (mg/dL)">'+
               '<input type="number" id="tk-cr" placeholder="Cr (mg/dL)" step="0.01">'+
               '<input type="number" id="tk-egfr" placeholder="eGFR (mL/min)">'+
-              '<input type="number" id="tk-na" placeholder="Na (mmol/L)">'+
-              '<input type="number" id="tk-k" placeholder="K (mmol/L)" step="0.1">'+
               '<input type="number" id="tk-ldl" placeholder="LDL (mg/dL)">'+
               '<input type="number" id="tk-hba1c" placeholder="HbA1c (%)" step="0.1">'+
+              '<input type="text" id="tk-lab-other" placeholder="其他（項目／數值）">'+
             '</div>'+
             '<label class="field-label">藥物治療(GDMT四大類)</label>'+
             '<div class="tkm-wrap">'+tkmRowsHtml+'</div>'+
@@ -676,7 +677,8 @@
               'na: document.getElementById("tk-na").value,'+
               'k: document.getElementById("tk-k").value,'+
               'ldl: document.getElementById("tk-ldl").value,'+
-              'hba1c: document.getElementById("tk-hba1c").value'+
+              'hba1c: document.getElementById("tk-hba1c").value,'+
+              'other: document.getElementById("tk-lab-other").value'+
             '},'+
             'meds: meds,'+
             'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
