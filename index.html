@@ -881,7 +881,10 @@
     }
     var myTaskCount = state.tasks.filter(function(t){ return t.role===state.identity && t.status!=='done'; }).length;
 
-    var followUpCount = state.cases.filter(function(c){ return c.discharged || (c.followUp && (c.followUp.nextVisitDate||c.followUp.doctor||c.followUp.note)); }).length;
+    var today = todayStr();
+    var followUpCount = state.cases.filter(function(c){
+      return !!(c.followUp && c.followUp.nextVisitDate===today);
+    }).length;
 
     var html = '';
     html += topbar();
@@ -892,7 +895,7 @@
     html += tabBtn('cases','個案總覽');
     html += tabBtn('mytasks','我的任務', myTaskCount);
     if(state.identity==='case_manager'){
-      html += tabBtn('followup','門診追蹤', followUpCount);
+      html += tabBtn('followup','門診追蹤', followUpCount, true);
     }
     html += '</div>';
     html += '<div class="hfb-body"><div class="hfb-main">';
@@ -920,9 +923,10 @@
     updateClock();
   }
 
-  function tabBtn(view,label,count){
+  function tabBtn(view,label,count,showZero){
     var active = state.view===view ? ' active' : '';
-    return '<button class="hfb-tab'+active+'" data-view="'+view+'">'+label+(count?'<span class="hfb-count">'+count+'</span>':'')+'</button>';
+    var showCount = !!count || (showZero && count===0);
+    return '<button class="hfb-tab'+active+'" data-view="'+view+'">'+label+(showCount?'<span class="hfb-count">'+count+'</span>':'')+'</button>';
   }
 
   function topbar(){
