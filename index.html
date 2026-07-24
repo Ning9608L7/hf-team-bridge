@@ -1585,6 +1585,9 @@
   function medsSection(c){
     var canEdit = isInitiator(state.identity);
     if(!c.meds){ c.meds = emptyMeds(); }
+    MED_CLASSES.forEach(function(cls){
+      if(!c.meds[cls.key]) c.meds[cls.key] = {on:false,drug:'',dose:'',freq:''};
+    });
     var html = '<div class="hfb-section-title"><span>藥物治療</span></div>'+
       '<div class="hfb-meds-card">';
     MED_CLASSES.forEach(function(cls){
