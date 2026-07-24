@@ -255,7 +255,7 @@
   .hfb-clinical-row .hfb-field input, .hfb-clinical-row .hfb-field select{font-size:24px; padding:11px 14px;}
   .hfb-lab-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px 12px;}
   .hfb-lab-field{display:flex; flex-direction:column; gap:3px;}
-  .hfb-lab-field label{font-size:14px; color:var(--ink-mute); font-weight:600;}
+  .hfb-lab-field label{font-size:15px; color:var(--ink); font-weight:700;}
   .hfb-lab-field input{padding:7px 9px; font-size:16px; border:1px solid var(--line); border-radius:7px;}
   .hfb-lab-field input:disabled{background:var(--bg); color:var(--ink-mute);}
   @media (max-width:900px){ .hfb-clinical-cols{flex-direction:column;} }
@@ -331,6 +331,8 @@
     {key:'bb', label:'β-Blocker'},
     {key:'mra', label:'MRA'},
     {key:'sglt2', label:'SGLT2i'},
+    {key:'glp1', label:'GLP-1 RA'},
+    {key:'diuretic', label:'利尿劑'},
     {key:'other', label:'其他'}
   ];
   var LAB_FIELDS = [
@@ -356,7 +358,7 @@
     {key:'got', label:'GOT', unit:'U/L'},
     {key:'gpt', label:'GPT', unit:'U/L'},
     {key:'tsh', label:'TSH', unit:'µIU/mL'},
-    {key:'t4', label:'T4', unit:'µg/dL'},
+    {key:'t4', label:'Free T4', unit:'ng/dL'},
     {key:'uacr', label:'UACR', unit:'mg/g'},
     {key:'lpa', label:'Lp(a)', unit:'mg/dL'}
   ];
@@ -525,7 +527,7 @@
       '</div>';
     });
 
-    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', other:'其他'};
+    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他'};
     function medsRowsHtmlFromEntry(r){
       var medsObj = r.meds || null;
       if(!medsObj){
@@ -778,7 +780,7 @@
               '<input type="number" id="tk-hba1c" placeholder="HbA1c (%)" step="0.1">'+
               '<input type="text" id="tk-lab-other" placeholder="其他（項目／數值）">'+
             '</div>'+
-            '<label class="field-label">藥物治療(GDMT四大類)</label>'+
+            '<label class="field-label">藥物治療</label>'+
             '<div class="tkm-wrap">'+tkmRowsHtml+'</div>'+
             '<label class="field-label">衛教內容(可複選)</label>'+
             '<div class="edu-chips" id="tk-edu-chips">'+
@@ -1574,6 +1576,8 @@
       bb:{on:false,drug:'',dose:'',freq:''},
       mra:{on:false,drug:'',dose:'',freq:''},
       sglt2:{on:false,drug:'',dose:'',freq:''},
+      glp1:{on:false,drug:'',dose:'',freq:''},
+      diuretic:{on:false,drug:'',dose:'',freq:''},
       other:{on:false,drug:'',dose:'',freq:''}
     };
   }
@@ -1581,7 +1585,7 @@
   function medsSection(c){
     var canEdit = isInitiator(state.identity);
     if(!c.meds){ c.meds = emptyMeds(); }
-    var html = '<div class="hfb-section-title"><span>藥物治療(GDMT四大類)</span></div>'+
+    var html = '<div class="hfb-section-title"><span>藥物治療</span></div>'+
       '<div class="hfb-meds-card">';
     MED_CLASSES.forEach(function(cls){
       var m = c.meds[cls.key] || {on:false, drug:'', dose:'', freq:''};
