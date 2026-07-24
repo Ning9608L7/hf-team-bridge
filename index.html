@@ -125,6 +125,7 @@
 
   .hfb-overview-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;}
   .hfb-overview-head h2{font-size:29px; font-weight:500; margin:0; color:var(--ink);}
+  .hfb-overview-actions{display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap;}
   .hfb-table-wrap{background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
   .hfb-table{width:100%; border-collapse:collapse;}
   .hfb-table thead th{text-align:left; font-size:19.5px; color:var(--ink-mute); font-weight:500; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--bg);}
@@ -231,7 +232,16 @@
   .hfb-hftype-group{display:flex; gap:8px; flex-wrap:wrap;}
   .hfb-hftype-btn{padding:7px 16px; border-radius:20px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-mute); font-size:19.5px; font-weight:700;}
   .hfb-hftype-btn.active{background:var(--primary); color:#fff; border-color:var(--primary);}
+  .hfb-hftype-btn.hfb-hfpef{border-color:#73c9bb; color:#1f7469; background:#e5f6f2;}
+  .hfb-hftype-btn.hfb-hfmref{border-color:#e2b866; color:#98600f; background:#fff3d9;}
+  .hfb-hftype-btn.hfb-hfref{border-color:#d58a99; color:#963f52; background:#fbe8ec;}
+  .hfb-hftype-btn.hfb-hfpef.active{background:#2f9e94; border-color:#2f9e94; color:#fff;}
+  .hfb-hftype-btn.hfb-hfmref.active{background:#d6942f; border-color:#d6942f; color:#fff;}
+  .hfb-hftype-btn.hfb-hfref.active{background:#b95569; border-color:#b95569; color:#fff;}
   .hfb-hftype-tag{font-size:18px; font-weight:700; padding:2px 9px; border-radius:20px; background:var(--primary-tint); color:var(--primary-deep); margin-left:8px; vertical-align:middle;}
+  .hfb-hftype-tag.hfb-hfpef{background:#dff4ef; color:#1f7469;}
+  .hfb-hftype-tag.hfb-hfmref{background:#fff0cf; color:#98600f;}
+  .hfb-hftype-tag.hfb-hfref{background:#f8e1e6; color:#963f52;}
   .hfb-meds-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:6px;}
   .hfb-clinical-cols{display:flex; gap:18px; align-items:flex-start;}
   .hfb-clinical-col{flex:1; min-width:0;}
@@ -369,6 +379,7 @@
     showNewCase: false,
     editingCaseId: null,
     showFollowUp: {},
+    overviewHfFilter: '',
     followUpHfFilter: '',
     showAssign: {},
     newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr()},
@@ -415,6 +426,12 @@
     var end = new Date(endKey+'T00:00:00');
     if(isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return '—';
     return Math.round((end-start)/86400000)+'天';
+  }
+  function hfTypeClass(value){
+    if(value==='HFpEF') return ' hfb-hfpef';
+    if(value==='HFmrEF') return ' hfb-hfmref';
+    if(value==='HFrEF') return ' hfb-hfref';
+    return '';
   }
   function nowLocalStr(){
     var d = new Date();
@@ -1351,15 +1368,28 @@
 
   function overviewPage(){
     var newBtn = isInitiator(state.identity) ? '<button class="hfb-new-case-btn" id="hfb-open-newcase">+ 新增個案</button>' : '';
-    var head = '<div class="hfb-overview-head"><h2>個案總覽</h2>'+newBtn+'</div>';
+    var hfTypesForFilter = ['全部','HFpEF','HFmrEF','HFrEF'];
+    var filterBtns = '';
+    hfTypesForFilter.forEach(function(ht){
+      var isAll = ht==='全部';
+      var active = (isAll ? !state.overviewHfFilter : state.overviewHfFilter===ht) ? ' active' : '';
+      filterBtns += '<button type="button" class="hfb-hftype-btn'+(isAll?'':hfTypeClass(ht))+active+'" data-overview-filter="'+(isAll?'':ht)+'">'+ht+'</button>';
+    });
+    var head = '<div class="hfb-overview-head"><h2>個案總覽</h2><div class="hfb-overview-actions"><div class="hfb-hftype-group">'+filterBtns+'</div>'+newBtn+'</div></div>';
+    var overviewCases = state.cases.filter(function(c){
+      return !state.overviewHfFilter || c.hfType===state.overviewHfFilter;
+    });
 
     if(state.cases.length===0){
       return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">尚無個案'+
         (isInitiator(state.identity) ? '・點擊「+ 新增個案」開始收案' : '') + '</div></div>';
     }
+    if(overviewCases.length===0){
+      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">此分類目前沒有個案</div></div>';
+    }
 
     var rows = '';
-    state.cases.slice().sort(function(a,b){
+    overviewCases.slice().sort(function(a,b){
       var dateA = normalizeDateKey(a.caseDate);
       var dateB = normalizeDateKey(b.caseDate);
       if(dateA!==dateB) return dateB.localeCompare(dateA);
@@ -1391,7 +1421,7 @@
         : esc(c.caseNumber||'—');
       rows += '<tr data-case="'+c.id+'">'+
         '<td class="hfb-td-nowrap">'+caseNumberHtml+'</td>'+
-        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+
           (function(){ var a=calcAge(c.birthday); var g=genderFromId(c.idnumber); var extra=[]; if(a!==null) extra.push(a+'歲'); if(g) extra.push(g); return extra.length ? ' ・ '+extra.join(' '):''; })()+
         '</div></td>'+
         '<td>'+(c.initiatorName?esc(c.initiatorName):ROLES[c.initiator].label)+'</td>'+
@@ -1418,7 +1448,7 @@
     hfTypesForFilter.forEach(function(ht){
       var isAll = ht==='全部';
       var active = (isAll ? !state.followUpHfFilter : state.followUpHfFilter===ht) ? ' active' : '';
-      filterBtns += '<button type="button" class="hfb-hftype-btn'+active+'" data-followup-filter="'+(isAll?'':ht)+'">'+ht+'</button>';
+      filterBtns += '<button type="button" class="hfb-hftype-btn'+(isAll?'':hfTypeClass(ht))+active+'" data-followup-filter="'+(isAll?'':ht)+'">'+ht+'</button>';
     });
     var head = '<div class="hfb-overview-head"><h2>門診追蹤</h2><div class="hfb-hftype-group">'+filterBtns+'</div></div>';
     var list = state.cases.filter(function(c){
@@ -1442,7 +1472,7 @@
         ? '<span class="hfb-note-done">'+esc(noteText)+'</span>'
         : esc(noteText);
       rows += '<tr data-followup-case="'+c.id+'">'+
-        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+' ・ '+esc(c.ward||'—')+'</div></td>'+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+' ・ '+esc(c.ward||'—')+'</div></td>'+
         '<td class="pmeta">'+esc(c.dischargeDate||'—')+'</td>'+
         '<td class="pmeta">'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+'</td>'+
         '<td class="pmeta">'+(fu.doctor?esc(fu.doctor)+(fu.session?' ('+esc(fu.session)+')':''):'—')+'</td>'+
@@ -1490,7 +1520,7 @@
 
     var body = '<button class="hfb-back-btn" id="hfb-back-overview">← 返回總覽</button>';
     body += '<div class="hfb-case-header">'+
-      '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag">'+esc(c.hfType)+'</span>':'')+'</h2>'+
+      '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</h2>'+
       infoGridHtml+
       '<div class="hfb-locked-note">🔒 基本資料一般職類無法修改'+
         (isInitiator(state.identity) ? '<button class="hfb-edit-btn" id="hfb-edit-case">編輯基本資料</button>' : '・如需更正請聯繫個管師或醫師') +
@@ -2032,6 +2062,14 @@
     root.querySelectorAll('[data-pick-hftype]').forEach(function(b){
       b.onclick = function(){
         state.newCaseDraft.hfType = this.getAttribute('data-pick-hftype');
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-overview-filter]').forEach(function(b){
+      b.onclick = function(){
+        var val = this.getAttribute('data-overview-filter');
+        state.overviewHfFilter = val;
         render();
       };
     });
