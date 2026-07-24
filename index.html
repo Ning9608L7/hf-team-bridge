@@ -242,6 +242,10 @@
   .hfb-hftype-tag.hfb-hfpef{background:#dff4ef; color:#1f7469;}
   .hfb-hftype-tag.hfb-hfmref{background:#fff0cf; color:#98600f;}
   .hfb-hftype-tag.hfb-hfref{background:#f8e1e6; color:#963f52;}
+  .hfb-history-group{display:flex; gap:9px; flex-wrap:wrap;}
+  .hfb-history-btn{padding:7px 14px; border-radius:20px; border:1.5px solid var(--line); background:var(--bg); color:var(--ink-mute); font-size:18px; font-weight:600;}
+  .hfb-history-btn.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+  .hfb-history-other{margin-top:9px;}
   .hfb-meds-card{background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:6px;}
   .hfb-clinical-cols{display:flex; gap:18px; align-items:flex-start;}
   .hfb-clinical-col{flex:1; min-width:0;}
@@ -366,6 +370,8 @@
     done:{label:'已完成', ink:'var(--status-done-ink)', bg:'var(--status-done-bg)'}
   };
 
+  var MEDICAL_HISTORY_OPTIONS = ['高血壓','冠狀動脈疾病','瓣膜疾病','心房顫動','高血脂','糖尿病','慢性腎臟病','慢性阻塞性肺病','其他'];
+
   var state = {
     identity: 'case_manager',
     view: 'cases',
@@ -382,7 +388,7 @@
     overviewHfFilter: '',
     followUpHfFilter: '',
     showAssign: {},
-    newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr()},
+    newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr(), medicalHistory:[], medicalHistoryOther:''},
     assignDraft: {},
     loaded: false,
     systemRole: 'member',
@@ -1512,10 +1518,14 @@
       });
       return h;
     };
+    var medicalHistoryItems = (Array.isArray(c.medicalHistory) ? c.medicalHistory : []).filter(function(item){ return item!=='其他'; });
+    if(c.medicalHistoryOther) medicalHistoryItems.push(c.medicalHistoryOther);
+    var medicalHistoryText = medicalHistoryItems.length ? medicalHistoryItems.map(esc).join('、') : '—';
     var infoGridHtml = '<div class="hfb-info-cols">'+
       '<div class="hfb-info-col">'+colHtml(leftRows)+'</div>'+
       '<div class="hfb-info-col">'+colHtml(midRows)+'</div>'+
-      '<div class="hfb-info-col">'+(c.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">收案備註</span><span class="hfb-info-value">'+esc(c.note)+'</span></div>' : '')+'</div>'+
+      '<div class="hfb-info-col"><div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">過去病史</span><span class="hfb-info-value">'+medicalHistoryText+'</span></div>'+
+        (c.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">收案備註</span><span class="hfb-info-value">'+esc(c.note)+'</span></div>' : '')+'</div>'+
     '</div>';
 
     var body = '<button class="hfb-back-btn" id="hfb-back-overview">← 返回總覽</button>';
@@ -1705,6 +1715,15 @@
       var active = state.newCaseDraft.hfType===ht ? ' active' : '';
       hfBtns += '<button type="button" class="hfb-hftype-btn'+active+'" data-pick-hftype="'+ht+'">'+ht+'</button>';
     });
+    var selectedHistory = state.newCaseDraft.medicalHistory || [];
+    var historyBtns = '';
+    MEDICAL_HISTORY_OPTIONS.forEach(function(item){
+      var active = selectedHistory.indexOf(item)!==-1 ? ' active' : '';
+      historyBtns += '<button type="button" class="hfb-history-btn'+active+'" data-pick-history="'+esc(item)+'">'+esc(item)+'</button>';
+    });
+    var historyOther = selectedHistory.indexOf('其他')!==-1
+      ? '<input class="hfb-history-other" id="nc-history-other" value="'+esc(state.newCaseDraft.medicalHistoryOther||'')+'" placeholder="請輸入其他過去病史">'
+      : '';
     return '<div class="hfb-modal-mask"><div class="hfb-modal">'+
       '<h3>'+(editing?'編輯個案基本資料':'建立新個案')+'</h3>'+
       (editing ? '<div class="hfb-edit-note">🔐 此為個管師/醫師專用的管理入口,一般職類無法進入編輯</div>' : '') +
@@ -1714,6 +1733,7 @@
       '<div class="hfb-field"><label>身分證字號</label><input id="nc-idnumber" value="'+esc(state.newCaseDraft.idnumber)+'" placeholder="A123456789"></div>'+
       '<div class="hfb-field"><label>床號</label><input id="nc-ward" value="'+esc(state.newCaseDraft.ward)+'" placeholder="9059A"></div>'+
       '<div class="hfb-field"><label>心衰竭分類</label><div class="hfb-hftype-group">'+hfBtns+'</div></div>'+
+      '<div class="hfb-field"><label>過去病史（可複選）</label><div class="hfb-history-group">'+historyBtns+'</div>'+historyOther+'</div>'+
       '<div class="hfb-field"><label>住院日期</label><input type="date" id="nc-admdate" value="'+esc(state.newCaseDraft.admissionDate)+'"></div>'+
       '<div class="hfb-field"><label>收案日期</label><input type="date" id="nc-date" value="'+esc(state.newCaseDraft.date)+'"></div>'+
       '<div class="hfb-field"><label>收案備註(選填)</label><textarea id="nc-note" placeholder="EF 30%,近期因心衰竭急性惡化入院…">'+esc(state.newCaseDraft.note)+'</textarea></div>'+
@@ -2041,7 +2061,7 @@
     if(openNew) openNew.onclick = function(){
       state.showNewCase = true;
       state.editingCaseId = null;
-      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr()};
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),medicalHistory:[],medicalHistoryOther:''};
       state.activeCaseId = null;
       render();
     };
@@ -2054,7 +2074,9 @@
       state.newCaseDraft = {
         name: c.name || '', mrn: c.mrn || '', ward: c.ward || '',
         note: c.note || '', date: c.caseDate || todayStr(), hfType: c.hfType || '',
-        birthday: c.birthday || '', idnumber: c.idnumber || '', admissionDate: c.admissionDate || todayStr()
+        birthday: c.birthday || '', idnumber: c.idnumber || '', admissionDate: c.admissionDate || todayStr(),
+        medicalHistory: Array.isArray(c.medicalHistory) ? c.medicalHistory.slice() : [],
+        medicalHistoryOther: c.medicalHistoryOther || ''
       };
       state.showNewCase = true;
       render();
@@ -2065,6 +2087,22 @@
         render();
       };
     });
+    root.querySelectorAll('[data-pick-history]').forEach(function(b){
+      b.onclick = function(){
+        var item = this.getAttribute('data-pick-history');
+        var selected = state.newCaseDraft.medicalHistory || [];
+        var index = selected.indexOf(item);
+        if(index===-1) selected.push(item);
+        else selected.splice(index,1);
+        state.newCaseDraft.medicalHistory = selected;
+        if(item==='其他' && index!==-1) state.newCaseDraft.medicalHistoryOther = '';
+        render();
+      };
+    });
+    var historyOtherInput = document.getElementById('nc-history-other');
+    if(historyOtherInput) historyOtherInput.oninput = function(){
+      state.newCaseDraft.medicalHistoryOther = this.value;
+    };
 
     root.querySelectorAll('[data-overview-filter]').forEach(function(b){
       b.onclick = function(){
@@ -2214,6 +2252,8 @@
       }
       var idnumber = document.getElementById('nc-idnumber').value.trim();
       var admissionDate = document.getElementById('nc-admdate').value || '';
+      var medicalHistory = (state.newCaseDraft.medicalHistory || []).slice();
+      var medicalHistoryOther = (state.newCaseDraft.medicalHistoryOther || '').trim();
 
       if(state.editingCaseId){
         var existing = state.cases.find(function(x){ return x.id===state.editingCaseId; });
@@ -2227,6 +2267,8 @@
           existing.birthday = birthday;
           existing.idnumber = idnumber;
           existing.admissionDate = admissionDate;
+          existing.medicalHistory = medicalHistory;
+          existing.medicalHistoryOther = medicalHistoryOther;
           saveCases();
         }
         state.activeCaseId = state.editingCaseId;
@@ -2248,6 +2290,8 @@
         birthday: birthday,
         idnumber: idnumber,
         admissionDate: admissionDate,
+        medicalHistory: medicalHistory,
+        medicalHistoryOther: medicalHistoryOther,
         meds: emptyMeds(),
         initiator: state.identity,
         initiatorName: (currentMember() && currentMember().name) || '',
@@ -2256,7 +2300,7 @@
       };
       state.cases.push(newCase);
       state.showNewCase = false;
-      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr()};
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),medicalHistory:[],medicalHistoryOther:''};
       state.activeCaseId = newCase.id;
       saveCases();
       render();
