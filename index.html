@@ -519,11 +519,12 @@
       DOSE_OPTIONS.forEach(function(d){ doseOptsC += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>'; });
       var freqOptsC = '<option value="">頻次</option>';
       FREQ_OPTIONS.forEach(function(f){ freqOptsC += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>'; });
+      var isWideMed = cls.key==='glp1' || cls.key==='other';
+      var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
       tkmRowsHtml += '<div class="tkm-row">'+
         '<button type="button" id="tkm-toggle-'+cls.key+'" class="tkm-toggle'+(m.on?' on':'')+'" onclick="this.classList.toggle(\'on\')">'+cls.label+'</button>'+
-        '<input class="tkm-drug" id="tkm-drug-'+cls.key+'" value="'+esc(m.drug||'')+'" placeholder="藥物名稱">'+
-        '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select>'+
-        '<select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>'+
+        '<input class="tkm-drug'+(isWideMed?' tkm-drug-wide':'')+'" id="tkm-drug-'+cls.key+'" value="'+esc(m.drug||'')+'" placeholder="'+medPlaceholder+'">'+
+        (isWideMed ? '' : '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select><select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>')+
       '</div>';
     });
 
@@ -722,6 +723,7 @@
         '.tkm-toggle{flex:0 0 150px; padding:11px 8px; border-radius:8px; border:none; font-size:15.5px; font-weight:700; background:#E4D9EE; color:#7A6690; cursor:pointer; font-family:inherit;}'+
         '.tkm-toggle.on{background:#7A4C9E; color:#fff;}'+
         '.tkm-drug{flex:1.3; min-width:120px;}'+
+        '.tkm-drug-wide{flex:1 1 320px;}'+
         '.tkm-row select{flex:0 0 92px;}'+
         '.edu-chips{display:flex; flex-wrap:wrap; gap:9px;}'+
         '.edu-chip{margin-top:0; flex:0 0 auto; width:auto; background:#fff; color:#7A4C9E; border:1.5px solid #D9BEEF; padding:10px 16px; font-size:16px; font-weight:600; border-radius:20px;}'+
@@ -814,8 +816,8 @@
             'meds[k] = {'+
               'on: document.getElementById("tkm-toggle-"+k).classList.contains("on"),'+
               'drug: document.getElementById("tkm-drug-"+k).value,'+
-              'dose: document.getElementById("tkm-dose-"+k).value,'+
-              'freq: document.getElementById("tkm-freq-"+k).value'+
+              'dose: document.getElementById("tkm-dose-"+k) ? document.getElementById("tkm-dose-"+k).value : "",'+
+              'freq: document.getElementById("tkm-freq-"+k) ? document.getElementById("tkm-freq-"+k).value : ""'+
             '};'+
           '});'+
           'var entry = {'+
@@ -1600,11 +1602,12 @@
       FREQ_OPTIONS.forEach(function(f){
         freqOpts += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>';
       });
-      var isOther = cls.key==='other';
+      var isWideMed = cls.key==='glp1' || cls.key==='other';
+      var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
       html += '<div class="hfb-med-row">'+
         '<button type="button" class="hfb-med-toggle'+(m.on?' on':'')+'" data-med-toggle="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+cls.label+'</button>'+
-        '<input class="hfb-med-drug'+(isOther?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="藥物名稱"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">'+
-        (isOther ? '' :
+        '<input class="hfb-med-drug'+(isWideMed?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="'+medPlaceholder+'"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">'+
+        (isWideMed ? '' :
           '<select class="hfb-med-dose" data-med-dose="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+doseOpts+'</select>'+
           '<select class="hfb-med-freq" data-med-freq="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+freqOpts+'</select>'
         ) +
