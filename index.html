@@ -175,23 +175,28 @@
   .hfb-role-group-summary{font-size:19px; color:var(--ink-mute); margin-bottom:10px;}
   .hfb-role-group-empty{font-size:19.5px; color:var(--ink-mute); padding:14px 0; text-align:center;}
 
-  .hfb-case-header{border-bottom:1px solid var(--line); padding-bottom:14px; margin-bottom:18px;}
-  .hfb-case-header h2{font-size:29px; font-weight:500; margin:0 0 4px;}
+  .hfb-case-header{border:1px solid var(--line); border-radius:16px; padding:18px; margin-bottom:20px; background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(232,247,244,.72)); box-shadow:0 8px 24px rgba(44,112,103,.08);}
+  .hfb-case-header h2{font-size:29px; font-weight:600; margin:0 0 12px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
   .hfb-case-header .sub{font-size:21.5px; color:var(--ink-soft);}
   .hfb-case-header .note{font-size:21.5px; color:var(--ink-soft); margin-top:10px; background:var(--bg); padding:8px 10px; border-radius:8px; line-height:1.6;}
-  .hfb-info-cols{display:grid; grid-template-columns:1.1fr 1.1fr 1fr; gap:8px 26px; margin-top:12px;}
-  .hfb-info-col{display:flex; flex-direction:column; gap:8px;}
+  .hfb-info-cols{display:grid; grid-template-columns:1fr 1fr 1.12fr; gap:14px; margin-top:10px;}
+  .hfb-info-col{display:flex; flex-direction:column; gap:8px; min-width:0; background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:13px; padding:14px 16px; box-shadow:0 3px 10px rgba(40,98,91,.05);}
+  .hfb-info-card-title{display:flex; align-items:center; gap:8px; color:var(--primary-deep); font-size:18px; font-weight:800; padding-bottom:8px; margin-bottom:2px; border-bottom:1px solid var(--line);}
+  .hfb-info-card-icon{display:inline-flex; width:30px; height:30px; border-radius:9px; align-items:center; justify-content:center; background:var(--primary-tint); font-size:17px;}
   .hfb-info-item{font-size:21.5px; display:flex; gap:8px; align-items:baseline;}
   .hfb-gender-icon{display:inline-flex; width:22px; height:22px; border-radius:50%; align-items:center; justify-content:center; font-size:18px; font-weight:800; vertical-align:middle; margin-right:3px;}
   .hfb-gender-icon.male{color:#2775a8; background:#e7f4fb;}
   .hfb-gender-icon.female{color:#b84f78; background:#fdebf2;}
-  .hfb-anthro-summary{display:flex; align-items:center; gap:22px; flex-wrap:wrap; margin-top:8px; color:var(--ink-mute); font-size:20px;}
-  .hfb-anthro-summary strong{display:inline-block; min-width:44px; padding:0 5px 2px; border-bottom:1px solid var(--ink-mute); color:var(--ink); text-align:center; font-weight:600;}
+  .hfb-anthro-summary{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:5px;}
+  .hfb-anthro-summary span{display:flex; flex-direction:column; gap:2px; align-items:center; justify-content:center; min-height:70px; padding:8px 5px; border-radius:10px; background:linear-gradient(180deg,var(--primary-tint),#fff); color:var(--ink-mute); font-size:15px; text-align:center;}
+  .hfb-anthro-summary strong{display:block; min-width:0; padding:0; border:0; color:var(--primary-deep); text-align:center; font-size:24px; line-height:1.1; font-weight:800;}
+  .hfb-anthro-unit{font-size:13px; color:var(--ink-mute); font-weight:500;}
   .hfb-info-label{color:var(--ink-mute); flex-shrink:0; min-width:88px;}
   .hfb-info-value{color:var(--ink); font-weight:600;}
   .hfb-info-note{flex-direction:column; align-items:flex-start; gap:3px;}
   .hfb-info-note .hfb-info-value{font-weight:500; background:var(--bg); padding:8px 10px; border-radius:8px; width:100%;}
-  @media (max-width:700px){ .hfb-info-cols{grid-template-columns:1fr;} }
+  @media (max-width:1000px){.hfb-info-cols{grid-template-columns:1fr 1fr;}.hfb-info-col:last-child{grid-column:1/-1;}}
+  @media (max-width:700px){.hfb-info-cols{grid-template-columns:1fr;}.hfb-info-col:last-child{grid-column:auto;}.hfb-anthro-summary{grid-template-columns:repeat(3,minmax(0,1fr));}}
   .hfb-locked-note{font-size:18.5px; color:var(--ink-mute); margin-top:9px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
   .hfb-edit-btn{font-size:16.5px; padding:4px 11px; border-radius:7px; border:1px solid var(--primary); color:var(--primary-deep); background:var(--primary-tint); font-weight:600;}
   .hfb-edit-btn:hover{background:var(--primary); color:#fff;}
@@ -1547,9 +1552,9 @@
       ['生日', c.birthday ? esc(c.birthday)+(age!==null?' ('+age+'歲)':'') : '—']
     ];
     var anthropometricHtml = '<div class="hfb-anthro-summary">'+
-      '<span>身高 <strong>'+(c.height?esc(c.height):'—')+'</strong> cm</span>'+
-      '<span>體重 <strong>'+(c.weight?esc(c.weight):'—')+'</strong> kg</span>'+
-      '<span>BMI <strong>'+(calculateBmi(c.height,c.weight)||c.bmi||'—')+'</strong> kg/m²</span>'+
+      '<span>身高<strong>'+(c.height?esc(c.height):'—')+'</strong><small class="hfb-anthro-unit">cm</small></span>'+
+      '<span>體重<strong>'+(c.weight?esc(c.weight):'—')+'</strong><small class="hfb-anthro-unit">kg</small></span>'+
+      '<span>BMI<strong>'+(calculateBmi(c.height,c.weight)||c.bmi||'—')+'</strong><small class="hfb-anthro-unit">kg/m²</small></span>'+
     '</div>';
     var midRows = [
       ['床號', esc(c.ward||'—')],
@@ -1568,9 +1573,9 @@
     if(c.medicalHistoryOther) medicalHistoryItems.push(c.medicalHistoryOther);
     var medicalHistoryText = medicalHistoryItems.length ? medicalHistoryItems.map(esc).join('、') : '—';
     var infoGridHtml = '<div class="hfb-info-cols">'+
-      '<div class="hfb-info-col">'+colHtml(leftRows)+anthropometricHtml+'</div>'+
-      '<div class="hfb-info-col">'+colHtml(midRows)+'</div>'+
-      '<div class="hfb-info-col"><div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">過去病史</span><span class="hfb-info-value">'+medicalHistoryText+'</span></div>'+
+      '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">👤</span>個人與身體資料</div>'+colHtml(leftRows)+anthropometricHtml+'</div>'+
+      '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">🏥</span>住院與收案資訊</div>'+colHtml(midRows)+'</div>'+
+      '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">📋</span>病史與備註</div><div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">過去病史</span><span class="hfb-info-value">'+medicalHistoryText+'</span></div>'+
         (c.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">收案備註</span><span class="hfb-info-value">'+esc(c.note)+'</span></div>' : '')+'</div>'+
     '</div>';
 
