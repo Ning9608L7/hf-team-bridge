@@ -154,8 +154,11 @@
   .hfb-discharge-btn.on{background:var(--primary); color:#fff; border-color:var(--primary);}
   .hfb-discharge-tag{font-size:16.5px; font-weight:700; color:var(--primary-deep); background:var(--primary-tint); padding:4px 10px; border-radius:20px;}
   .hfb-locked-tag{font-size:16.5px; font-weight:700; color:var(--status-pending-ink); background:var(--status-pending-bg); padding:4px 12px; border-radius:20px;}
-  .hfb-delete-btn{font-size:28px; width:auto; height:auto; padding:4px; border-radius:8px; border:none; background:transparent; cursor:pointer; line-height:1; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s;}
-  .hfb-delete-btn:hover{transform:scale(1.15) rotate(-6deg);}
+  .hfb-delete-btn{width:46px; height:46px; padding:2px; border:none; background:transparent; color:#171717; cursor:pointer; line-height:1; display:inline-flex; align-items:center; justify-content:center; transition:transform .12s,color .12s;}
+  .hfb-delete-btn svg{width:42px; height:42px; overflow:visible;}
+  .hfb-trash-ring{fill:none; stroke:currentColor; stroke-width:2.1; stroke-linecap:round; stroke-dasharray:1 5.1;}
+  .hfb-trash-bin{fill:none; stroke:currentColor; stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+  .hfb-delete-btn:hover{transform:scale(1.08); color:#b4233b;}
 
   .hfb-back-btn{font-size:20.5px; padding:6px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink-soft); margin-bottom:14px; display:inline-flex; align-items:center; gap:4px;}
   .hfb-back-btn:hover{background:var(--bg); color:var(--ink);}
@@ -270,6 +273,9 @@
   .hfb-med-dose, .hfb-med-freq{flex:0 0 110px; border:1px solid var(--line); border-radius:8px; padding:8px 8px; font-size:19.5px; background:var(--surface); color:var(--ink);}
   .hfb-med-dose:disabled, .hfb-med-freq:disabled{background:var(--bg); color:var(--ink-mute);}
   .hfb-field{margin-bottom:10px;}
+  .hfb-anthro-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;}
+  .hfb-bmi-output{background:var(--bg); font-weight:700; color:var(--primary-deep);}
+  @media(max-width:640px){.hfb-anthro-grid{grid-template-columns:1fr;}}
   .hfb-field label{font-size:21px; color:var(--ink-soft); display:block; margin-bottom:4px;}
   .hfb-field input, .hfb-field textarea, .hfb-field select{width:100%; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:22px;}
   .hfb-field textarea{min-height:50px; resize:vertical;}
@@ -396,7 +402,7 @@
     overviewHfFilter: '',
     followUpHfFilter: '',
     showAssign: {},
-    newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr(), medicalHistory:[], medicalHistoryOther:''},
+    newCaseDraft: {name:'', mrn:'', ward:'', note:'', date: todayStr(), hfType:'', birthday:'', idnumber:'', admissionDate: todayStr(), height:'', weight:'', medicalHistory:[], medicalHistoryOther:''},
     assignDraft: {},
     loaded: false,
     systemRole: 'member',
@@ -440,6 +446,11 @@
     var end = new Date(endKey+'T00:00:00');
     if(isNaN(start.getTime()) || isNaN(end.getTime()) || end < start) return '—';
     return Math.round((end-start)/86400000)+'天';
+  }
+  function calculateBmi(heightCm,weightKg){
+    var height = Number(heightCm), weight = Number(weightKg);
+    if(!height || !weight || height<=0 || weight<=0) return '';
+    return (weight/Math.pow(height/100,2)).toFixed(1);
   }
   function hfTypeClass(value){
     if(value==='HFpEF') return ' hfb-hfpef';
@@ -1406,10 +1417,15 @@
 
     var rows = '';
     overviewCases.slice().sort(function(a,b){
-      var dateA = normalizeDateKey(a.caseDate);
-      var dateB = normalizeDateKey(b.caseDate);
-      if(dateA!==dateB) return dateB.localeCompare(dateA);
-      return (Number(b.createdAt)||0)-(Number(a.createdAt)||0);
+      var numberA = String(a.caseNumber||'').trim();
+      var numberB = String(b.caseNumber||'').trim();
+      if(!numberA && numberB) return -1;
+      if(numberA && !numberB) return 1;
+      if(!numberA && !numberB) return (Number(b.createdAt)||0)-(Number(a.createdAt)||0);
+      var numericA = parseInt((numberA.match(/\d+/g)||['-1']).join(''),10);
+      var numericB = parseInt((numberB.match(/\d+/g)||['-1']).join(''),10);
+      if(numericA!==numericB) return numericB-numericA;
+      return numberB.localeCompare(numberA,undefined,{numeric:true,sensitivity:'base'});
     }).forEach(function(c){
       var p = progressOf(c.id);
       var pct = p.total ? Math.round(p.done/p.total*100) : 0;
@@ -1430,7 +1446,7 @@
         ? '<button type="button" class="hfb-discharge-btn'+(c.discharged?' on':'')+'" data-discharge="'+c.id+'">'+(c.discharged?'已出院':'出院')+'</button>'
         : (c.discharged ? '<span class="hfb-discharge-tag">已出院</span>' : '—');
       var deleteBtn = canManage
-        ? '<button type="button" class="hfb-delete-btn" data-delete-case="'+c.id+'" title="刪除個案">🗑️</button>'
+        ? '<button type="button" class="hfb-delete-btn" data-delete-case="'+c.id+'" title="刪除個案" aria-label="刪除個案"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="hfb-trash-ring" cx="24" cy="24" r="20"/><path class="hfb-trash-bin" d="M17 19h14l-1.2 17H18.2L17 19zm-2-4h18v4H15v-4zm5-3h8l1.5 3h-11L20 12zm1 11v9m6-9v9"/></svg></button>'
         : '';
       var caseNumberHtml = canManage
         ? '<input type="text" class="hfb-case-number-input" data-case-number="'+c.id+'" value="'+esc(c.caseNumber||'')+'" aria-label="'+esc(c.name)+'的編號" placeholder="編號">'
@@ -1513,7 +1529,10 @@
     var leftRows = [
       ['病歷號', esc(c.mrn||'—')],
       ['身分證字號', c.idnumber ? esc(c.idnumber)+(gender?' ('+gender+')':'') : '—'],
-      ['生日', c.birthday ? esc(c.birthday)+(age!==null?' ('+age+'歲)':'') : '—']
+      ['生日', c.birthday ? esc(c.birthday)+(age!==null?' ('+age+'歲)':'') : '—'],
+      ['身高', c.height ? esc(c.height)+' cm' : '—'],
+      ['體重', c.weight ? esc(c.weight)+' kg' : '—'],
+      ['BMI', calculateBmi(c.height,c.weight) || c.bmi || '—']
     ];
     var midRows = [
       ['床號', esc(c.ward||'—')],
@@ -1748,6 +1767,11 @@
       '<div class="hfb-field"><label>生日（民國年／月／日）</label><input type="text" inputmode="numeric" id="nc-birthday" value="'+esc(rocBirthdayValue(state.newCaseDraft.birthday))+'" placeholder="例如：75/3/18" autocomplete="off"><span class="hfb-date-converted" id="nc-birthday-converted">'+esc(gregorianBirthdayLabel(rocBirthdayValue(state.newCaseDraft.birthday)))+'</span></div>'+
       '<div class="hfb-field"><label>身分證字號</label><input id="nc-idnumber" value="'+esc(state.newCaseDraft.idnumber)+'" placeholder="A123456789"></div>'+
       '<div class="hfb-field"><label>床號</label><input id="nc-ward" value="'+esc(state.newCaseDraft.ward)+'" placeholder="9059A"></div>'+
+      '<div class="hfb-anthro-grid">'+
+        '<div class="hfb-field"><label>身高（cm）</label><input type="number" min="1" step="0.1" id="nc-height" value="'+esc(state.newCaseDraft.height||'')+'" placeholder="例如：165"></div>'+
+        '<div class="hfb-field"><label>體重（kg）</label><input type="number" min="1" step="0.1" id="nc-weight" value="'+esc(state.newCaseDraft.weight||'')+'" placeholder="例如：60"></div>'+
+        '<div class="hfb-field"><label>BMI（自動計算）</label><input class="hfb-bmi-output" id="nc-bmi" value="'+esc(calculateBmi(state.newCaseDraft.height,state.newCaseDraft.weight))+'" placeholder="—" readonly></div>'+
+      '</div>'+
       '<div class="hfb-field"><label>心衰竭分類</label><div class="hfb-hftype-group">'+hfBtns+'</div></div>'+
       '<div class="hfb-field"><label>過去病史（可複選）</label><div class="hfb-history-group">'+historyBtns+'</div>'+historyOther+'</div>'+
       '<div class="hfb-field"><label>住院日期</label><input type="date" id="nc-admdate" value="'+esc(state.newCaseDraft.admissionDate)+'"></div>'+
@@ -2077,7 +2101,7 @@
     if(openNew) openNew.onclick = function(){
       state.showNewCase = true;
       state.editingCaseId = null;
-      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),medicalHistory:[],medicalHistoryOther:''};
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),height:'',weight:'',medicalHistory:[],medicalHistoryOther:''};
       state.activeCaseId = null;
       render();
     };
@@ -2091,6 +2115,7 @@
         name: c.name || '', mrn: c.mrn || '', ward: c.ward || '',
         note: c.note || '', date: c.caseDate || todayStr(), hfType: c.hfType || '',
         birthday: c.birthday || '', idnumber: c.idnumber || '', admissionDate: c.admissionDate || todayStr(),
+        height: c.height || '', weight: c.weight || '',
         medicalHistory: Array.isArray(c.medicalHistory) ? c.medicalHistory.slice() : [],
         medicalHistoryOther: c.medicalHistoryOther || ''
       };
@@ -2255,6 +2280,9 @@
       if(!name){ document.getElementById('nc-name').focus(); return; }
       var mrn = document.getElementById('nc-mrn').value.trim();
       var ward = document.getElementById('nc-ward').value.trim();
+      var height = document.getElementById('nc-height').value.trim();
+      var weight = document.getElementById('nc-weight').value.trim();
+      var bmi = calculateBmi(height,weight);
       var note = document.getElementById('nc-note').value.trim();
       var caseDate = document.getElementById('nc-date').value || todayStr();
       var hfType = state.newCaseDraft.hfType || '';
@@ -2283,6 +2311,9 @@
           existing.birthday = birthday;
           existing.idnumber = idnumber;
           existing.admissionDate = admissionDate;
+          existing.height = height;
+          existing.weight = weight;
+          existing.bmi = bmi;
           existing.medicalHistory = medicalHistory;
           existing.medicalHistoryOther = medicalHistoryOther;
           saveCases();
@@ -2306,6 +2337,9 @@
         birthday: birthday,
         idnumber: idnumber,
         admissionDate: admissionDate,
+        height: height,
+        weight: weight,
+        bmi: bmi,
         medicalHistory: medicalHistory,
         medicalHistoryOther: medicalHistoryOther,
         meds: emptyMeds(),
@@ -2316,18 +2350,28 @@
       };
       state.cases.push(newCase);
       state.showNewCase = false;
-      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),medicalHistory:[],medicalHistoryOther:''};
+      state.newCaseDraft = {name:'',mrn:'',ward:'',note:'',date:todayStr(),hfType:'',birthday:'',idnumber:'',admissionDate:todayStr(),height:'',weight:'',medicalHistory:[],medicalHistoryOther:''};
       state.activeCaseId = newCase.id;
       saveCases();
       render();
     };
-    ['nc-name','nc-mrn','nc-ward','nc-note','nc-date','nc-birthday','nc-idnumber'].forEach(function(id){
+    ['nc-name','nc-mrn','nc-ward','nc-note','nc-date','nc-birthday','nc-idnumber','nc-height','nc-weight'].forEach(function(id){
       var f = document.getElementById(id);
       if(f) f.oninput = function(){
         var key = id.replace('nc-','');
         state.newCaseDraft[key] = this.value;
       };
     });
+    function updateBmiPreview(){
+      var heightEl = document.getElementById('nc-height');
+      var weightEl = document.getElementById('nc-weight');
+      var bmiEl = document.getElementById('nc-bmi');
+      if(bmiEl) bmiEl.value = calculateBmi(heightEl ? heightEl.value : '',weightEl ? weightEl.value : '');
+    }
+    var heightInput = document.getElementById('nc-height');
+    var weightInput = document.getElementById('nc-weight');
+    if(heightInput) heightInput.addEventListener('input',updateBmiPreview);
+    if(weightInput) weightInput.addEventListener('input',updateBmiPreview);
     var birthdayInput = document.getElementById('nc-birthday');
     if(birthdayInput) birthdayInput.oninput = function(){
       state.newCaseDraft.birthday = this.value;
