@@ -285,11 +285,19 @@
   .hfb-clinical-row .hfb-field input, .hfb-clinical-row .hfb-field select{font-size:18px; padding:8px 10px;}
   @media(max-width:900px){.hfb-clinical-row{grid-template-columns:repeat(2,minmax(0,1fr));}}
   @media(max-width:520px){.hfb-clinical-row{grid-template-columns:1fr;}}
-  .hfb-lab-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px 12px;}
-  .hfb-lab-field{display:flex; flex-direction:column; gap:3px;}
-  .hfb-lab-field label{font-size:15px; color:var(--ink); font-weight:700;}
-  .hfb-lab-field input{padding:7px 9px; font-size:16px; border:1px solid var(--line); border-radius:7px;}
+  .hfb-lab-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:11px 12px;}
+  .hfb-lab-field{display:flex; flex-direction:column; gap:4px; padding:5px; border-radius:10px; transition:background .18s,box-shadow .18s;}
+  .hfb-lab-field label{font-size:15px; color:var(--ink); font-weight:700; display:flex; align-items:center; gap:6px;}
+  .hfb-lab-field input{padding:8px 10px; font-size:17px; border:1px solid var(--line); border-radius:8px; background:#fff; transition:border-color .18s,box-shadow .18s,background .18s;}
   .hfb-lab-field input:disabled{background:var(--bg); color:var(--ink-mute);}
+  .hfb-lab-field.has-value{background:linear-gradient(145deg,rgba(226,247,243,.9),rgba(247,252,251,.95)); box-shadow:inset 3px 0 0 var(--primary),0 3px 10px rgba(31,122,112,.08);}
+  .hfb-lab-field.has-value label{color:var(--primary-deep);}
+  .hfb-lab-field.has-value label::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 3px rgba(31,122,112,.12);}
+  .hfb-lab-field.has-value input,.hfb-lab-field input:not(:placeholder-shown){background:#fff; border-color:var(--primary); color:var(--primary-deep); font-size:19px; font-weight:800; box-shadow:0 2px 8px rgba(31,122,112,.13);}
+  .hfb-lab-field input:focus{outline:none; border-color:var(--secondary); box-shadow:0 0 0 3px rgba(95,184,214,.18);}
+  .hfb-clinical-field.has-value{padding:9px 10px; border-radius:11px; background:linear-gradient(145deg,rgba(226,247,243,.92),#fff); box-shadow:inset 4px 0 0 var(--primary),0 3px 10px rgba(31,122,112,.08);}
+  .hfb-clinical-field.has-value label{color:var(--primary-deep); font-weight:800;}
+  .hfb-clinical-field.has-value input,.hfb-clinical-field.has-value select{border-color:var(--primary); color:var(--primary-deep); background:#fff; font-size:20px; font-weight:800; box-shadow:0 2px 8px rgba(31,122,112,.13);}
   @media (max-width:900px){ .hfb-clinical-cols{flex-direction:column;} }
   .hfb-med-row{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;}
   .hfb-med-row:last-child{margin-bottom:0;}
@@ -1711,13 +1719,13 @@
     var html = '<div class="hfb-section-title"><span>臨床評估與抽血數據</span></div>'+
       '<div class="hfb-meds-card">'+
         '<div class="hfb-clinical-row">'+
-          '<div class="hfb-field" style="margin-bottom:0;"><label>NYHA Fc 評估</label><select data-nyha="'+c.id+'"'+(canEdit?'':' disabled')+'>'+nyhaOpts+'</select></div>'+
-          '<div class="hfb-field" style="margin-bottom:0;"><label>LVEF (%)</label><input type="number" data-lvef="'+c.id+'" value="'+esc(c.lvef||'')+'" placeholder="例如:35"'+(canEdit?'':' disabled')+'></div>'+
+          '<div class="hfb-field hfb-clinical-field'+(c.nyha?' has-value':'')+'" style="margin-bottom:0;"><label>NYHA Fc 評估</label><select data-nyha="'+c.id+'"'+(canEdit?'':' disabled')+'>'+nyhaOpts+'</select></div>'+
+          '<div class="hfb-field hfb-clinical-field'+(c.lvef!=='' && c.lvef!=null?' has-value':'')+'" style="margin-bottom:0;"><label>LVEF (%)</label><input type="number" data-lvef="'+c.id+'" value="'+esc(c.lvef||'')+'" placeholder="例如:35"'+(canEdit?'':' disabled')+'></div>'+
         '</div>'+
         '<div class="hfb-lab-grid">';
     LAB_FIELDS.forEach(function(f){
       var val = c.labs[f.key] || '';
-      html += '<div class="hfb-lab-field"><label>'+f.label+'</label><input type="number" step="0.01" data-lab-key="'+f.key+'" data-case="'+c.id+'" value="'+esc(val)+'" placeholder="'+f.unit+'"'+(canEdit?'':' disabled')+'></div>';
+      html += '<div class="hfb-lab-field'+(val!=='' && val!=null?' has-value':'')+'"><label>'+f.label+'</label><input type="number" step="0.01" data-lab-key="'+f.key+'" data-case="'+c.id+'" value="'+esc(val)+'" placeholder="'+f.unit+'"'+(canEdit?'':' disabled')+'></div>';
     });
     html += '</div>'+
       (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:14px;">'+
@@ -2284,6 +2292,8 @@
         var c = state.cases.find(function(x){ return x.id===cid; });
         if(!c) return;
         c.nyha = this.value;
+        var field = this.closest('.hfb-clinical-field');
+        if(field) field.classList.toggle('has-value', !!this.value);
         saveCases();
       };
     });
@@ -2294,6 +2304,8 @@
         var c = state.cases.find(function(x){ return x.id===cid; });
         if(!c) return;
         c.lvef = this.value;
+        var field = this.closest('.hfb-clinical-field');
+        if(field) field.classList.toggle('has-value', this.value!=='');
         saveCases();
       };
     });
@@ -2306,6 +2318,8 @@
         if(!c) return;
         if(!c.labs) c.labs = emptyLabs();
         c.labs[key] = this.value;
+        var field = this.closest('.hfb-lab-field');
+        if(field) field.classList.toggle('has-value', this.value!=='');
         saveCases();
       };
     });
