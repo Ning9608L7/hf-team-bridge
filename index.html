@@ -2675,7 +2675,7 @@
     });
 
     root.querySelectorAll('[data-confirm-response-content]').forEach(function(btn){
-      btn.onclick = function(){
+      btn.onclick = async function(){
         var id = this.getAttribute('data-confirm-response-content');
         var t = state.tasks.find(function(x){ return x.id===id; });
         if(!canEditResponseDate(t)){
@@ -2691,14 +2691,21 @@
           inp.focus();
           return;
         }
-        t.response = value;
-        saveTasks();
-        this.disabled = true;
-        var msg = document.getElementById('response-content-saved-'+id);
-        if(msg){
-          msg.textContent = '✓ 已確認';
-          setTimeout(function(){ if(msg) msg.textContent=''; },1800);
+        var button = this;
+        button.disabled = true;
+        button.textContent = '儲存中…';
+        state.syncErrorShown = false;
+        var ok = await runTaskRpc('update_task_response', {
+          p_task_id:id,
+          p_response:value,
+          p_responded_at:t.respondedAt || null
+        });
+        if(!ok){
+          button.disabled = false;
+          button.textContent = '確定修改';
+          return;
         }
+        window.alert('回覆內容已成功儲存。');
       };
     });
 
@@ -2713,7 +2720,7 @@
     });
 
     root.querySelectorAll('[data-confirm-response-date]').forEach(function(btn){
-      btn.onclick = function(){
+      btn.onclick = async function(){
         var id = this.getAttribute('data-confirm-response-date');
         var t = state.tasks.find(function(x){ return x.id===id; });
         if(!canEditResponseDate(t)){
@@ -2728,14 +2735,21 @@
           window.alert('請選擇正確的回覆日期與時間。');
           return;
         }
-        t.respondedAt = parsed.toISOString();
-        saveTasks();
-        this.disabled = true;
-        var msg = document.getElementById('response-date-saved-'+id);
-        if(msg){
-          msg.textContent = '✓ 已確認';
-          setTimeout(function(){ if(msg) msg.textContent=''; },1800);
+        var button = this;
+        button.disabled = true;
+        button.textContent = '儲存中…';
+        state.syncErrorShown = false;
+        var ok = await runTaskRpc('update_task_response', {
+          p_task_id:id,
+          p_response:t.response || '',
+          p_responded_at:parsed.toISOString()
+        });
+        if(!ok){
+          button.disabled = false;
+          button.textContent = '確定';
+          return;
         }
+        window.alert('回覆日期已成功儲存。');
       };
     });
 
