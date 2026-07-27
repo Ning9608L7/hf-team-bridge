@@ -299,14 +299,15 @@
   .hfb-lab-field label{font-size:15px; color:var(--ink); font-weight:700; display:flex; align-items:center; gap:6px;}
   .hfb-lab-field input{padding:8px 10px; font-size:17px; border:1px solid var(--line); border-radius:8px; background:#fff; transition:border-color .18s,box-shadow .18s,background .18s;}
   .hfb-lab-field input:disabled{background:var(--bg); color:var(--ink-mute);}
-  .hfb-lab-field.has-value{background:linear-gradient(145deg,rgba(226,247,243,.9),rgba(247,252,251,.95)); box-shadow:0 3px 10px rgba(31,122,112,.08);}
+  .hfb-lab-field.has-value{background:transparent; box-shadow:none;}
   .hfb-lab-field.has-value label{color:var(--primary-deep);}
-  .hfb-lab-field.has-value label::before{content:""; width:7px; height:7px; border-radius:50%; background:var(--primary); box-shadow:0 0 0 3px rgba(31,122,112,.12);}
-  .hfb-lab-field.has-value input,.hfb-lab-field input:not(:placeholder-shown){background:#fff; border-color:var(--primary); color:var(--primary-deep); font-size:19px; font-weight:800; box-shadow:0 2px 8px rgba(31,122,112,.13);}
+  .hfb-lab-field.has-value label::before{content:""; flex:0 0 7px; width:7px; height:7px; border-radius:50%; background:var(--primary);}
+  .hfb-lab-field.has-value input,.hfb-lab-field input:not(:placeholder-shown){background:#fff; border-color:var(--line); color:var(--primary-deep); font-size:19px; font-weight:800; box-shadow:none;}
   .hfb-lab-field input:focus{outline:none; border-color:var(--secondary); box-shadow:0 0 0 3px rgba(95,184,214,.18);}
-  .hfb-clinical-field.has-value{padding:9px 10px; border-radius:11px; background:linear-gradient(145deg,rgba(226,247,243,.92),#fff); box-shadow:0 3px 10px rgba(31,122,112,.08);}
-  .hfb-clinical-field.has-value label{color:var(--primary-deep); font-weight:800;}
-  .hfb-clinical-field.has-value input,.hfb-clinical-field.has-value select{border-color:var(--primary); color:var(--primary-deep); background:#fff; font-size:20px; font-weight:800; box-shadow:0 2px 8px rgba(31,122,112,.13);}
+  .hfb-clinical-field.has-value{padding:0; border-radius:0; background:transparent; box-shadow:none;}
+  .hfb-clinical-field.has-value label{color:var(--primary-deep); font-weight:800; display:flex; align-items:center; gap:7px;}
+  .hfb-clinical-field.has-value label::before{content:""; flex:0 0 7px; width:7px; height:7px; border-radius:50%; background:var(--primary);}
+  .hfb-clinical-field.has-value input,.hfb-clinical-field.has-value select{border-color:var(--line); color:var(--primary-deep); background:#fff; font-size:20px; font-weight:800; box-shadow:none;}
   @media (max-width:900px){ .hfb-clinical-cols{flex-direction:column;} }
   .hfb-med-row{display:flex; gap:10px; align-items:center; margin-bottom:10px; flex-wrap:wrap;}
   .hfb-med-row:last-child{margin-bottom:0;}
