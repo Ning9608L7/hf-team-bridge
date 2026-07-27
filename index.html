@@ -1308,8 +1308,11 @@
   function currentMember(){
     return state.members.find(function(m){ return m.id===state.currentMemberId; }) || null;
   }
+  function isAdmin(){
+    return String(state.systemRole || '').trim().toLowerCase() === 'admin';
+  }
   function canManageTask(t){
-    if(state.systemRole==='admin') return true;
+    if(isAdmin()) return true;
     var member = currentMember();
     if(!member || !t) return false;
     if(t.assignedByMemberId) return t.assignedByMemberId===member.id;
@@ -1319,7 +1322,7 @@
   }
   function canEditResponseDate(t){
     if(!t || t.status!=='done') return false;
-    if(state.systemRole==='admin') return true;
+    if(isAdmin()) return true;
     var member = currentMember();
     if(!member) return false;
     if(t.respondedByMemberId) return t.respondedByMemberId===member.id;
@@ -1339,7 +1342,7 @@
     return '<div class="hfb-response-content-editor">'+
       '<textarea data-edit-response-content="'+t.id+'" aria-label="修改回覆內容">'+esc(t.response||'')+'</textarea>'+
       '<div class="hfb-response-content-actions">'+
-        '<button type="button" data-confirm-response-content="'+t.id+'" disabled>確定修改</button>'+
+        '<button type="button" data-confirm-response-content="'+t.id+'">確定修改</button>'+
         '<span class="hfb-response-content-saved" id="response-content-saved-'+t.id+'"></span>'+
       '</div>'+
     '</div>';
