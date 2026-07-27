@@ -1601,7 +1601,6 @@
       ['床號', esc(c.ward||'—')],
       ['住院日期', esc(c.admissionDate||'—')],
       ['出院日期', esc(c.dischargeDate||'—')],
-      ['出院時間', esc(c.dischargeTime||'—')],
       ['收案日期', esc(c.caseDate||fmt(c.createdAt))],
       ['收案人', (c.initiatorName?esc(c.initiatorName)+'・':'')+ROLES[c.initiator].label]
     ];
@@ -1763,10 +1762,7 @@
         '</div>'
       ) : '';
       html += '<div class="hfb-modal-mask"><div class="hfb-modal"><div class="hfb-fu-layout"><div class="hfb-fu-form">'+
-        '<div class="hfb-doctor-row">'+
-          '<div class="hfb-field" style="flex:1;"><label>出院日期</label><input type="date" id="fu-dischargedate" data-case="'+c.id+'" value="'+esc(c.dischargeDate||'')+'"></div>'+
-          '<div class="hfb-field" style="flex:1;"><label>出院時間</label><input type="time" id="fu-dischargetime" data-case="'+c.id+'" value="'+esc(c.dischargeTime||'')+'"></div>'+
-        '</div>'+
+        '<div class="hfb-field"><label>出院日期</label><input type="date" id="fu-dischargedate" data-case="'+c.id+'" value="'+esc(c.dischargeDate||'')+'"></div>'+
         '<div class="hfb-field"><label>下次門診追蹤日期</label><input type="date" id="fu-nextvisit" data-case="'+c.id+'" value="'+esc(fu.nextVisitDate||'')+'"></div>'+
         '<div class="hfb-field"><label>追蹤門診醫師/時段</label><div class="hfb-doctor-row">'+
           '<select id="fu-doctor" data-case="'+c.id+'">'+doctorOpts+'</select>'+
@@ -1781,7 +1777,6 @@
     } else if(c.dischargeDate || fu.nextVisitDate || fu.doctor || fu.note){
       html += '<div class="hfb-meds-card">'+
         (c.dischargeDate ? '<div class="hfb-info-item"><span class="hfb-info-label">出院日期</span><span class="hfb-info-value">'+esc(c.dischargeDate)+'</span></div>' : '')+
-        (c.dischargeTime ? '<div class="hfb-info-item"><span class="hfb-info-label">出院時間</span><span class="hfb-info-value">'+esc(c.dischargeTime)+'</span></div>' : '')+
         (fu.nextVisitDate ? '<div class="hfb-info-item"><span class="hfb-info-label">下次門診</span><span class="hfb-info-value">'+esc(fu.nextVisitDate)+'</span></div>' : '')+
         (fu.doctor ? '<div class="hfb-info-item"><span class="hfb-info-label">追蹤醫師</span><span class="hfb-info-value">'+esc(fu.doctor)+(fu.session?' ・ '+esc(fu.session):'')+'</span></div>' : '')+
         (fu.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">追蹤備註</span><span class="hfb-info-value">'+esc(fu.note)+'</span></div>' : '')+
@@ -2002,7 +1997,7 @@
       }
       var headers = ['姓名','病歷號','身分證字號','性別','生日','年齡','床號','住院日期','收案日期','心衰竭分類','收案人',
         'NYHA','LVEF(%)','ACEI/ARB/ARNI','β-Blocker','MRA','SGLT2i','其他用藥',
-        '出院狀態','出院日期','出院時間','下次門診','追蹤醫師','追蹤時段','追蹤備註','收案備註'];
+        '出院狀態','出院日期','下次門診','追蹤醫師','追蹤時段','追蹤備註','收案備註'];
       var rows = [headers.map(csvCell).join(',')];
       state.cases.forEach(function(c){
         var meds = c.meds || {};
@@ -2014,7 +2009,7 @@
           c.name, c.mrn, c.idnumber, gender, c.birthday, (age!==null?age:''), c.ward, c.admissionDate, c.caseDate, c.hfType, initiatorLabel,
           c.nyha, c.lvef,
           medsSummary(meds.acei), medsSummary(meds.bb), medsSummary(meds.mra), medsSummary(meds.sglt2), medsSummary(meds.other),
-          (c.discharged?'已出院':'未出院'), (c.dischargeDate||''), (c.dischargeTime||''), (fu.nextVisitDate||''), (fu.doctor||''), (fu.session||''), (fu.note||''), (c.note||'')
+          (c.discharged?'已出院':'未出院'), (c.dischargeDate||''), (fu.nextVisitDate||''), (fu.doctor||''), (fu.session||''), (fu.note||''), (c.note||'')
         ];
         rows.push(row.map(csvCell).join(','));
       });
@@ -2126,7 +2121,6 @@
         c.discharged = !c.discharged;
         if(c.discharged){
           c.dischargeDate = c.dischargeDate || todayStr();
-          c.dischargeTime = c.dischargeTime || nowLocalStr().slice(11,16);
           if(c.followUp) c.followUp.trackingDone = false;
           state.tasks.forEach(function(t){
             if(t.caseId===c.id && t.status!=='done' && !t.cancelled){
@@ -2488,13 +2482,11 @@
         var c = state.cases.find(function(x){ return x.id===cid; });
         if(!c) return;
         var dischargeDateEl = document.getElementById('fu-dischargedate');
-        var dischargeTimeEl = document.getElementById('fu-dischargetime');
         var nextVisitEl = document.getElementById('fu-nextvisit');
         var doctorEl = document.getElementById('fu-doctor');
         var sessionEl = document.getElementById('fu-session');
         var noteEl = document.getElementById('fu-note');
         c.dischargeDate = dischargeDateEl ? dischargeDateEl.value : c.dischargeDate;
-        c.dischargeTime = dischargeTimeEl ? dischargeTimeEl.value : (c.dischargeTime||'');
         c.followUp = {
           nextVisitDate: nextVisitEl ? nextVisitEl.value : '',
           doctor: doctorEl ? doctorEl.value : '',
