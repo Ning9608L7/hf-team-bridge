@@ -393,8 +393,6 @@
     {key:'bun', label:'BUN', unit:'mg/dL'},
     {key:'cr', label:'Cr', unit:'mg/dL'},
     {key:'egfr', label:'eGFR', unit:'mL/min'},
-    {key:'na', label:'Na', unit:'mmol/L'},
-    {key:'k', label:'K', unit:'mmol/L'},
     {key:'hba1c', label:'HbA1c', unit:'%'},
     {key:'glucose', label:'Glucose', unit:'mg/dL'},
     {key:'hb', label:'Hb', unit:'g/dL'},
@@ -1754,6 +1752,8 @@
           '<div class="hfb-field hfb-clinical-field'+(c.nyha?' has-value':'')+'" style="margin-bottom:0;"><label>NYHA Fc 評估</label><select data-nyha="'+c.id+'"'+(canEdit?'':' disabled')+'>'+nyhaOpts+'</select></div>'+
           '<div class="hfb-field hfb-clinical-field'+(c.lvef!=='' && c.lvef!=null?' has-value':'')+'" style="margin-bottom:0;"><label>LVEF (%)</label><input type="number" data-lvef="'+c.id+'" value="'+esc(c.lvef||'')+'" placeholder="例如:35"'+(canEdit?'':' disabled')+'></div>'+
           '<div class="hfb-field hfb-clinical-field'+(c.ekg?' has-value':'')+'" style="margin-bottom:0;"><label>EKG</label><select data-ekg="'+c.id+'"'+(canEdit?'':' disabled')+'>'+ekgOpts+'</select></div>'+
+          '<div class="hfb-field hfb-clinical-field'+(c.labs.na!=='' && c.labs.na!=null?' has-value':'')+'" style="margin-bottom:0;"><label>Na</label><input type="number" step="0.01" data-lab-key="na" data-case="'+c.id+'" value="'+esc(c.labs.na||'')+'" placeholder="mmol/L"'+(canEdit?'':' disabled')+'></div>'+
+          '<div class="hfb-field hfb-clinical-field'+(c.labs.k!=='' && c.labs.k!=null?' has-value':'')+'" style="margin-bottom:0;"><label>K</label><input type="number" step="0.01" data-lab-key="k" data-case="'+c.id+'" value="'+esc(c.labs.k||'')+'" placeholder="mmol/L"'+(canEdit?'':' disabled')+'></div>'+
         '</div>'+
         '<div class="hfb-lab-grid">';
     LAB_FIELDS.forEach(function(f){
@@ -2365,7 +2365,7 @@
         if(!c) return;
         if(!c.labs) c.labs = emptyLabs();
         c.labs[key] = this.value;
-        var field = this.closest('.hfb-lab-field');
+        var field = this.closest('.hfb-lab-field, .hfb-clinical-field');
         if(field) field.classList.toggle('has-value', this.value!=='');
         saveCases();
       };
