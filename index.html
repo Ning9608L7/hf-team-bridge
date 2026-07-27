@@ -315,6 +315,7 @@
   .hfb-med-toggle:disabled{cursor:not-allowed;}
   .hfb-med-drug{flex:1.4; min-width:150px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:20.5px;}
   .hfb-med-drug-lg{padding:11px 12px; font-size:22px; flex:1.8;}
+  .hfb-med-other{min-height:78px; line-height:1.5; resize:vertical; font-family:inherit; box-sizing:border-box;}
   .hfb-med-drug:disabled{background:var(--bg); color:var(--ink-mute);}
   .hfb-med-dose, .hfb-med-freq{flex:0 0 110px; border:1px solid var(--line); border-radius:8px; padding:8px 8px; font-size:19.5px; background:var(--surface); color:var(--ink);}
   .hfb-med-dose:disabled, .hfb-med-freq:disabled{background:var(--bg); color:var(--ink-mute);}
@@ -412,9 +413,11 @@
     {key:'tsh', label:'TSH', unit:'µIU/mL'},
     {key:'t4', label:'Free T4', unit:'ng/dL'},
     {key:'uacr', label:'UACR', unit:'mg/g'},
-    {key:'lpa', label:'Lp(a)', unit:'mg/dL'}
+    {key:'lpa', label:'Lp(a)', unit:'mg/dL'},
+    {key:'other', label:'其他', unit:'項目／數值', inputType:'text'}
   ];
   var NYHA_OPTIONS = ['I','II','III','IV'];
+  var EKG_OPTIONS = ['竇性心律','竇性心搏過速','竇性心搏過緩','心房顫動','心房撲動','早期收縮（PAC／PVC）','房室傳導阻滯','心律調節器節律','其他'];
   var EDUCATION_OPTIONS = ['加強飲食及水分控制觀念','加強症狀評估','提供心肺復健資訊'];
   var SUGGESTIONS = {
     case_manager: ['居家衛教', '個案追蹤與回診提醒', '轉介資源協調', '出院準備進度追蹤'],
@@ -1708,9 +1711,12 @@
       });
       var isWideMed = cls.key==='glp1' || cls.key==='other';
       var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
+      var drugField = cls.key==='other'
+        ? '<textarea class="hfb-med-drug hfb-med-drug-lg hfb-med-other" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="藥物名稱（可輸入多項）"'+(canEdit?'':' disabled')+'>'+esc(m.drug)+'</textarea>'
+        : '<input class="hfb-med-drug'+(isWideMed?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="'+medPlaceholder+'"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">';
       html += '<div class="hfb-med-row">'+
         '<button type="button" class="hfb-med-toggle'+(m.on?' on':'')+'" data-med-toggle="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+cls.label+'</button>'+
-        '<input class="hfb-med-drug'+(isWideMed?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="'+medPlaceholder+'"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">'+
+        drugField+
         (isWideMed ? '' :
           '<select class="hfb-med-dose" data-med-dose="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+doseOpts+'</select>'+
           '<select class="hfb-med-freq" data-med-freq="'+cls.key+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+freqOpts+'</select>'
@@ -1738,16 +1744,23 @@
     NYHA_OPTIONS.forEach(function(n){
       nyhaOpts += '<option value="'+n+'"'+(c.nyha===n?' selected':'')+'>'+n+'</option>';
     });
+    var ekgOpts = '<option value="">選擇心電圖</option>';
+    EKG_OPTIONS.forEach(function(e){
+      ekgOpts += '<option value="'+e+'"'+(c.ekg===e?' selected':'')+'>'+e+'</option>';
+    });
     var html = '<div class="hfb-section-title"><span>臨床評估與抽血數據</span></div>'+
       '<div class="hfb-meds-card">'+
         '<div class="hfb-clinical-row">'+
           '<div class="hfb-field hfb-clinical-field'+(c.nyha?' has-value':'')+'" style="margin-bottom:0;"><label>NYHA Fc 評估</label><select data-nyha="'+c.id+'"'+(canEdit?'':' disabled')+'>'+nyhaOpts+'</select></div>'+
           '<div class="hfb-field hfb-clinical-field'+(c.lvef!=='' && c.lvef!=null?' has-value':'')+'" style="margin-bottom:0;"><label>LVEF (%)</label><input type="number" data-lvef="'+c.id+'" value="'+esc(c.lvef||'')+'" placeholder="例如:35"'+(canEdit?'':' disabled')+'></div>'+
+          '<div class="hfb-field hfb-clinical-field'+(c.ekg?' has-value':'')+'" style="margin-bottom:0;"><label>EKG</label><select data-ekg="'+c.id+'"'+(canEdit?'':' disabled')+'>'+ekgOpts+'</select></div>'+
         '</div>'+
         '<div class="hfb-lab-grid">';
     LAB_FIELDS.forEach(function(f){
       var val = c.labs[f.key] || '';
-      html += '<div class="hfb-lab-field'+(val!=='' && val!=null?' has-value':'')+'"><label>'+f.label+'</label><input type="number" step="0.01" data-lab-key="'+f.key+'" data-case="'+c.id+'" value="'+esc(val)+'" placeholder="'+f.unit+'"'+(canEdit?'':' disabled')+'></div>';
+      var inputType = f.inputType || 'number';
+      var stepAttr = inputType==='number' ? ' step="0.01"' : '';
+      html += '<div class="hfb-lab-field'+(val!=='' && val!=null?' has-value':'')+'"><label>'+f.label+'</label><input type="'+inputType+'"'+stepAttr+' data-lab-key="'+f.key+'" data-case="'+c.id+'" value="'+esc(val)+'" placeholder="'+f.unit+'"'+(canEdit?'':' disabled')+'></div>';
     });
     html += '</div>'+
       (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:14px;">'+
@@ -2326,6 +2339,18 @@
         var c = state.cases.find(function(x){ return x.id===cid; });
         if(!c) return;
         c.lvef = this.value;
+        var field = this.closest('.hfb-clinical-field');
+        if(field) field.classList.toggle('has-value', this.value!=='');
+        saveCases();
+      };
+    });
+
+    root.querySelectorAll('[data-ekg]').forEach(function(sel){
+      sel.onchange = function(){
+        var cid = this.getAttribute('data-ekg');
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(!c) return;
+        c.ekg = this.value;
         var field = this.closest('.hfb-clinical-field');
         if(field) field.classList.toggle('has-value', this.value!=='');
         saveCases();
