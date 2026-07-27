@@ -180,13 +180,18 @@
   .hfb-case-header .sub{font-size:21.5px; color:var(--ink-soft);}
   .hfb-case-header .note{font-size:21.5px; color:var(--ink-soft); margin-top:10px; background:var(--bg); padding:8px 10px; border-radius:8px; line-height:1.6;}
   .hfb-info-cols{display:grid; grid-template-columns:1fr 1fr 1.12fr; gap:14px; margin-top:10px;}
-  .hfb-info-col{display:flex; flex-direction:column; gap:8px; min-width:0; background:rgba(255,255,255,.9); border:1px solid var(--line); border-radius:13px; padding:14px 16px; box-shadow:0 3px 10px rgba(40,98,91,.05);}
-  .hfb-info-card-title{display:flex; align-items:center; gap:8px; color:var(--primary-deep); font-size:18px; font-weight:800; padding-bottom:8px; margin-bottom:2px; border-bottom:1px solid var(--line);}
-  .hfb-info-card-icon{display:inline-flex; width:30px; height:30px; border-radius:9px; align-items:center; justify-content:center; background:var(--primary-tint); font-size:17px;}
-  .hfb-info-item{font-size:21.5px; display:flex; gap:8px; align-items:baseline;}
-  .hfb-gender-icon{display:inline-flex; width:22px; height:22px; border-radius:50%; align-items:center; justify-content:center; font-size:18px; font-weight:800; vertical-align:middle; margin-right:3px;}
-  .hfb-gender-icon.male{color:#2775a8; background:#e7f4fb;}
-  .hfb-gender-icon.female{color:#b84f78; background:#fdebf2;}
+  .hfb-info-col{position:relative; overflow:hidden; display:flex; flex-direction:column; gap:8px; min-width:0; background:linear-gradient(155deg,rgba(255,255,255,.98),rgba(239,249,247,.82)); border:1px solid var(--line); border-radius:15px; padding:15px 17px 16px; box-shadow:0 5px 16px rgba(40,98,91,.08);}
+  .hfb-info-col::before{content:""; position:absolute; inset:0 auto 0 0; width:4px; background:linear-gradient(180deg,var(--primary),var(--secondary));}
+  .hfb-info-col:nth-child(2)::before{background:linear-gradient(180deg,#5aaec6,#8bc9d8);}
+  .hfb-info-col:nth-child(3)::before{background:linear-gradient(180deg,#a88b65,#d7b98d);}
+  .hfb-info-card-title{display:flex; align-items:center; gap:8px; color:var(--primary-deep); font-size:18px; font-weight:800; padding:0 0 9px 2px; margin-bottom:2px; border-bottom:1px solid var(--line);}
+  .hfb-info-card-icon{display:inline-flex; width:32px; height:32px; border-radius:10px; align-items:center; justify-content:center; background:linear-gradient(135deg,var(--primary-tint),#fff); box-shadow:0 2px 7px rgba(31,122,112,.12); font-size:18px;}
+  .hfb-info-item{font-size:21.5px; display:flex; gap:9px; align-items:baseline; padding:4px 7px; border-radius:8px;}
+  .hfb-info-item:nth-child(odd){background:rgba(232,247,244,.55);}
+  .hfb-gender-icon{display:inline-flex; width:25px; height:25px; border-radius:50%; align-items:center; justify-content:center; font-size:19px; font-weight:800; vertical-align:middle; margin:0 1px;}
+  .hfb-gender-icon.male{color:#2775a8; background:#e7f4fb; box-shadow:inset 0 0 0 1px rgba(39,117,168,.14);}
+  .hfb-gender-icon.female{color:#b84f78; background:#fdebf2; box-shadow:inset 0 0 0 1px rgba(184,79,120,.14);}
+  .hfb-info-col-admission .hfb-info-value{font-weight:400;}
   .hfb-anthro-summary{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:5px;}
   .hfb-anthro-summary span{display:flex; flex-direction:column; gap:2px; align-items:center; justify-content:center; min-height:70px; padding:8px 5px; border-radius:10px; background:linear-gradient(180deg,var(--primary-tint),#fff); color:var(--ink-mute); font-size:15px; text-align:center;}
   .hfb-anthro-summary strong{display:block; min-width:0; padding:0; border:0; color:var(--primary-deep); text-align:center; font-size:24px; line-height:1.1; font-weight:800;}
@@ -1543,12 +1548,11 @@
     var ts = tasksForCase(c.id);
     var age = calcAge(c.birthday);
     var gender = genderFromId(c.idnumber);
-    var genderDisplay = gender==='男'
-      ? '<span class="hfb-gender-icon male" aria-label="男性">♂</span> 男'
-      : (gender==='女' ? '<span class="hfb-gender-icon female" aria-label="女性">♀</span> 女' : '—');
+    var genderIcon = gender==='男'
+      ? '<span class="hfb-gender-icon male" aria-label="男性" title="男性">♂</span>'
+      : (gender==='女' ? '<span class="hfb-gender-icon female" aria-label="女性" title="女性">♀</span>' : '');
     var leftRows = [
       ['病歷號', esc(c.mrn||'—')],
-      ['性別', genderDisplay],
       ['生日', c.birthday ? esc(c.birthday)+(age!==null?' ('+age+'歲)':'') : '—']
     ];
     var anthropometricHtml = '<div class="hfb-anthro-summary">'+
@@ -1574,14 +1578,14 @@
     var medicalHistoryText = medicalHistoryItems.length ? medicalHistoryItems.map(esc).join('、') : '—';
     var infoGridHtml = '<div class="hfb-info-cols">'+
       '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">👤</span>個人與身體資料</div>'+colHtml(leftRows)+anthropometricHtml+'</div>'+
-      '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">🏥</span>住院與收案資訊</div>'+colHtml(midRows)+'</div>'+
+      '<div class="hfb-info-col hfb-info-col-admission"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">🏥</span>住院與收案資訊</div>'+colHtml(midRows)+'</div>'+
       '<div class="hfb-info-col"><div class="hfb-info-card-title"><span class="hfb-info-card-icon">📋</span>病史與備註</div><div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">過去病史</span><span class="hfb-info-value">'+medicalHistoryText+'</span></div>'+
         (c.note ? '<div class="hfb-info-item hfb-info-note"><span class="hfb-info-label">收案備註</span><span class="hfb-info-value">'+esc(c.note)+'</span></div>' : '')+'</div>'+
     '</div>';
 
     var body = '<button class="hfb-back-btn" id="hfb-back-overview">← 返回總覽</button>';
     body += '<div class="hfb-case-header">'+
-      '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</h2>'+
+      '<h2>'+esc(c.name)+genderIcon+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</h2>'+
       infoGridHtml+
       '<div class="hfb-locked-note">🔒 基本資料一般職類無法修改'+
         (isInitiator(state.identity) ? '<button class="hfb-edit-btn" id="hfb-edit-case">編輯基本資料</button>' : '・如需更正請聯繫個管師或醫師') +
