@@ -1600,7 +1600,6 @@
     var midRows = [
       ['床號', esc(c.ward||'—')],
       ['住院日期', esc(c.admissionDate||'—')],
-      ['出院日期', esc(c.dischargeDate||'—')],
       ['收案日期', esc(c.caseDate||fmt(c.createdAt))],
       ['收案人', (c.initiatorName?esc(c.initiatorName)+'・':'')+ROLES[c.initiator].label]
     ];
