@@ -240,6 +240,15 @@
   .hfb-response-date-editor button:disabled{opacity:.42; cursor:not-allowed;}
   .hfb-response-date-saved{font-size:15px; color:var(--primary-deep); font-weight:650;}
   .hfb-response-date-static{white-space:nowrap;}
+  .hfb-response-content-static{white-space:pre-wrap;}
+  .hfb-response-content-editor{display:flex; flex-direction:column; gap:7px;}
+  .hfb-response-content-editor textarea{width:100%; min-height:64px; box-sizing:border-box; resize:vertical; border:1px solid var(--line); border-radius:9px; padding:9px 11px; background:#fff; color:var(--primary-deep); font:inherit; font-size:20px; font-weight:650; line-height:1.5;}
+  .hfb-response-content-editor textarea:focus{outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(31,122,112,.14);}
+  .hfb-response-content-actions{display:flex; align-items:center; gap:8px;}
+  .hfb-response-content-actions button{font-size:16px; padding:5px 11px; border:1px solid var(--primary); border-radius:7px; color:#fff; background:var(--primary); font-weight:650;}
+  .hfb-response-content-actions button:hover:not(:disabled){background:var(--primary-deep);}
+  .hfb-response-content-actions button:disabled{opacity:.42; cursor:not-allowed;}
+  .hfb-response-content-saved{font-size:15px; color:var(--primary-deep); font-weight:650;}
   .hfb-task-actions{margin-top:9px; padding-top:9px; border-top:1px dashed var(--line);}
   .hfb-task-actions textarea{width:100%; min-height:56px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:21.5px; resize:vertical;}
   .hfb-task-actions .row{display:flex; gap:8px; margin-top:8px; align-items:center;}
@@ -1325,6 +1334,16 @@
       '<span class="hfb-response-date-saved" id="response-date-saved-'+t.id+'"></span>'+
     '</span>';
   }
+  function responseContentEditorHtml(t){
+    if(!canEditResponseDate(t)) return '<div class="hfb-response-content-static">'+esc(t.response||'—')+'</div>';
+    return '<div class="hfb-response-content-editor">'+
+      '<textarea data-edit-response-content="'+t.id+'" aria-label="修改回覆內容">'+esc(t.response||'')+'</textarea>'+
+      '<div class="hfb-response-content-actions">'+
+        '<button type="button" data-confirm-response-content="'+t.id+'" disabled>確定修改</button>'+
+        '<span class="hfb-response-content-saved" id="response-content-saved-'+t.id+'"></span>'+
+      '</div>'+
+    '</div>';
+  }
 
   function isTaskActive(t){
     if(!t || t.cancelled) return false;
@@ -1913,7 +1932,7 @@
         '</div></div>';
 
     if(t.status==='done'){
-      html += '<div class="hfb-task-response">'+esc(t.response)+
+      html += '<div class="hfb-task-response">'+responseContentEditorHtml(t)+
         '<div class="who"><span>回覆人:'+(t.respondedByName?esc(t.respondedByName)+'・':'')+role.label+'</span><span class="hfb-response-date-separator">・</span>'+responseDateEditorHtml(t)+'</div></div>';
     } else if(state.identity===t.role){
       html += responseFormHtml(t);
@@ -1946,7 +1965,7 @@
           '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
         '</div>';
       if(t.status==='done'){
-        html += '<div class="hfb-task-response">'+esc(t.response)+'<div class="who"><span>'+(t.respondedByName?esc(t.respondedByName):ROLES[t.role].label)+'</span><span class="hfb-response-date-separator">・</span>'+responseDateEditorHtml(t)+'</div></div>';
+        html += '<div class="hfb-task-response">'+responseContentEditorHtml(t)+'<div class="who"><span>'+(t.respondedByName?esc(t.respondedByName):ROLES[t.role].label)+'</span><span class="hfb-response-date-separator">・</span>'+responseDateEditorHtml(t)+'</div></div>';
       } else if(c && c.discharged){
         html += '<div class="hfb-discharged-note">'+
           '<span>⚠️ 病人已出院,此任務無法再回覆</span>'+
@@ -2612,6 +2631,44 @@
         if(msg){
           msg.textContent = '已儲存';
           setTimeout(function(){ if(msg) msg.textContent=''; }, 1800);
+        }
+      };
+    });
+
+    root.querySelectorAll('[data-edit-response-content]').forEach(function(inp){
+      inp.oninput = function(){
+        var id = this.getAttribute('data-edit-response-content');
+        var btn = root.querySelector('[data-confirm-response-content="'+id+'"]');
+        if(btn) btn.disabled = false;
+        var msg = document.getElementById('response-content-saved-'+id);
+        if(msg) msg.textContent = '';
+      };
+    });
+
+    root.querySelectorAll('[data-confirm-response-content]').forEach(function(btn){
+      btn.onclick = function(){
+        var id = this.getAttribute('data-confirm-response-content');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(!canEditResponseDate(t)){
+          window.alert('您沒有權限修改這筆回覆內容。');
+          render();
+          return;
+        }
+        var inp = root.querySelector('[data-edit-response-content="'+id+'"]');
+        if(!inp) return;
+        var value = inp.value.trim();
+        if(!value){
+          window.alert('回覆內容不可空白。');
+          inp.focus();
+          return;
+        }
+        t.response = value;
+        saveTasks();
+        this.disabled = true;
+        var msg = document.getElementById('response-content-saved-'+id);
+        if(msg){
+          msg.textContent = '✓ 已確認';
+          setTimeout(function(){ if(msg) msg.textContent=''; },1800);
         }
       };
     });
