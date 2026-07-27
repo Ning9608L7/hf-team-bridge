@@ -231,7 +231,15 @@
   .hfb-status-pill.is-pending{font-size:22.5px; font-weight:700; animation:hfb-blink 1.1s ease-in-out infinite;}
   @keyframes hfb-blink{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
   .hfb-task-response{margin-top:9px; padding-top:9px; border-top:1px dashed var(--line); font-size:21.5px; color:var(--primary-deep); font-weight:700;}
-  .hfb-task-response .who{color:var(--ink-mute); font-size:20px; margin-top:4px;}
+  .hfb-task-response .who{color:var(--ink-mute); font-size:20px; margin-top:6px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-weight:500;}
+  .hfb-response-date-editor{display:inline-flex; align-items:center; gap:7px; flex-wrap:wrap;}
+  .hfb-response-date-editor label{font-size:17px; color:var(--ink-mute);}
+  .hfb-response-date-editor input{font-size:16px; padding:4px 7px; border:1px solid var(--line); border-radius:7px; color:var(--ink); background:var(--surface);}
+  .hfb-response-date-editor button{font-size:16px; padding:5px 11px; border:1px solid var(--primary); border-radius:7px; color:#fff; background:var(--primary); font-weight:650;}
+  .hfb-response-date-editor button:hover:not(:disabled){background:var(--primary-deep);}
+  .hfb-response-date-editor button:disabled{opacity:.42; cursor:not-allowed;}
+  .hfb-response-date-saved{font-size:15px; color:var(--primary-deep); font-weight:650;}
+  .hfb-response-date-static{white-space:nowrap;}
   .hfb-task-actions{margin-top:9px; padding-top:9px; border-top:1px dashed var(--line);}
   .hfb-task-actions textarea{width:100%; min-height:56px; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:21.5px; resize:vertical;}
   .hfb-task-actions .row{display:flex; gap:8px; margin-top:8px; align-items:center;}
@@ -479,10 +487,14 @@
     if(value==='HFrEF') return ' hfb-hfref';
     return '';
   }
-  function nowLocalStr(){
-    var d = new Date();
+  function dateTimeLocalValue(value){
+    var d = value ? new Date(value) : new Date();
+    if(isNaN(d.getTime())) d = new Date();
     var p = function(n){ return String(n).padStart(2,'0'); };
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes());
+  }
+  function nowLocalStr(){
+    return dateTimeLocalValue(new Date());
   }
   function calcAge(birthday){
     if(!birthday) return null;
@@ -814,7 +826,7 @@
               '<input type="number" id="tk-hba1c" placeholder="HbA1c (%)" step="0.1">'+
               '<input type="text" id="tk-lab-other" placeholder="其他（項目／數值）">'+
             '</div>'+
-            '<label class="field-label">藥物治療</label>'+
+            '<label class="field-label">目前用藥</label>'+
             '<div class="tkm-wrap">'+tkmRowsHtml+'</div>'+
             '<label class="field-label">衛教內容(可複選)</label>'+
             '<div class="edu-chips" id="tk-edu-chips">'+
@@ -1288,6 +1300,23 @@
     if(!c || c.initiator!==member.role) return false;
     return !c.initiatorName || !member.name || c.initiatorName===member.name;
   }
+  function canEditResponseDate(t){
+    if(!t || t.status!=='done') return false;
+    if(state.systemRole==='admin') return true;
+    var member = currentMember();
+    if(!member) return false;
+    if(t.respondedByMemberId) return t.respondedByMemberId===member.id;
+    return t.role===member.role;
+  }
+  function responseDateEditorHtml(t){
+    if(!canEditResponseDate(t)) return '<span class="hfb-response-date-static">'+fmt(t.respondedAt)+'</span>';
+    return '<span class="hfb-response-date-editor">'+
+      '<label for="response-date-'+t.id+'">回覆日期</label>'+
+      '<input type="datetime-local" id="response-date-'+t.id+'" data-edit-response-date="'+t.id+'" value="'+esc(dateTimeLocalValue(t.respondedAt))+'">'+
+      '<button type="button" data-confirm-response-date="'+t.id+'" disabled>確定</button>'+
+      '<span class="hfb-response-date-saved" id="response-date-saved-'+t.id+'"></span>'+
+    '</span>';
+  }
 
   function isTaskActive(t){
     if(!t || t.cancelled) return false;
@@ -1616,7 +1645,7 @@
   var DOSE_OPTIONS = ['0.5','1','1.5','2','2.5','3','3.5','4'];
   var DOCTOR_OPTIONS = ['吳文憲','李威杰','林志憲','林裕民','周銘霆','施志遠','洪俊聲','陳志成','黃沛頡','曾冠叡','曾宣靈','蔣俊彥'];
   var SESSION_OPTIONS = ['上午','下午'];
-  var FREQ_OPTIONS = ['QD','Bid','Tid','Qid','Q8H','Q12H'];
+  var FREQ_OPTIONS = ['QD','Bid','Tid','Qid','Q8H','Q12H','PRN'];
   function emptyMeds(){
     return {
       acei:{on:false,drug:'',dose:'',freq:''},
@@ -1635,7 +1664,7 @@
     MED_CLASSES.forEach(function(cls){
       if(!c.meds[cls.key]) c.meds[cls.key] = {on:false,drug:'',dose:'',freq:''};
     });
-    var html = '<div class="hfb-section-title"><span>藥物治療</span></div>'+
+    var html = '<div class="hfb-section-title"><span>目前用藥</span></div>'+
       '<div class="hfb-meds-card">';
     MED_CLASSES.forEach(function(cls){
       var m = c.meds[cls.key] || {on:false, drug:'', dose:'', freq:''};
@@ -1661,7 +1690,7 @@
     html += (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:12px;">'+
         '<button class="hfb-btn-primary-sm" data-confirm-meds="'+c.id+'">確認</button>'+
         '<span class="hfb-meds-saved-msg" id="meds-saved-'+c.id+'" style="display:none; color:var(--status-done-ink); font-size:17px; font-weight:600;">✓ 已儲存</span>'+
-      '</div>' : '<div class="hfb-role-group-empty">僅個管師/醫師可編輯藥物治療資訊</div>') +
+      '</div>' : '<div class="hfb-role-group-empty">僅個管師/醫師可編輯目前用藥資訊</div>') +
     '</div>';
     return html;
   }
@@ -1877,7 +1906,7 @@
 
     if(t.status==='done'){
       html += '<div class="hfb-task-response">'+esc(t.response)+
-        '<div class="who">回覆人:'+(t.respondedByName?esc(t.respondedByName)+'・':'')+role.label+' ・ '+fmt(t.respondedAt)+'</div></div>';
+        '<div class="who"><span>回覆人:'+(t.respondedByName?esc(t.respondedByName)+'・':'')+role.label+'</span><span class="hfb-response-date-separator">・</span>'+responseDateEditorHtml(t)+'</div></div>';
     } else if(state.identity===t.role){
       html += responseFormHtml(t);
     } else if(t.status==='in_progress'){
@@ -1909,7 +1938,7 @@
           '<span class="'+pillClass+'" style="background:'+st.bg+'; color:'+st.ink+'">'+pillLabel+'</span>'+
         '</div>';
       if(t.status==='done'){
-        html += '<div class="hfb-task-response">'+esc(t.response)+'<div class="who">'+(t.respondedByName?esc(t.respondedByName)+' ・ ':'')+fmt(t.respondedAt)+'</div></div>';
+        html += '<div class="hfb-task-response">'+esc(t.response)+'<div class="who"><span>'+(t.respondedByName?esc(t.respondedByName):ROLES[t.role].label)+'</span><span class="hfb-response-date-separator">・</span>'+responseDateEditorHtml(t)+'</div></div>';
       } else if(c && c.discharged){
         html += '<div class="hfb-discharged-note">'+
           '<span>⚠️ 病人已出院,此任務無法再回覆</span>'+
@@ -2573,6 +2602,43 @@
       };
     });
 
+    root.querySelectorAll('[data-edit-response-date]').forEach(function(inp){
+      inp.oninput = function(){
+        var id = this.getAttribute('data-edit-response-date');
+        var btn = root.querySelector('[data-confirm-response-date="'+id+'"]');
+        if(btn) btn.disabled = false;
+        var msg = document.getElementById('response-date-saved-'+id);
+        if(msg) msg.textContent = '';
+      };
+    });
+
+    root.querySelectorAll('[data-confirm-response-date]').forEach(function(btn){
+      btn.onclick = function(){
+        var id = this.getAttribute('data-confirm-response-date');
+        var t = state.tasks.find(function(x){ return x.id===id; });
+        if(!canEditResponseDate(t)){
+          window.alert('您沒有權限修改這筆回覆日期。');
+          render();
+          return;
+        }
+        var inp = root.querySelector('[data-edit-response-date="'+id+'"]');
+        if(!inp || !inp.value) return;
+        var parsed = new Date(inp.value);
+        if(isNaN(parsed.getTime())){
+          window.alert('請選擇正確的回覆日期與時間。');
+          return;
+        }
+        t.respondedAt = parsed.toISOString();
+        saveTasks();
+        this.disabled = true;
+        var msg = document.getElementById('response-date-saved-'+id);
+        if(msg){
+          msg.textContent = '✓ 已確認';
+          setTimeout(function(){ if(msg) msg.textContent=''; },1800);
+        }
+      };
+    });
+
     root.querySelectorAll('[data-response-input]').forEach(function(ta){
       ta.oninput = function(){
         var id = this.getAttribute('data-response-input');
@@ -2619,11 +2685,20 @@
         if(!t) return;
         var val = (t.draft||'').trim();
         if(!val) return;
+        var responseTimeValue = t.responseTimeDraft || nowLocalStr();
         var button = this;
         button.disabled = true;
         button.textContent = '送出中…';
         var ok = await runTaskRpc('respond_to_task', {p_task_id:id, p_response:val});
-        if(!ok){
+        if(ok){
+          var savedTask = state.tasks.find(function(x){ return x.id===id; });
+          var parsedResponseTime = new Date(responseTimeValue);
+          if(savedTask && !isNaN(parsedResponseTime.getTime())){
+            savedTask.respondedAt = parsedResponseTime.toISOString();
+            saveTasks();
+            render();
+          }
+        } else {
           button.disabled = false;
           button.textContent = '送出回覆';
         }
