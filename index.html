@@ -2824,14 +2824,16 @@
         button.textContent = '送出中…';
         var ok = await runTaskRpc('respond_to_task', {p_task_id:id, p_response:val});
         if(ok){
-          var savedTask = state.tasks.find(function(x){ return x.id===id; });
           var parsedResponseTime = new Date(responseTimeValue);
-          if(savedTask && !isNaN(parsedResponseTime.getTime())){
-            savedTask.respondedAt = parsedResponseTime.toISOString();
-            saveTasks();
-            render();
+          if(!isNaN(parsedResponseTime.getTime())){
+            ok = await runTaskRpc('update_task_response', {
+              p_task_id:id,
+              p_response:val,
+              p_responded_at:parsedResponseTime.toISOString()
+            });
           }
-        } else {
+        }
+        if(!ok){
           button.disabled = false;
           button.textContent = '送出回覆';
         }
