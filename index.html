@@ -2038,8 +2038,94 @@
       render();
     };
 
+    function requestExcelPassword(){
+      return new Promise(function(resolve){
+        var overlay = document.createElement('div');
+        overlay.setAttribute('role','dialog');
+        overlay.setAttribute('aria-modal','true');
+        overlay.setAttribute('aria-label','Excel 匯出二次驗證');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(18,45,42,.55);display:flex;align-items:center;justify-content:center;padding:20px;';
+        overlay.innerHTML =
+          '<div style="width:min(420px,100%);background:#fff;border:1px solid #c7e3de;border-radius:16px;padding:24px;box-shadow:0 18px 48px rgba(0,0,0,.22);font-family:inherit;color:#183d38;">'+
+            '<h3 style="margin:0 0 8px;font-size:22px;">Excel 匯出二次驗證</h3>'+
+            '<p style="margin:0 0 16px;color:#668a84;font-size:16px;line-height:1.55;">請輸入下載專用密碼。驗證成功後才會產生檔案。</p>'+
+            '<label for="hfb-export-password" style="display:block;font-size:16px;font-weight:600;margin-bottom:6px;">下載專用密碼</label>'+
+            '<input id="hfb-export-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;border:1px solid #bddbd6;border-radius:9px;padding:11px 12px;font-size:17px;outline:none;">'+
+            '<div id="hfb-export-password-error" role="alert" style="min-height:22px;margin-top:8px;color:#bb3d4a;font-size:14px;"></div>'+
+            '<div style="display:flex;justify-content:flex-end;gap:9px;margin-top:10px;">'+
+              '<button id="hfb-export-cancel" type="button" style="border:1px solid #bddbd6;border-radius:8px;padding:8px 14px;background:#fff;color:#456f68;font-size:16px;">取消</button>'+
+              '<button id="hfb-export-confirm" type="button" style="border:0;border-radius:8px;padding:8px 14px;background:#2f9e94;color:#fff;font-size:16px;font-weight:700;">驗證並匯出</button>'+
+            '</div>'+
+          '</div>';
+        document.body.appendChild(overlay);
+        var input = overlay.querySelector('#hfb-export-password');
+        var confirmBtn = overlay.querySelector('#hfb-export-confirm');
+        var cancelBtn = overlay.querySelector('#hfb-export-cancel');
+        var errorEl = overlay.querySelector('#hfb-export-password-error');
+        function finish(value){
+          input.value = '';
+          overlay.remove();
+          resolve(value);
+        }
+        function confirmPassword(){
+          var value = input.value;
+          if(!value){
+            errorEl.textContent = '請輸入下載專用密碼。';
+            input.focus();
+            return;
+          }
+          finish(value);
+        }
+        confirmBtn.onclick = confirmPassword;
+        cancelBtn.onclick = function(){ finish(null); };
+        input.onkeydown = function(event){
+          if(event.key === 'Enter'){ event.preventDefault(); confirmPassword(); }
+          if(event.key === 'Escape'){ event.preventDefault(); finish(null); }
+        };
+        overlay.onclick = function(event){ if(event.target === overlay) finish(null); };
+        setTimeout(function(){ input.focus(); },0);
+      });
+    }
+
     var exportCsvBtn = document.getElementById('hfb-export-csv');
-    if(exportCsvBtn) exportCsvBtn.onclick = function(){
+    if(exportCsvBtn) exportCsvBtn.onclick = async function(){
+      if(state.systemRole !== 'admin'){
+        window.alert('僅限管理員匯出資料。');
+        return;
+      }
+      var exportPassword = await requestExcelPassword();
+      if(exportPassword === null) return;
+      var originalTitle = exportCsvBtn.title;
+      exportCsvBtn.disabled = true;
+      exportCsvBtn.title = '驗證中…';
+      try{
+        var exportClient = window.hfbSupabaseClient;
+        if(!exportClient) throw new Error('登入連線尚未就緒');
+        var verifyResult = await exportClient.functions.invoke('secure-excel-export', {
+          body: { password: exportPassword, rowCount: state.cases.length }
+        });
+        exportPassword = '';
+        if(verifyResult.error){
+          var functionMessage = verifyResult.error.message || '';
+          if(verifyResult.error.context && verifyResult.error.context.json){
+            try{
+              var errorBody = await verifyResult.error.context.json();
+              functionMessage = errorBody.error || functionMessage;
+            }catch(ignore){}
+          }
+          throw new Error(functionMessage || '驗證失敗');
+        }
+        if(!verifyResult.data || verifyResult.data.authorized !== true){
+          throw new Error((verifyResult.data && verifyResult.data.error) || '未取得匯出授權');
+        }
+      }catch(error){
+        exportPassword = '';
+        window.alert((error && error.message) || 'Excel 匯出驗證失敗，請稍後再試。');
+        return;
+      }finally{
+        exportCsvBtn.disabled = false;
+        exportCsvBtn.title = originalTitle;
+      }
       function csvCell(v){
         v = v==null ? '' : String(v);
         if(/[",\n]/.test(v)) v = '"'+v.replace(/"/g,'""')+'"';
