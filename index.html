@@ -802,8 +802,8 @@
         '.tk-current-title{font-size:19px; font-weight:700; color:#A0398A; margin-bottom:4px;}'+
         '.tkm-wrap{background:#fff; border-radius:9px; padding:4px 0;}'+
         '.tkm-row{display:flex; gap:8px; margin-bottom:8px; align-items:center; flex-wrap:wrap;}'+
-        '.tkm-toggle{flex:0 0 150px; padding:11px 8px; border-radius:8px; border:none; font-size:15.5px; font-weight:700; background:#E4D9EE; color:#7A6690; cursor:pointer; font-family:inherit;}'+
-        '.tkm-toggle.on{background:#7A4C9E; color:#fff;}'+
+        '.tkm-toggle{flex:0 0 150px;padding:11px 8px;border-radius:8px;border:1px solid rgba(100,140,244,.18);font-size:15.5px;font-weight:700;background:linear-gradient(135deg,#eaf2ff,#e3faf5);color:#46658f;cursor:pointer;font-family:inherit;box-shadow:0 5px 14px rgba(82,120,223,.08);transition:.16s;}'+
+        '.tkm-toggle.on{background:linear-gradient(112deg,#638cf2,#57bfdc 54%,#73d9bf);color:#fff;border-color:transparent;box-shadow:0 9px 22px rgba(82,120,223,.25);text-shadow:0 1px 2px rgba(43,72,139,.22);}'+
         '.tkm-drug{flex:1.3; min-width:120px;}'+
         '.tkm-drug-wide{flex:1 1 320px;}'+
         '.tkm-row select{flex:0 0 92px;}'+
@@ -3895,5 +3895,61 @@
   }
 </style>
 <!-- HFB_LUMINOUS_AURORA_MEDICAL_THEME_END -->
+
+
+<!-- HFB_LUMINOUS_MEDICATION_TOGGLE_START -->
+<style>
+  .hfb-med-toggle {
+    color: #46658f !important;
+    background: linear-gradient(135deg, #eaf2ff 0%, #e3faf5 100%) !important;
+    border: 1px solid rgba(100,140,244,.18) !important;
+    box-shadow: 0 5px 14px rgba(82,120,223,.08), inset 0 1px 0 rgba(255,255,255,.92) !important;
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease, color .16s ease !important;
+  }
+
+  .hfb-med-toggle:hover:not(:disabled) {
+    color: #3659b4 !important;
+    background: linear-gradient(135deg, #dfeaff 0%, #d5f7f0 100%) !important;
+    box-shadow: 0 8px 19px rgba(82,120,223,.15) !important;
+  }
+
+  .hfb-med-toggle.on {
+    color: #fff !important;
+    background:
+      linear-gradient(112deg, #638cf2 0%, #57bfdc 54%, #73d9bf 100%) !important;
+    border-color: transparent !important;
+    box-shadow:
+      0 9px 22px rgba(82,120,223,.25),
+      inset 0 1px 0 rgba(255,255,255,.28) !important;
+    text-shadow: 0 1px 2px rgba(43,72,139,.22);
+  }
+
+  .hfb-med-toggle.on::before {
+    content: "✓";
+    display: inline-block;
+    margin-right: .38rem;
+    font-size: .82em;
+    font-weight: 800;
+  }
+
+  .hfb-med-toggle:disabled {
+    opacity: .72;
+  }
+
+  .hfb-med-dose,
+  .hfb-med-freq,
+  .hfb-med-drug {
+    border-color: rgba(100,140,244,.22) !important;
+    background: rgba(255,255,255,.94) !important;
+  }
+
+  .hfb-med-dose:focus,
+  .hfb-med-freq:focus,
+  .hfb-med-drug:focus {
+    border-color: #648cf4 !important;
+    box-shadow: 0 0 0 4px rgba(100,140,244,.11) !important;
+  }
+</style>
+<!-- HFB_LUMINOUS_MEDICATION_TOGGLE_END -->
 
 <!-- HFB_SOFT_PINK_THEME_END -->
