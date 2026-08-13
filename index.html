@@ -3690,4 +3690,210 @@
 </style>
 <!-- HFB_WARM_WOW_MEDICAL_THEME_END -->
 
+
+<!-- HFB_LUMINOUS_AURORA_MEDICAL_THEME_START -->
+<style>
+  :root {
+    --hfb-aurora-blue: #648cf4;
+    --hfb-aurora-deep: #405fbd;
+    --hfb-aurora-cyan: #62d5dc;
+    --hfb-aurora-mint: #80dfc8;
+    --hfb-aurora-warm: #ffad98;
+    --hfb-aurora-gold: #ffd08a;
+    --hfb-aurora-ink: #263856;
+    --hfb-aurora-pale: #f4f8ff;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 8% 8%, rgba(100,140,244,.18), transparent 25rem),
+      radial-gradient(circle at 91% 10%, rgba(98,213,220,.17), transparent 28rem),
+      radial-gradient(circle at 78% 92%, rgba(255,173,152,.10), transparent 24rem),
+      linear-gradient(150deg, #f7f9ff 0%, #f4fffc 48%, #fff9f5 100%) !important;
+  }
+
+  #hfb-root {
+    color: var(--hfb-aurora-ink);
+  }
+
+  .hfb-topbar {
+    isolation: isolate;
+    background:
+      radial-gradient(circle at 15% 18%, rgba(255,255,255,.34), transparent 20%),
+      radial-gradient(circle at 35% 4%, rgba(128,223,200,.82), transparent 25%),
+      radial-gradient(circle at 78% 30%, rgba(98,213,220,.78), transparent 28%),
+      linear-gradient(118deg, #789af4 0%, #638cf2 38%, #64c5e2 72%, #7edcc8 100%) !important;
+    border-bottom: 4px solid rgba(255,208,138,.92) !important;
+    box-shadow: 0 16px 38px rgba(64,95,189,.22) !important;
+  }
+
+  .hfb-topbar::before {
+    opacity: .34 !important;
+    background-image:
+      radial-gradient(circle at 82% 34%, rgba(255,255,255,.70) 0 3px, transparent 4px),
+      radial-gradient(circle at 88% 68%, rgba(255,255,255,.46) 0 2px, transparent 3px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='130' viewBox='0 0 560 130'%3E%3Cpath d='M0 72h84l14-22 18 50 21-79 22 51h72l14-25 18 48 18-23h90' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' opacity='.82'/%3E%3Ccircle cx='467' cy='61' r='35' fill='none' stroke='%23ffffff' stroke-width='2' opacity='.38'/%3E%3Cpath d='M467 43v36M449 61h36' stroke='%23fff1cc' stroke-width='7' stroke-linecap='round' opacity='.88'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right center !important;
+  }
+
+  .hfb-topbar,
+  .hfb-topbar * {
+    color: #fff !important;
+    text-shadow: 0 1px 2px rgba(42,67,130,.22);
+  }
+
+  .hfb-tabs {
+    background: rgba(255,255,255,.90) !important;
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid rgba(100,140,244,.18) !important;
+    box-shadow: 0 8px 24px rgba(64,95,189,.09) !important;
+  }
+
+  .hfb-tab:hover {
+    color: #4568ca !important;
+    background: linear-gradient(180deg, rgba(100,140,244,.11), rgba(128,223,200,.11)) !important;
+  }
+
+  .hfb-tab.active {
+    color: #405fbd !important;
+    background: linear-gradient(180deg, rgba(100,140,244,.18), rgba(98,213,220,.13)) !important;
+    border-color: #648cf4 !important;
+  }
+
+  .hfb-member-panel,
+  .hfb-table-wrap,
+  .hfb-role-group,
+  .hfb-form-card,
+  .hfb-followup-card,
+  .hfb-task-card,
+  .hfb-case-header,
+  .hfb-info-col {
+    border-color: rgba(100,140,244,.20) !important;
+    box-shadow:
+      0 12px 32px rgba(64,95,189,.08),
+      0 3px 12px rgba(98,213,220,.05),
+      0 1px 0 rgba(255,255,255,.95) inset !important;
+  }
+
+  .hfb-member-panel,
+  .hfb-form-card,
+  .hfb-followup-card,
+  .hfb-case-header {
+    background:
+      linear-gradient(138deg, rgba(255,255,255,.98), rgba(242,249,255,.91) 58%, rgba(240,255,250,.88)) !important;
+  }
+
+  .hfb-role-group,
+  .hfb-task-card,
+  .hfb-info-col {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.98), rgba(246,249,255,.92)) !important;
+  }
+
+  .hfb-case-header::after,
+  .hfb-form-card::after,
+  .hfb-followup-card::after {
+    width: 12rem !important;
+    height: 12rem !important;
+    right: -6rem !important;
+    top: -6rem !important;
+    background:
+      radial-gradient(circle, rgba(98,213,220,.25), rgba(100,140,244,.10) 48%, transparent 72%) !important;
+  }
+
+  .hfb-table thead th {
+    color: #3b568d !important;
+    background:
+      linear-gradient(105deg, #eaf1ff 0%, #e8fbf8 58%, #fff5ed 100%) !important;
+    border-bottom: 2px solid rgba(100,140,244,.28) !important;
+  }
+
+  .hfb-table tbody tr:hover {
+    background:
+      linear-gradient(90deg, rgba(100,140,244,.10), rgba(98,213,220,.10), rgba(255,173,152,.07)) !important;
+    box-shadow: inset 4px 0 0 #648cf4 !important;
+  }
+
+  .hfb-primary-btn,
+  .hfb-auth-button {
+    color: #fff !important;
+    background:
+      linear-gradient(110deg, #5278df 0%, #638ff3 42%, #57cbd4 76%, #72d8bd 100%) !important;
+    border-color: transparent !important;
+    box-shadow: 0 8px 20px rgba(82,120,223,.22) !important;
+  }
+
+  .hfb-primary-btn:hover,
+  .hfb-auth-button:hover {
+    filter: brightness(1.04) saturate(1.08) !important;
+    box-shadow: 0 11px 26px rgba(82,120,223,.27) !important;
+  }
+
+  .hfb-status.pending {
+    color: #a95d4d !important;
+    background: linear-gradient(135deg, #fff0e8, #ffe5df) !important;
+  }
+
+  .hfb-status.done {
+    color: #287565 !important;
+    background: linear-gradient(135deg, #e5fbf3, #dcf5f2) !important;
+  }
+
+  .hfb-lab-field.has-value,
+  .hfb-clinical-field.has-value {
+    background:
+      linear-gradient(145deg, rgba(226,241,255,.98), rgba(224,250,244,.94)) !important;
+    border-color: rgba(100,140,244,.27) !important;
+    box-shadow: 0 7px 18px rgba(82,120,223,.12) !important;
+  }
+
+  .hfb-lab-field.has-value::before,
+  .hfb-clinical-field.has-value::before {
+    background: #56c9bd !important;
+    box-shadow: 0 0 0 4px rgba(86,201,189,.14) !important;
+  }
+
+  #hfb-auth-shell {
+    background:
+      radial-gradient(circle at 17% 15%, rgba(100,140,244,.42), transparent 28rem),
+      radial-gradient(circle at 52% 2%, rgba(128,223,200,.45), transparent 25rem),
+      radial-gradient(circle at 88% 24%, rgba(98,213,220,.34), transparent 28rem),
+      radial-gradient(circle at 80% 88%, rgba(255,173,152,.16), transparent 24rem),
+      linear-gradient(145deg, #eef3ff, #effffc 55%, #fff8f2) !important;
+  }
+
+  .hfb-auth-card {
+    background: rgba(255,255,255,.93) !important;
+    border: 1px solid rgba(100,140,244,.20) !important;
+    backdrop-filter: blur(18px);
+    box-shadow:
+      0 30px 76px rgba(64,95,189,.20),
+      0 0 0 1px rgba(255,255,255,.7) inset !important;
+  }
+
+  .hfb-auth-logo {
+    background:
+      linear-gradient(145deg, #638cf2 0%, #5dcbd5 58%, #78ddc3 100%) !important;
+    box-shadow:
+      0 12px 28px rgba(82,120,223,.25),
+      0 0 0 8px rgba(255,208,138,.19) !important;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    border-color: rgba(100,140,244,.72) !important;
+    box-shadow: 0 0 0 4px rgba(100,140,244,.12) !important;
+  }
+
+  @media (max-width: 760px) {
+    .hfb-topbar::before {
+      opacity: .20 !important;
+      background-size: 410px auto !important;
+    }
+  }
+</style>
+<!-- HFB_LUMINOUS_AURORA_MEDICAL_THEME_END -->
+
 <!-- HFB_SOFT_PINK_THEME_END -->
