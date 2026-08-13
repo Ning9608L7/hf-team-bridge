@@ -836,34 +836,7 @@
         '.tkm-row input, .tkm-row select{padding:10px 11px; font-size:16px; min-width:0; max-width:100%;}'+
         '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}}@media (max-width:720px){.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style>
-<!-- HFB_HEADER_HEART_HOME_MATCH_START -->
-<style>
-  /* 導覽列愛心：與登入首頁一致的藍綠圓心、白色愛心與暖色外環 */
-  .hfb-brand-mark {
-    width: 54px !important;
-    height: 54px !important;
-    flex: 0 0 54px !important;
-    box-sizing: border-box !important;
-    color: #ffffff !important;
-    background: linear-gradient(135deg, #5f9ff2 4%, #55bfe5 48%, #55d4bf 100%) !important;
-    border: 5px solid rgba(255, 241, 219, .96) !important;
-    border-radius: 50% !important;
-    font-size: 30px !important;
-    line-height: 1 !important;
-    opacity: 1 !important;
-    text-shadow: 0 2px 4px rgba(28, 77, 128, .18) !important;
-    box-shadow:
-      0 0 0 1px rgba(255,255,255,.72),
-      0 7px 18px rgba(51,105,178,.25),
-      inset 2px 2px 6px rgba(255,255,255,.30),
-      inset -3px -4px 8px rgba(29,153,166,.16) !important;
-  }
-  .hfb-brand-mark::before {
-    content: none !important;
-    display: none !important;
-  }
-</style>
-<!-- HFB_HEADER_HEART_HOME_MATCH_END -->
+
 </head><body>'+
       '<h1>'+esc(c.name)+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
       '<div class="sub">個管師追蹤事項・獨立視窗</div>'+
@@ -4453,3 +4426,35 @@
   }
 </style>
 <!-- HFB_TOPBAR_CLASSIC_MEDICAL_RESTORE_END -->
+
+<!-- HFB_HEADER_HEART_HOME_MATCH_START -->
+<style>
+  /* 導覽列愛心：與登入首頁一致，置於檔案最後避免舊樣式覆蓋 */
+  .hfb-brand-mark {
+    width: 56px !important;
+    height: 56px !important;
+    flex: 0 0 56px !important;
+    box-sizing: border-box !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, #5b91f1 3%, #55bce8 48%, #55d5bd 100%) !important;
+    border: 5px solid #fff0d8 !important;
+    border-radius: 50% !important;
+    font-size: 31px !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    text-shadow: 0 2px 4px rgba(24, 72, 128, .20) !important;
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,.72),
+      0 8px 20px rgba(43,101,177,.28),
+      inset 3px 3px 7px rgba(255,255,255,.30),
+      inset -4px -5px 9px rgba(22,143,160,.18) !important;
+  }
+  .hfb-brand-mark::before {
+    content: none !important;
+    display: none !important;
+  }
+</style>
+<!-- HFB_HEADER_HEART_HOME_MATCH_END -->
