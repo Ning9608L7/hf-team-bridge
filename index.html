@@ -4141,4 +4141,60 @@
 </style>
 <!-- HFB_ROLE_AND_LOGIN_VISUAL_ENHANCEMENT_END -->
 
+
+<!-- HFB_AUTH_ECG_REFINEMENT_START -->
+<style>
+  /* 登入頁：移除粉紅心臟，保留低干擾、具有流動感的心電圖 */
+  .hfb-auth-card::before {
+    z-index: -1 !important;
+    top: 25px !important;
+    left: 42px !important;
+    right: 42px !important;
+    height: 72px !important;
+    opacity: .34 !important;
+    background-position: 0 center !important;
+    background-size: 700px 66px !important;
+    background-repeat: repeat-x !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='66' viewBox='0 0 700 66'%3E%3Cpath d='M0 38h110l18-1 14-25 23 49 25-58 25 35h105l19-1 13-23 22 45 25-54 24 33h108l17-1 13-21 20 41 23-49 24 30h83' fill='none' stroke='%23638cf2' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    filter: drop-shadow(0 0 7px rgba(99,140,242,.22));
+    animation: hfbEcgFlow 8s linear infinite !important;
+    will-change: background-position;
+  }
+
+  @keyframes hfbEcgFlow {
+    from { background-position: 0 center; }
+    to { background-position: -700px center; }
+  }
+
+  /* 電子郵件帳號與院內網域維持同一底色、同一視覺區塊 */
+  .hfb-auth-email-wrap,
+  .hfb-auth-email-wrap input,
+  .hfb-auth-email-domain {
+    background: rgba(255,255,255,.88) !important;
+  }
+
+  .hfb-auth-email-domain {
+    color: inherit !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hfb-auth-card::before {
+      animation: none !important;
+      background-position: center !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .hfb-auth-card::before {
+      left: 22px !important;
+      right: 22px !important;
+      background-size: 560px 56px !important;
+      animation-duration: 9s !important;
+    }
+  }
+</style>
+<!-- HFB_AUTH_ECG_REFINEMENT_END -->
+
 <!-- HFB_SOFT_PINK_THEME_END -->
