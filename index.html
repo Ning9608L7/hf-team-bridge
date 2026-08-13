@@ -3106,3 +3106,84 @@
   });
 })();
 </script>
+
+<!-- HFB_SOFT_PINK_THEME_START -->
+<style>
+  /* 柔和粉紅主題：集中覆寫共用色彩，不影響功能與職類辨識色 */
+  #hfb-auth-shell{
+    background:linear-gradient(135deg,#fceff3 0%,#fff8fa 52%,#f7edf2 100%);
+    color:#513a42;
+  }
+  .hfb-auth-card{
+    background:#fffdfd;
+    border-color:#e9cbd5;
+    box-shadow:0 18px 48px rgba(166,96,120,.14);
+  }
+  .hfb-auth-logo{
+    background:linear-gradient(135deg,#c9829b,#e5a9ba);
+  }
+  .hfb-auth-subtitle,.hfb-auth-notice{color:#8d6b77;}
+  .hfb-auth-field input,.hfb-auth-email-wrap{border-color:#e2c2cd;background:#fffafa;}
+  .hfb-auth-email-domain{background:#fffafa;color:#805e6b;}
+  .hfb-auth-field input:focus,.hfb-auth-email-wrap:focus-within{
+    border-color:#c9829b;
+    box-shadow:0 0 0 3px rgba(201,130,155,.14);
+  }
+  .hfb-auth-button{background:#c9829b;}
+  .hfb-auth-button:hover{background:#ad6680;}
+  .hfb-auth-notice{border-top-color:#f0dce3;}
+
+  #hfb-root{
+    --bg:#fff5f8;
+    --surface:#fffdfd;
+    --line:#ead0d9;
+    --ink:#49343c;
+    --ink-soft:#745763;
+    --ink-mute:#967783;
+    --primary:#c9829b;
+    --primary-deep:#a95f79;
+    --primary-tint:#f8e2e9;
+    --secondary:#dca0b3;
+    --secondary-deep:#bf7891;
+    --secondary-tint:#fbeaf0;
+    --status-done-ink:#98536d;
+    --status-done-bg:#f8e2e9;
+    background:var(--bg);
+    border-color:var(--line);
+  }
+  .hfb-topbar{
+    background:linear-gradient(120deg,#ad6680 0%,#cb859d 56%,#e0a7b8 100%);
+  }
+  .hfb-member-panel,.hfb-tabs,.hfb-table-wrap,.hfb-role-group,
+  .hfb-task-card,.hfb-form-card,.hfb-followup-card{
+    background:var(--surface);
+  }
+  .hfb-table thead th{background:#fdf0f4;}
+  .hfb-table tbody tr:hover{background:#fae9ef;}
+  .hfb-case-header{
+    background:linear-gradient(135deg,rgba(255,253,253,.98),rgba(249,229,236,.78));
+    box-shadow:0 8px 24px rgba(166,96,120,.08);
+  }
+  .hfb-info-col{
+    background:linear-gradient(155deg,rgba(255,253,253,.99),rgba(253,240,244,.86));
+    box-shadow:0 5px 16px rgba(166,96,120,.08);
+  }
+  .hfb-info-col::before,
+  .hfb-info-col:nth-child(2)::before,
+  .hfb-info-col:nth-child(3)::before{
+    background:linear-gradient(180deg,#cf8ba2,#e7b7c5);
+  }
+  .hfb-info-card-icon{
+    background:linear-gradient(135deg,#f8e2e9,#fffdfd);
+    box-shadow:0 2px 7px rgba(169,95,121,.12);
+  }
+  .hfb-info-item:nth-child(odd){background:rgba(249,229,236,.6);}
+  .hfb-anthro-summary span{background:linear-gradient(180deg,#f8e2e9,#fffdfd);}
+  .hfb-mini-progress-fill{background:linear-gradient(90deg,#c9829b,#e0a7b8);}
+  .hfb-case-number-input{border-color:#dfb2c1;background:#fae9ef;}
+  .hfb-case-number-input:focus{
+    border-color:#c9829b;
+    box-shadow:0 0 0 3px rgba(201,130,155,.15);
+  }
+</style>
+<!-- HFB_SOFT_PINK_THEME_END -->
