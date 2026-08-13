@@ -82,30 +82,21 @@
     border-radius:50%;
     display:flex; align-items:center; justify-content:center;
     overflow:visible;
-    background:
-      radial-gradient(circle at 32% 25%, rgba(255,255,255,.92) 0 8%, transparent 9%),
-      linear-gradient(145deg,#aebfff 0%,#72aef5 42%,#68d7cc 100%);
-    border:1px solid rgba(255,255,255,.72);
+    background:linear-gradient(135deg,#67a8f3 8%,#5fc4e8 48%,#61d9c5 100%);
+    border:4px solid rgba(255,241,220,.92);
     color:#fff;
-    font-size:30px;
-    text-shadow:
-      0 2px 2px rgba(41,73,145,.20),
-      0 0 9px rgba(255,255,255,.65);
+    font-size:28px;
+    line-height:1;
+    text-shadow:0 2px 3px rgba(32,86,141,.18);
     box-shadow:
-      0 7px 18px rgba(48,94,175,.24),
-      inset 3px 3px 8px rgba(255,255,255,.48),
-      inset -4px -5px 9px rgba(43,127,181,.20),
-      0 0 0 6px rgba(255,255,255,.18);
+      0 0 0 1px rgba(255,255,255,.55),
+      0 7px 18px rgba(54,111,184,.24),
+      inset 2px 2px 6px rgba(255,255,255,.34),
+      inset -3px -4px 7px rgba(38,156,167,.16);
     animation:hfb-heartbeat 1.6s ease-in-out infinite;
   }
   .hfb-brand-mark::before{
-    content:"";
-    position:absolute;
-    inset:4px;
-    border-radius:50%;
-    border:1px solid rgba(255,255,255,.35);
-    box-shadow:inset 0 1px 3px rgba(255,255,255,.55);
-    pointer-events:none;
+    content:none;
   }
   .hfb-topbar > *{position:relative; z-index:1;}
   .hfb-brand{display:flex; align-items:center; gap:10px;}
