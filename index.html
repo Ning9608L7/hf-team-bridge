@@ -3251,4 +3251,116 @@
   }
 /* HFB_CLINICAL_PINK_FIELDS_END */
 </style>
+<style>
+/* HFB_VISUAL_MEDICAL_THEME_START */
+  /* 立體而不花俏：醫療藍綠為主、暖玫瑰聚焦 */
+  #hfb-root{
+    background:
+      radial-gradient(circle at 8% 3%,rgba(101,183,201,.14),transparent 24%),
+      radial-gradient(circle at 94% 8%,rgba(201,111,135,.10),transparent 22%),
+      linear-gradient(180deg,#f8fcfb 0%,#edf7f5 100%);
+  }
+  .hfb-topbar{
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 8px 24px rgba(26,100,94,.20);
+  }
+  .hfb-topbar::after{
+    content:"";
+    position:absolute;
+    width:360px;height:360px;
+    right:-120px;top:-250px;
+    border-radius:50%;
+    background:rgba(255,255,255,.12);
+    pointer-events:none;
+  }
+  .hfb-tabs{
+    box-shadow:0 4px 16px rgba(35,119,111,.07);
+  }
+  .hfb-tab{
+    transition:color .18s ease,background .18s ease,transform .18s ease;
+  }
+  .hfb-tab:hover{
+    color:var(--primary-deep);
+    background:rgba(223,242,239,.62);
+    transform:translateY(-1px);
+  }
+  .hfb-member-panel,.hfb-table-wrap,.hfb-role-group,
+  .hfb-form-card,.hfb-followup-card,.hfb-task-card{
+    border-color:rgba(117,173,165,.38);
+    box-shadow:0 7px 22px rgba(37,112,103,.075);
+  }
+  .hfb-table-wrap{overflow:hidden;}
+  .hfb-table thead th{
+    background:linear-gradient(180deg,#e2f3f0 0%,#eef8f6 100%);
+    color:#315f59;
+    border-bottom:1px solid #bcdad5;
+  }
+  .hfb-table tbody tr{
+    transition:background .18s ease,box-shadow .18s ease;
+  }
+  .hfb-table tbody tr:nth-child(even){background:#fbfdfd;}
+  .hfb-table tbody tr:hover{
+    background:linear-gradient(90deg,#e1f3f0,#f8edF1);
+    box-shadow:inset 4px 0 0 #32988f;
+  }
+  button,.hfb-button,.hfb-primary-btn,.hfb-auth-button{
+    transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+  }
+  button:hover:not(:disabled),.hfb-button:hover:not(:disabled),
+  .hfb-primary-btn:hover:not(:disabled),.hfb-auth-button:hover:not(:disabled){
+    transform:translateY(-1px);
+    box-shadow:0 6px 14px rgba(35,119,111,.18);
+  }
+  button:active:not(:disabled),.hfb-button:active:not(:disabled){
+    transform:translateY(0);
+  }
+  .hfb-status.pending{
+    background:linear-gradient(135deg,#c96f87,#db91a5);
+    box-shadow:0 4px 11px rgba(201,111,135,.24);
+  }
+  .hfb-status.done{
+    background:linear-gradient(135deg,#d9f1ed,#edf9f7);
+    border:1px solid #b6dcd6;
+  }
+  .hfb-case-header{
+    border:1px solid rgba(113,173,165,.38);
+    box-shadow:0 12px 30px rgba(35,119,111,.10);
+  }
+  .hfb-info-col{
+    border:1px solid rgba(128,181,174,.34);
+    transition:transform .18s ease,box-shadow .18s ease;
+  }
+  .hfb-info-col:hover{
+    transform:translateY(-2px);
+    box-shadow:0 10px 24px rgba(35,119,111,.12);
+  }
+  .hfb-info-col:nth-child(3){
+    background:linear-gradient(155deg,#fff 0%,#fbedf1 100%);
+  }
+  .hfb-lab-field.has-value,.hfb-clinical-field.has-value{
+    background:linear-gradient(145deg,#cfeae6 0%,#e5f5f2 100%);
+    box-shadow:0 7px 16px rgba(36,127,123,.13);
+  }
+  .hfb-lab-field.has-value input,
+  .hfb-clinical-field.has-value input,
+  .hfb-clinical-field.has-value select{
+    border-color:#a8d1cb;
+    box-shadow:0 2px 7px rgba(36,127,123,.08);
+  }
+  .hfb-auth-card{
+    position:relative;
+    overflow:hidden;
+    box-shadow:0 24px 60px rgba(31,122,112,.16),0 5px 18px rgba(189,109,132,.08);
+  }
+  .hfb-auth-card::before{
+    content:"";
+    position:absolute;left:0;right:0;top:0;height:5px;
+    background:linear-gradient(90deg,#23776f,#65b7c9,#c96f87);
+  }
+  @media (prefers-reduced-motion:reduce){
+    #hfb-root *{transition:none!important;}
+  }
+/* HFB_VISUAL_MEDICAL_THEME_END */
+</style>
 <!-- HFB_SOFT_PINK_THEME_END -->
