@@ -3952,4 +3952,193 @@
 </style>
 <!-- HFB_LUMINOUS_MEDICATION_TOGGLE_END -->
 
+
+<!-- HFB_ROLE_AND_LOGIN_VISUAL_ENHANCEMENT_START -->
+<style>
+  /* 已選取藥物僅使用亮色底，不再在文字前顯示勾選符號 */
+  .hfb-med-toggle.on::before,
+  .tkm-toggle.on::before {
+    content: none !important;
+    display: none !important;
+  }
+
+  /* 各職類回覆：保留專業資訊密度，增加角色色彩、柔光與識別圓章 */
+  .hfb-role-groups {
+    gap: 18px !important;
+  }
+
+  .hfb-role-group {
+    position: relative !important;
+    isolation: isolate;
+    overflow: hidden !important;
+    border: 1px solid color-mix(in srgb, var(--role-color) 22%, #dce8f6) !important;
+    border-top: 0 !important;
+    border-radius: 18px !important;
+    padding: 18px 18px 20px !important;
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.98) 0%, rgba(248,251,255,.96) 58%, color-mix(in srgb, var(--role-color) 8%, #ffffff) 100%) !important;
+    box-shadow:
+      0 12px 30px rgba(72,94,150,.10),
+      inset 0 1px 0 rgba(255,255,255,.9) !important;
+    transition: transform .18s ease, box-shadow .18s ease !important;
+  }
+
+  .hfb-role-group::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    width: 150px;
+    height: 150px;
+    top: -82px;
+    right: -56px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--role-color) 18%, transparent);
+    filter: blur(2px);
+    opacity: .72;
+    pointer-events: none;
+  }
+
+  .hfb-role-group::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--role-color), color-mix(in srgb, var(--role-color) 35%, #7bdac8), transparent 88%);
+    pointer-events: none;
+  }
+
+  .hfb-role-group:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 17px 38px rgba(72,94,150,.14),
+      inset 0 1px 0 rgba(255,255,255,.92) !important;
+  }
+
+  .hfb-role-group-head {
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .hfb-role-group-head::before {
+    content: "✦";
+    display: inline-flex;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 16px;
+    background: linear-gradient(135deg, var(--role-color), color-mix(in srgb, var(--role-color) 55%, #79d8cb));
+    box-shadow: 0 7px 16px color-mix(in srgb, var(--role-color) 24%, transparent);
+  }
+
+  .hfb-role-group-head .rname {
+    letter-spacing: .02em;
+  }
+
+  .hfb-role-group-summary {
+    display: inline-flex !important;
+    align-items: center;
+    width: fit-content;
+    min-height: 30px;
+    margin: 0 0 13px 44px !important;
+    padding: 3px 11px !important;
+    border-radius: 999px;
+    color: color-mix(in srgb, var(--role-color) 72%, #34425e) !important;
+    background: color-mix(in srgb, var(--role-color) 9%, #f7faff);
+    border: 1px solid color-mix(in srgb, var(--role-color) 15%, #e6edf8);
+    font-size: 17px !important;
+    font-weight: 650;
+  }
+
+  .hfb-role-group-empty {
+    border: 1px dashed color-mix(in srgb, var(--role-color) 24%, #dce5f1);
+    border-radius: 12px;
+    background: rgba(255,255,255,.66);
+  }
+
+  .hfb-role-group .hfb-task-card {
+    border: 1px solid color-mix(in srgb, var(--role-color) 18%, #dfe8f3) !important;
+    border-left: 4px solid var(--role-color) !important;
+    border-radius: 13px !important;
+    box-shadow: 0 6px 16px rgba(74,95,145,.07);
+  }
+
+  /* 登入首頁：心電圖、心臟與醫療十字的輕量醫療插圖 */
+  .hfb-auth-card {
+    position: relative !important;
+    overflow: hidden !important;
+    isolation: isolate;
+  }
+
+  .hfb-auth-card::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    height: 92px;
+    opacity: .26;
+    background-repeat: no-repeat;
+    background-position: center top;
+    background-size: min(380px, 92%) 82px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 460 96'%3E%3Cpath d='M6 55h92l12-20 18 45 20-63 20 38h92' fill='none' stroke='%23638cf2' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M327 24c-24-21-61 11-29 43l29 23 29-23c32-32-5-64-29-43z' fill='%23ef8fa9'/%3E%3Cpath d='M414 25v46M391 48h46' stroke='%235dcbd5' stroke-width='13' stroke-linecap='round'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .hfb-auth-card::after {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: 0;
+    background:
+      radial-gradient(circle at 15% 8%, rgba(99,140,242,.11), transparent 28%),
+      radial-gradient(circle at 87% 12%, rgba(239,143,169,.12), transparent 27%),
+      radial-gradient(circle at 80% 92%, rgba(93,203,213,.10), transparent 28%);
+    pointer-events: none;
+  }
+
+  .hfb-auth-logo,
+  .hfb-auth-title {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (max-width: 640px) {
+    .hfb-role-group-summary {
+      margin-left: 0 !important;
+    }
+    .hfb-role-group:hover {
+      transform: none;
+    }
+    .hfb-auth-card::before {
+      opacity: .20;
+      background-size: 320px 67px;
+    }
+  }
+
+  /* 不支援 color-mix 的瀏覽器仍維持清楚可讀 */
+  @supports not (color: color-mix(in srgb, white, black)) {
+    .hfb-role-group {
+      border-color: #dbe5f2 !important;
+      background: linear-gradient(145deg,#fff,#f7faff) !important;
+    }
+    .hfb-role-group-head::before {
+      background: var(--role-color);
+    }
+    .hfb-role-group-summary {
+      color: var(--role-color) !important;
+      background: #f3f7fc;
+      border-color: #e2e9f3;
+    }
+  }
+</style>
+<!-- HFB_ROLE_AND_LOGIN_VISUAL_ENHANCEMENT_END -->
+
 <!-- HFB_SOFT_PINK_THEME_END -->
