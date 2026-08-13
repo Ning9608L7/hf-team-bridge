@@ -3188,57 +3188,64 @@
 </style>
 <style>
 /* HFB_CLINICAL_PINK_FIELDS_START */
-  /* 臨床評估與抽血：柔和粉紅視覺化 */
+  /* 臨床評估與抽血：醫療藍綠主色、暖玫瑰僅作提醒 */
   .hfb-lab-field {
-    background: #fffafb;
+    background: #fffdfc;
   }
   .hfb-lab-field label {
-    color: #674d57;
+    color: #465f5d;
   }
   .hfb-lab-field input {
-    background: #fffdfd;
-    border-color: #ead1da;
-    color: #674d57;
+    background: #fffdfc;
+    border-color: #cadeda;
+    color: #385754;
   }
   .hfb-lab-field.has-value {
-    background: linear-gradient(145deg, #f4dce5 0%, #fbeaf0 100%);
-    box-shadow: 0 5px 14px rgba(174, 95, 124, .14);
+    background: linear-gradient(145deg, #dcefeb 0%, #eaf6f3 100%);
+    box-shadow: 0 5px 14px rgba(36, 127, 123, .13);
   }
   .hfb-lab-field.has-value label {
-    color: #9c5871;
+    color: #247f7b;
   }
   .hfb-lab-field.has-value label::before {
-    background: #c97d99;
-    box-shadow: 0 0 0 3px rgba(201, 125, 153, .15);
+    background: #3a9b95;
+    box-shadow: 0 0 0 3px rgba(58, 155, 149, .14);
   }
   .hfb-lab-field.has-value input,
   .hfb-lab-field input:not(:placeholder-shown) {
-    background: #fffafb;
-    border-color: #d9a6b8;
-    color: #9a5570;
-    box-shadow: 0 2px 7px rgba(174, 95, 124, .11);
+    background: #fff;
+    border-color: #82bbb5;
+    color: #185f5c;
+    box-shadow: 0 2px 7px rgba(36, 127, 123, .10);
   }
   .hfb-lab-field input:focus {
-    border-color: #c97d99;
-    box-shadow: 0 0 0 3px rgba(201, 125, 153, .16);
+    border-color: #3a9b95;
+    box-shadow: 0 0 0 3px rgba(58, 155, 149, .15);
+  }
+  .hfb-clinical-field {
+    background: #fffdfc;
   }
   .hfb-clinical-field.has-value {
-    background: linear-gradient(145deg, #f4dce5 0%, #fbeaf0 100%);
-    box-shadow: 0 5px 14px rgba(174, 95, 124, .14);
+    background: linear-gradient(145deg, #dcefeb 0%, #eaf6f3 100%);
+    box-shadow: 0 5px 14px rgba(36, 127, 123, .13);
   }
   .hfb-clinical-field.has-value label {
-    color: #9c5871;
+    color: #247f7b;
   }
   .hfb-clinical-field.has-value label::before {
-    background: #c97d99;
-    box-shadow: 0 0 0 3px rgba(201, 125, 153, .15);
+    background: #3a9b95;
+    box-shadow: 0 0 0 3px rgba(58, 155, 149, .14);
   }
   .hfb-clinical-field.has-value input,
   .hfb-clinical-field.has-value select {
-    background: #fffafb;
-    border-color: #d9a6b8;
-    color: #9a5570;
-    box-shadow: 0 2px 7px rgba(174, 95, 124, .11);
+    background: #fff;
+    border-color: #82bbb5;
+    color: #185f5c;
+    box-shadow: 0 2px 7px rgba(36, 127, 123, .10);
+  }
+  /* 待處理、警示與異常狀態繼續使用暖玫瑰色 */
+  .status-pending, .badge-pending, .alert, .warning {
+    --status-accent: #c97991;
   }
 /* HFB_CLINICAL_PINK_FIELDS_END */
 </style>
