@@ -3363,4 +3363,119 @@
   }
 /* HFB_VISUAL_MEDICAL_THEME_END */
 </style>
+<style>
+/* HFB_SLATE_SAGE_MEDICAL_THEME_START */
+  /* 全新主視覺：深靛藍 × 鼠尾草 × 暖陶紅，刻意避開藍綠漸層 */
+  #hfb-root{
+    --bg:#f5f3ef;
+    --surface:#fffdf9;
+    --line:#d8d6cf;
+    --ink:#293444;
+    --ink-soft:#586373;
+    --ink-mute:#7a8490;
+    --primary:#43516a;
+    --primary-deep:#303c54;
+    --primary-tint:#e9edf3;
+    --secondary:#82998d;
+    --secondary-deep:#657d71;
+    --secondary-tint:#edf2ee;
+    --np:#b66f6b;
+    --np-tint:#f7e9e6;
+    --status-pending-ink:#fff;
+    --status-pending-bg:#c57870;
+    --status-progress-ink:#8b5b3f;
+    --status-progress-bg:#f6e8d8;
+    --status-done-ink:#526f61;
+    --status-done-bg:#e4eee8;
+    color:var(--ink);
+    background:
+      radial-gradient(circle at 8% 4%,rgba(130,153,141,.14),transparent 24%),
+      radial-gradient(circle at 94% 7%,rgba(198,120,112,.10),transparent 22%),
+      linear-gradient(180deg,#faf9f6 0%,#f1f0eb 100%);
+  }
+  .hfb-topbar{
+    position:relative;
+    overflow:hidden;
+    background:linear-gradient(118deg,#303b52 0%,#48556d 62%,#657268 100%);
+    box-shadow:0 9px 26px rgba(42,51,70,.24);
+  }
+  /* 淡線稿心電圖：提供醫療辨識，不干擾文字 */
+  .hfb-topbar::before{
+    content:"";
+    position:absolute;
+    right:7%;top:10px;
+    width:360px;height:92px;
+    opacity:.18;
+    pointer-events:none;
+    background:center/contain no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 120'%3E%3Cpath d='M8 68h115l18-25 25 58 34-92 35 59h72l17-28 30 62 34-85 29 51h125' fill='none' stroke='%23ffffff' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='548' cy='68' r='30' fill='none' stroke='%23ffffff' stroke-width='4'/%3E%3Cpath d='M548 51v34M531 68h34' stroke='%23ffffff' stroke-width='4'/%3E%3C/svg%3E");
+  }
+  .hfb-topbar::after{
+    width:260px;height:260px;right:-90px;top:-190px;
+    background:rgba(216,171,158,.14);
+  }
+  .hfb-tabs{background:#fffdf9;border-color:#dedbd3;box-shadow:0 4px 15px rgba(48,60,84,.07);}
+  .hfb-tab:hover{color:#303c54;background:#edf0f4;}
+  .hfb-tab.active{color:#303c54;border-bottom-color:#b66f6b;}
+  .hfb-table thead th{
+    background:linear-gradient(180deg,#e9edf0 0%,#f3f3f0 100%);
+    color:#3c485d;border-bottom-color:#d2d5d6;
+  }
+  .hfb-table tbody tr:nth-child(even){background:#fbfaf7;}
+  .hfb-table tbody tr:hover{
+    background:linear-gradient(90deg,#edf1ee,#faf0ed);
+    box-shadow:inset 4px 0 0 #82998d;
+  }
+  .hfb-member-panel,.hfb-table-wrap,.hfb-role-group,
+  .hfb-form-card,.hfb-followup-card,.hfb-task-card,.hfb-case-header,.hfb-info-col{
+    border-color:#d8d8d2;
+    box-shadow:0 8px 24px rgba(48,60,84,.075);
+  }
+  .hfb-info-col:hover{box-shadow:0 11px 27px rgba(48,60,84,.12);}
+  .hfb-info-col:nth-child(3){background:linear-gradient(155deg,#fffdf9 0%,#f8ece9 100%);}
+  button,.hfb-button,.hfb-primary-btn,.hfb-auth-button{background-color:#43516a;border-color:#43516a;}
+  button:hover:not(:disabled),.hfb-button:hover:not(:disabled),
+  .hfb-primary-btn:hover:not(:disabled),.hfb-auth-button:hover:not(:disabled){
+    background-color:#303c54;box-shadow:0 6px 15px rgba(48,60,84,.22);
+  }
+  .hfb-status.pending{background:linear-gradient(135deg,#b96f69,#cf8a80);box-shadow:0 4px 11px rgba(182,111,107,.23);}
+  .hfb-status.done{background:#e4eee8;border-color:#c5d8cc;color:#526f61;}
+  .hfb-lab-field.has-value,.hfb-clinical-field.has-value{
+    background:linear-gradient(145deg,#e3ebe6 0%,#f0f3ef 100%);
+    box-shadow:0 7px 16px rgba(78,103,89,.11);
+  }
+  .hfb-lab-field.has-value input,.hfb-clinical-field.has-value input,
+  .hfb-clinical-field.has-value select{border-color:#bdcec3;box-shadow:none;}
+
+  #hfb-auth-shell{
+    position:relative;
+    overflow:hidden;
+    background:
+      linear-gradient(rgba(245,243,239,.92),rgba(245,243,239,.95)),
+      center/cover no-repeat url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cg fill='none' stroke='%2382998d' stroke-width='3' opacity='.38'%3E%3Cpath d='M30 380h190l35-70 55 145 70-225 82 150h160'/%3E%3Ccircle cx='950' cy='190' r='84'/%3E%3Cpath d='M950 140v100M900 190h100'/%3E%3Cpath d='M760 630c70-130 170-130 240 0 70-130 170-130 200 0'/%3E%3C/g%3E%3C/svg%3E");
+    color:#293444;
+  }
+  #hfb-auth-shell::before{
+    content:"";
+    position:absolute;inset:0;
+    background:radial-gradient(circle at 18% 20%,rgba(130,153,141,.18),transparent 27%),
+               radial-gradient(circle at 85% 78%,rgba(182,111,107,.13),transparent 25%);
+    pointer-events:none;
+  }
+  .hfb-auth-card{
+    background:rgba(255,253,249,.96);
+    border-color:#d7d8d3;
+    box-shadow:0 25px 64px rgba(48,60,84,.18),0 5px 18px rgba(182,111,107,.08);
+  }
+  .hfb-auth-card::before{height:6px;background:linear-gradient(90deg,#303c54 0%,#82998d 62%,#c98277 100%);}
+  .hfb-auth-logo{background:linear-gradient(145deg,#43516a,#69758b);}
+  .hfb-auth-subtitle,.hfb-auth-notice{color:#697483;}
+  .hfb-auth-field input,.hfb-auth-email-wrap{border-color:#cfd2d0;background:#fffdf9;}
+  .hfb-auth-email-domain{background:#eef1ed;color:#596e63;}
+  .hfb-auth-field input:focus,.hfb-auth-email-wrap:focus-within{
+    border-color:#82998d;box-shadow:0 0 0 3px rgba(130,153,141,.17);
+  }
+  .hfb-auth-button{background:#43516a;}
+  .hfb-auth-button:hover{background:#303c54;}
+/* HFB_SLATE_SAGE_MEDICAL_THEME_END */
+</style>
 <!-- HFB_SOFT_PINK_THEME_END -->
