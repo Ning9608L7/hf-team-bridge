@@ -3478,4 +3478,216 @@
   .hfb-auth-button:hover{background:#303c54;}
 /* HFB_SLATE_SAGE_MEDICAL_THEME_END */
 </style>
+
+<!-- HFB_WARM_WOW_MEDICAL_THEME_START -->
+<style>
+  :root {
+    --hfb-wow-ink: #26364f;
+    --hfb-wow-indigo: #53658d;
+    --hfb-wow-sage: #7da99a;
+    --hfb-wow-rose: #c97889;
+    --hfb-wow-coral: #db9075;
+    --hfb-wow-gold: #e6b86d;
+    --hfb-wow-cream: #fff8ef;
+    --hfb-wow-mist: #f5f7fb;
+  }
+
+  body {
+    background:
+      radial-gradient(circle at 10% 5%, rgba(230,184,109,.18), transparent 28rem),
+      radial-gradient(circle at 92% 12%, rgba(201,120,137,.15), transparent 30rem),
+      linear-gradient(145deg, #f8fafc 0%, #fff8f2 48%, #f7f5fb 100%) !important;
+  }
+
+  #hfb-root {
+    color: var(--hfb-wow-ink);
+  }
+
+  .hfb-topbar {
+    position: relative;
+    overflow: hidden;
+    background:
+      linear-gradient(118deg, rgba(41,56,83,.98) 0%, rgba(82,101,141,.97) 56%, rgba(186,111,119,.94) 100%) !important;
+    border-bottom: 4px solid rgba(230,184,109,.88) !important;
+    box-shadow: 0 14px 34px rgba(38,54,79,.20) !important;
+  }
+
+  .hfb-topbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: .26;
+    background-image:
+      radial-gradient(circle at 76% 35%, rgba(255,255,255,.34) 0 3px, transparent 4px),
+      radial-gradient(circle at 84% 68%, rgba(255,255,255,.24) 0 2px, transparent 3px),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='520' height='120' viewBox='0 0 520 120'%3E%3Cpath d='M0 68h82l12-20 18 48 20-75 21 47h66l13-22 17 44 16-22h78' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' opacity='.75'/%3E%3Cpath d='M430 31v48M406 55h48' stroke='%23f5d49b' stroke-width='7' stroke-linecap='round' opacity='.72'/%3E%3C/svg%3E");
+    background-repeat: no-repeat, no-repeat, no-repeat;
+    background-position: 76% 35%, 84% 68%, right center;
+  }
+
+  .hfb-topbar > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .hfb-tabs {
+    background: rgba(255,255,255,.92) !important;
+    border-bottom: 1px solid rgba(83,101,141,.18) !important;
+    box-shadow: 0 7px 20px rgba(38,54,79,.07);
+  }
+
+  .hfb-tab {
+    border-radius: 999px 999px 0 0 !important;
+    transition: color .2s ease, background .2s ease, transform .2s ease !important;
+  }
+
+  .hfb-tab:hover {
+    color: var(--hfb-wow-indigo) !important;
+    background: rgba(230,184,109,.13) !important;
+  }
+
+  .hfb-tab.active {
+    color: #3f527b !important;
+    background: linear-gradient(180deg, rgba(230,184,109,.24), rgba(201,120,137,.10)) !important;
+    border-color: var(--hfb-wow-rose) !important;
+  }
+
+  .hfb-member-panel,
+  .hfb-table-wrap,
+  .hfb-role-group,
+  .hfb-form-card,
+  .hfb-followup-card,
+  .hfb-task-card,
+  .hfb-case-header,
+  .hfb-info-col {
+    border-color: rgba(83,101,141,.18) !important;
+    box-shadow: 0 9px 26px rgba(38,54,79,.08), 0 1px 0 rgba(255,255,255,.9) inset !important;
+  }
+
+  .hfb-member-panel,
+  .hfb-form-card,
+  .hfb-followup-card,
+  .hfb-case-header {
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,248,239,.83)) !important;
+  }
+
+  .hfb-role-group,
+  .hfb-task-card,
+  .hfb-info-col {
+    background:
+      linear-gradient(145deg, rgba(255,255,255,.98), rgba(245,247,251,.90)) !important;
+  }
+
+  .hfb-table thead th {
+    color: #465779 !important;
+    background: linear-gradient(105deg, #eef2f7 0%, #fff3e5 55%, #faedf1 100%) !important;
+    border-bottom: 2px solid rgba(201,120,137,.28) !important;
+  }
+
+  .hfb-table tbody tr {
+    transition: background-color .18s ease, transform .18s ease, box-shadow .18s ease !important;
+  }
+
+  .hfb-table tbody tr:hover {
+    background: linear-gradient(90deg, rgba(230,184,109,.10), rgba(201,120,137,.08)) !important;
+    box-shadow: inset 4px 0 0 var(--hfb-wow-gold) !important;
+  }
+
+  .hfb-case-header,
+  .hfb-form-card,
+  .hfb-followup-card {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hfb-case-header::after,
+  .hfb-form-card::after,
+  .hfb-followup-card::after {
+    content: "";
+    position: absolute;
+    width: 9rem;
+    height: 9rem;
+    right: -4.5rem;
+    top: -4.5rem;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, rgba(230,184,109,.22), rgba(201,120,137,.08) 52%, transparent 72%);
+  }
+
+  button:not(.hfb-tab),
+  .hfb-button,
+  .hfb-primary-btn {
+    transition: transform .16s ease, box-shadow .16s ease, filter .16s ease !important;
+  }
+
+  button:not(.hfb-tab):hover,
+  .hfb-button:hover,
+  .hfb-primary-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(83,101,141,.18) !important;
+    filter: saturate(1.06);
+  }
+
+  .hfb-primary-btn,
+  .hfb-auth-button {
+    color: #fff !important;
+    background: linear-gradient(115deg, #53658d 0%, #687aa0 56%, #c97889 100%) !important;
+    border-color: transparent !important;
+  }
+
+  .hfb-status.pending {
+    background: #fff0dc !important;
+    color: #a55d3e !important;
+  }
+
+  .hfb-status.done {
+    background: #e6f2ed !important;
+    color: #467765 !important;
+  }
+
+  .hfb-lab-field.has-value,
+  .hfb-clinical-field.has-value {
+    background: linear-gradient(145deg, #fff5e9, #f9e9ee) !important;
+    border-color: rgba(201,120,137,.35) !important;
+    box-shadow: 0 5px 14px rgba(201,120,137,.12) !important;
+  }
+
+  .hfb-lab-field.has-value::before,
+  .hfb-clinical-field.has-value::before {
+    background: var(--hfb-wow-rose) !important;
+    box-shadow: 0 0 0 4px rgba(201,120,137,.13) !important;
+  }
+
+  #hfb-auth-shell {
+    background:
+      radial-gradient(circle at 18% 18%, rgba(230,184,109,.30), transparent 24rem),
+      radial-gradient(circle at 84% 25%, rgba(201,120,137,.22), transparent 27rem),
+      linear-gradient(145deg, #f1f4f9, #fff7ed 55%, #f7eef3) !important;
+  }
+
+  .hfb-auth-card {
+    border: 1px solid rgba(83,101,141,.18) !important;
+    box-shadow: 0 25px 65px rgba(38,54,79,.18) !important;
+    background: rgba(255,255,255,.94) !important;
+  }
+
+  .hfb-auth-logo {
+    background: linear-gradient(145deg, #53658d, #c97889) !important;
+    box-shadow: 0 10px 24px rgba(83,101,141,.24), 0 0 0 7px rgba(230,184,109,.14) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hfb-tab,
+    .hfb-table tbody tr,
+    button,
+    .hfb-button,
+    .hfb-primary-btn {
+      transition: none !important;
+    }
+  }
+</style>
+<!-- HFB_WARM_WOW_MEDICAL_THEME_END -->
+
 <!-- HFB_SOFT_PINK_THEME_END -->
