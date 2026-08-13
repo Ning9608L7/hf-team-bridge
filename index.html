@@ -4144,21 +4144,22 @@
 
 <!-- HFB_AUTH_ECG_REFINEMENT_START -->
 <style>
-  /* 登入頁：心電圖只保留在愛心左側，中央愛心柔和跳動 */
+  /* 登入頁：具代表性的正常心電圖 P–QRS–T 波形，只保留在愛心左側 */
   .hfb-auth-card::before {
     z-index: -1 !important;
     top: 25px !important;
     left: 42px !important;
     right: 50% !important;
     height: 72px !important;
-    opacity: .38 !important;
-    background-position: 0 center !important;
-    background-size: 420px 66px !important;
-    background-repeat: repeat-x !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='420' height='66' viewBox='0 0 420 66'%3E%3Cpath d='M0 38h170l16-1 14-24 22 47 25-57 25 35h148' fill='none' stroke='%23638cf2' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
-    filter: drop-shadow(0 0 7px rgba(99,140,242,.22));
-    animation: hfbEcgFlowLeft 5.2s linear infinite !important;
-    will-change: background-position;
+    opacity: .68 !important;
+    background-position: right center !important;
+    background-size: 100% 66px !important;
+    background-repeat: no-repeat !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='310' height='72' viewBox='0 0 310 72'%3E%3Cpath d='M0 39H50C58 39 62 32 69 32C76 32 81 39 89 39H112L120 44L132 8L147 64L160 39H184C197 39 205 24 219 24C235 24 244 39 262 39H310' fill='none' stroke='%234f79df' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    filter: drop-shadow(0 0 6px rgba(79,121,223,.30));
+    transform-origin: right center;
+    animation: hfbEcgSignal 1.45s ease-in-out infinite !important;
+    will-change: transform, filter;
     pointer-events: none;
   }
 
@@ -4168,9 +4169,15 @@
     will-change: transform, box-shadow;
   }
 
-  @keyframes hfbEcgFlowLeft {
-    from { background-position: -420px center; }
-    to { background-position: 0 center; }
+  @keyframes hfbEcgSignal {
+    0%, 36%, 100% {
+      transform: scaleX(1);
+      filter: drop-shadow(0 0 5px rgba(79,121,223,.24));
+    }
+    10%, 25% {
+      transform: scaleX(1.018);
+      filter: drop-shadow(0 0 9px rgba(79,121,223,.42));
+    }
   }
 
   @keyframes hfbHeartBeat {
@@ -4198,18 +4205,13 @@
     .hfb-auth-logo {
       animation: none !important;
     }
-
-    .hfb-auth-card::before {
-      background-position: center !important;
-    }
   }
 
   @media (max-width: 640px) {
     .hfb-auth-card::before {
       left: 22px !important;
       right: 50% !important;
-      background-size: 340px 56px !important;
-      animation-duration: 6s !important;
+      background-size: 100% 58px !important;
     }
   }
 </style>
