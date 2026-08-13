@@ -3734,7 +3734,7 @@
       radial-gradient(circle at 88% 68%, rgba(255,255,255,.46) 0 2px, transparent 3px),
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='130' viewBox='0 0 560 130'%3E%3Cpath d='M0 72h84l14-22 18 50 21-79 22 51h72l14-25 18 48 18-23h90' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round' opacity='.82'/%3E%3Ccircle cx='467' cy='61' r='35' fill='none' stroke='%23ffffff' stroke-width='2' opacity='.38'/%3E%3Cpath d='M467 43v36M449 61h36' stroke='%23fff1cc' stroke-width='7' stroke-linecap='round' opacity='.88'/%3E%3C/svg%3E") !important;
     background-repeat: no-repeat !important;
-    background-position: right center !important;
+    background-position: center !important;
   }
 
   .hfb-topbar,
@@ -4144,18 +4144,18 @@
 
 <!-- HFB_AUTH_ECG_REFINEMENT_START -->
 <style>
-  /* 登入頁：具代表性的正常心電圖 P–QRS–T 波形，只保留在愛心左側 */
+  /* 登入頁：愛心左右兩側皆呈現清楚的正常心電圖 P–QRS–T 波形 */
   .hfb-auth-card::before {
     z-index: -1 !important;
     top: 25px !important;
     left: 42px !important;
-    right: 50% !important;
+    right: 42px !important;
     height: 72px !important;
     opacity: .68 !important;
     background-position: right center !important;
     background-size: 100% 66px !important;
     background-repeat: no-repeat !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='310' height='72' viewBox='0 0 310 72'%3E%3Cpath d='M0 39H50C58 39 62 32 69 32C76 32 81 39 89 39H112L120 44L132 8L147 64L160 39H184C197 39 205 24 219 24C235 24 244 39 262 39H310' fill='none' stroke='%234f79df' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='620' height='72' viewBox='0 0 620 72'%3E%3Cpath d='M0 39H48C56 39 60 32 68 32C76 32 81 39 89 39H108L116 44L128 8L143 64L157 39H205C219 39 228 25 242 25C256 25 265 39 280 39H284M336 39H362C370 39 374 32 382 32C390 32 395 39 403 39H422L430 44L442 8L457 64L471 39H516C530 39 539 25 553 25C567 25 576 39 590 39H620' fill='none' stroke='%234f79df' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
     filter: drop-shadow(0 0 6px rgba(79,121,223,.30));
     transform-origin: right center;
     animation: hfbEcgSignal 1.45s ease-in-out infinite !important;
@@ -4210,7 +4210,7 @@
   @media (max-width: 640px) {
     .hfb-auth-card::before {
       left: 22px !important;
-      right: 50% !important;
+      right: 22px !important;
       background-size: 100% 58px !important;
     }
   }
