@@ -139,12 +139,17 @@
   .hfb-followup-case-number{display:inline-flex; min-width:88px; min-height:42px; padding:7px 12px; border-radius:9px; align-items:center; justify-content:center; background:var(--primary-tint); color:var(--primary-deep); font-size:20px; font-weight:700; white-space:nowrap;}
   .hfb-case-number-input::placeholder{color:#6b9f97; font-weight:500;}
   .hfb-case-number-input:focus{outline:none; background:#fff; border-color:var(--primary); box-shadow:0 0 0 3px rgba(47,158,148,.16);}
-  .hfb-role-dots{display:flex; gap:6px;}
-  .hfb-role-dot{width:16px; height:16px; border-radius:50%; background:var(--dot-color); display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; font-size:10px; line-height:1;}
-  .hfb-role-dot.done{opacity:1;}
-  .hfb-role-dot.pending{opacity:0.45;}
-  .hfb-role-dot.in_progress{opacity:0.75;}
-  .hfb-role-dot.none{opacity:0.22;}
+  .hfb-role-dots{display:grid; grid-template-columns:repeat(2,minmax(106px,1fr)); gap:5px 7px; min-width:226px;}
+  .hfb-role-dot{min-height:25px; border-radius:9px; border:1px solid #d6e5ea; background:#f7fafc; display:flex; align-items:center; gap:5px; padding:3px 7px; color:#38536b; font-size:12px; line-height:1.15; white-space:nowrap;}
+  .hfb-role-dot-mark{width:14px; height:14px; border-radius:50%; background:var(--dot-color); display:inline-flex; align-items:center; justify-content:center; flex:0 0 14px; color:#fff; font-size:9px; font-weight:800;}
+  .hfb-role-dot-name{font-weight:700;}
+  .hfb-role-dot-status{margin-left:auto; color:#71869a; font-size:10px;}
+  .hfb-role-dot.done{background:#eef9f6; border-color:#c8e6dd;}
+  .hfb-role-dot.done .hfb-role-dot-status{color:#237d70; font-weight:700;}
+  .hfb-role-dot.pending .hfb-role-dot-mark{opacity:.5;}
+  .hfb-role-dot.in_progress .hfb-role-dot-mark{opacity:.82;}
+  .hfb-role-dot.none .hfb-role-dot-mark{opacity:.25;}
+  @media(max-width:900px){.hfb-role-dots{grid-template-columns:1fr; min-width:116px;}.hfb-role-dot-status{display:none;}}
   .hfb-mini-progress{width:90px; height:6px; background:var(--line); border-radius:4px; overflow:hidden;}
   .hfb-mini-progress-fill{height:100%; background:linear-gradient(90deg, var(--primary), var(--secondary));}
   .hfb-td-nowrap{white-space:nowrap;}
@@ -1540,12 +1545,14 @@
           if(roleTasks.every(function(t){ return t.status==='done'; })){ cls='done'; mark='✓'; }
           else if(roleTasks.some(function(t){ return t.status!=='pending'; })) cls='in_progress';
         }
-        dots += '<span class="hfb-role-dot '+cls+'" style="--dot-color:'+ROLES[r].color+'" title="'+ROLES[r].label+(roleTasks.length?'':'・尚未指派')+'">'+mark+'</span>';
+        var statusText = cls==='done' ? '已完成' : (cls==='in_progress' ? '處理中' : (cls==='pending' ? '待處理' : '未指派'));
+        dots += '<span class="hfb-role-dot '+cls+'" style="--dot-color:'+ROLES[r].color+'" title="'+esc(ROLES[r].label)+'・'+statusText+'">'+
+          '<span class="hfb-role-dot-mark">'+(mark||'•')+'</span>'+
+          '<span class="hfb-role-dot-name">'+esc(ROLES[r].label)+'</span>'+
+          '<span class="hfb-role-dot-status">'+statusText+'</span>'+
+        '</span>';
       });
       var canManage = isInitiator(state.identity);
-      var dischargeBtn = canManage
-        ? '<button type="button" class="hfb-discharge-btn'+(c.discharged?' on':'')+'" data-discharge="'+c.id+'">'+(c.discharged?'已出院':'出院')+'</button>'
-        : (c.discharged ? '<span class="hfb-discharge-tag">已出院</span>' : '—');
       var deleteBtn = canManage
         ? '<button type="button" class="hfb-delete-btn" data-delete-case="'+c.id+'" title="刪除個案" aria-label="刪除個案"><svg viewBox="0 0 48 48" aria-hidden="true"><circle class="hfb-trash-ring" cx="24" cy="24" r="20"/><path class="hfb-trash-bin" d="M17 19h14l-1.2 17H18.2L17 19zm-2-4h18v4H15v-4zm5-3h8l1.5 3h-11L20 12zm1 11v9m6-9v9"/></svg></button>'
         : '';
@@ -1565,13 +1572,12 @@
         '<td><div class="hfb-role-dots">'+dots+'</div></td>'+
         '<td><div class="hfb-mini-progress"><div class="hfb-mini-progress-fill" style="width:'+pct+'%"></div></div>'+
           '<div class="pmeta">'+p.done+'/'+p.total+' 已完成</div></td>'+
-        '<td class="hfb-td-nowrap">'+dischargeBtn+'</td>'+
         '<td class="hfb-td-nowrap">'+deleteBtn+'</td>'+
       '</tr>';
     });
 
     return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
-      '<thead><tr><th>編號</th><th>個案</th><th>收案人</th><th>住院日期</th><th>出院日期</th><th>住院天數</th><th>收案日期</th><th>各職類狀態</th><th>整體進度</th><th>出院</th><th></th></tr></thead>'+
+      '<thead><tr><th>編號</th><th>個案</th><th>收案人</th><th>住院日期</th><th>出院日期</th><th>住院天數</th><th>收案日期</th><th>各職類狀態</th><th>整體進度</th><th></th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table></div>';
   }
 
