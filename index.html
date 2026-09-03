@@ -592,9 +592,15 @@
     var medsSummaryParts = [];
     MED_CLASSES.forEach(function(cls){
       var m = meds[cls.key] || {on:false,drug:'',dose:'',freq:''};
-      if(!m.on) return;
+      if(!m.on && !(cls.key==='other' && (m.drug||m.dose||m.freq))) return;
       medsHtml += '<div class="mrow"><span class="mtag">'+cls.label+'</span><span>'+esc(m.drug||'—')+(m.dose?' ・ '+esc(m.dose)+'顆':'')+(m.freq?' ・ '+esc(m.freq):'')+'</span></div>';
       medsSummaryParts.push((m.drug||cls.label)+(m.dose?' '+m.dose+'顆':'')+(m.freq?' '+m.freq:''));
+    });
+    extraOtherMeds(meds).forEach(function(m,idx){
+      if(!m.on && !m.drug && !m.dose && !m.freq) return;
+      var label = '其他 '+(idx+2);
+      medsHtml += '<div class="mrow"><span class="mtag">'+label+'</span><span>'+esc(m.drug||'—')+(m.dose?' ・ '+esc(m.dose)+'顆':'')+(m.freq?' ・ '+esc(m.freq):'')+'</span></div>';
+      medsSummaryParts.push((m.drug||label)+(m.dose?' '+m.dose+'顆':'')+(m.freq?' '+m.freq:''));
     });
     if(!medsHtml) medsHtml = '<div class="empty">尚無用藥資料</div>';
     var medsSummaryText = medsSummaryParts.join('、');
@@ -627,10 +633,19 @@
       var rows = '';
       MED_CLASSES.forEach(function(cls){
         var m = medsObj[cls.key];
-        if(!m || !m.on) return;
+        if(!m || (!m.on && !(cls.key==='other' && (m.drug||m.dose||m.freq)))) return;
         rows += '<div class="mp-row">'+
           '<span class="mp-pill">'+(MED_SHORT_LABEL[cls.key]||cls.label)+'</span>'+
           '<span class="mp-drug">'+esc(m.drug||cls.label)+'</span>'+
+          '<span class="mp-dose">'+esc(m.dose?m.dose+'顆':'—')+'</span>'+
+          '<span class="mp-freq">'+esc(m.freq||'—')+'</span>'+
+        '</div>';
+      });
+      extraOtherMeds(medsObj).forEach(function(m,idx){
+        if(!m.on && !m.drug && !m.dose && !m.freq) return;
+        rows += '<div class="mp-row">'+
+          '<span class="mp-pill">其他 '+(idx+2)+'</span>'+
+          '<span class="mp-drug">'+esc(m.drug||'—')+'</span>'+
           '<span class="mp-dose">'+esc(m.dose?m.dose+'顆':'—')+'</span>'+
           '<span class="mp-freq">'+esc(m.freq||'—')+'</span>'+
         '</div>';
@@ -877,6 +892,7 @@
         '.basic-medications .mgrid{display:flex;flex-direction:column;gap:7px;}'+
         '.basic-medications .mrow{display:grid;grid-template-columns:minmax(92px,auto) minmax(0,1fr);gap:8px;margin:0;padding:6px 8px;border-radius:8px;background:#f5fbfa;font-size:15px;line-height:1.35;}'+
         '.basic-medications .mtag{min-width:0;color:#287785!important;font-size:14px;}'+
+        '.basic-medications .mrow span:last-child{min-width:0;overflow-wrap:anywhere;word-break:break-word;}'+
         '.basic-card h2{display:flex;align-items:center;gap:8px;color:#315f7d!important;font-size:18px!important;margin:0 0 10px!important;padding-bottom:9px;border-bottom:1px solid #d9e7ed;}'+
         '.basic-icon{display:inline-flex;width:31px;height:31px;align-items:center;justify-content:center;border-radius:9px;background:#edf7fa;}'+
         '.basic-row{display:flex;gap:10px;align-items:baseline;padding:5px 7px;border-radius:8px;}'+
