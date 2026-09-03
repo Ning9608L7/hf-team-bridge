@@ -1418,10 +1418,11 @@
     html += tabBtn('mytasks','我的任務', myTaskCount);
     if(state.identity==='case_manager'){
       html += tabBtn('followup','門診追蹤', followUpCount, true);
+      html += tabBtn('case_manager_followup','個管師門診追蹤');
     }
     html += '</div>';
     html += '<div class="hfb-body"><div class="hfb-main">';
-    if(state.view==='followup' && state.identity!=='case_manager'){
+    if((state.view==='followup' || state.view==='case_manager_followup') && state.identity!=='case_manager'){
       state.view = 'cases';
     }
     if(state.view==='cases'){
@@ -1434,6 +1435,8 @@
       }
     } else if(state.view==='followup'){
       html += followUpOverviewPage();
+    } else if(state.view==='case_manager_followup'){
+      html += caseManagerFollowUpPage();
     } else {
       html += myTasksView();
     }
@@ -1579,6 +1582,11 @@
     return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
       '<thead><tr><th>編號</th><th>個案</th><th>收案人</th><th>住院日期</th><th>出院日期</th><th>住院天數</th><th>收案日期</th><th>各職類狀態</th><th>整體進度</th><th></th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table></div>';
+  }
+
+  function caseManagerFollowUpPage(){
+    return '<div class="hfb-overview-head"><h2>個管師門診追蹤</h2></div>'+
+      '<div class="hfb-table-wrap"><div class="hfb-empty-side">頁籤已建立，後續可在此加入個管師門診追蹤內容。</div></div>';
   }
 
   function followUpOverviewPage(){
