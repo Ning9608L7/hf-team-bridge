@@ -1417,8 +1417,8 @@
     html += tabBtn('cases','個案總覽');
     html += tabBtn('mytasks','我的任務', myTaskCount);
     if(state.identity==='case_manager'){
-      html += tabBtn('followup','門診追蹤', followUpCount, true);
-      html += tabBtn('case_manager_followup','個管師門診追蹤');
+      html += tabBtn('followup','門診追蹤總覽', followUpCount, true);
+      html += tabBtn('case_manager_followup','門診追蹤系統');
     }
     html += '</div>';
     html += '<div class="hfb-body"><div class="hfb-main">';
@@ -1586,9 +1586,9 @@
 
   function caseManagerFollowUpPage(){
     var c = state.cases.find(function(x){ return x.id===state.caseManagerFollowUpCaseId; });
-    var head = '<div class="hfb-overview-head"><h2>個管師門診追蹤</h2></div>';
+    var head = '<div class="hfb-overview-head"><h2>門診追蹤系統</h2></div>';
     if(!c){
-      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">請從「門診追蹤」點選一位病人。</div></div>';
+      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">請從「門診追蹤總覽」點選一位病人。</div></div>';
     }
     var fu = c.followUp || {};
     return head +
@@ -1608,7 +1608,7 @@
       var active = (isAll ? !state.followUpHfFilter : state.followUpHfFilter===ht) ? ' active' : '';
       filterBtns += '<button type="button" class="hfb-hftype-btn'+(isAll?'':hfTypeClass(ht))+active+'" data-followup-filter="'+(isAll?'':ht)+'">'+ht+'</button>';
     });
-    var head = '<div class="hfb-overview-head"><h2>門診追蹤</h2><div class="hfb-hftype-group">'+filterBtns+'</div></div>';
+    var head = '<div class="hfb-overview-head"><h2>門診追蹤總覽</h2><div class="hfb-hftype-group">'+filterBtns+'</div></div>';
     var list = state.cases.filter(function(c){
       var hasFollowUp = c.discharged || (c.followUp && (c.followUp.nextVisitDate||c.followUp.doctor||c.followUp.note));
       if(!hasFollowUp) return false;
