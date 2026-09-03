@@ -665,7 +665,7 @@
       });
       return rows || '<div class="empty">—</div>';
     }
-    var LAB_LABELS = {ntprobnp:'NT-proBNP',na:'Na',k:'K',bun:'BUN',cr:'Cr',egfr:'eGFR',hba1c:'HbA1c',glucose:'Glucose',hb:'Hb',wbc:'WBC',crp:'CRP',tg:'TG',ua:'UA',hdl:'HDL',ldl:'LDL',fe:'Fe',tibc:'TIBC',ferritin:'Ferritin',albumin:'Albumin',got:'GOT',gpt:'GPT',tsh:'TSH',t4:'Free T4',uacr:'UACR',lpa:'Lp(a)',other:'其他'};
+    var LAB_LABELS = {ntprobnp:'NT-proBNP', na:'Na', k:'K', bun:'BUN', cr:'Cr', egfr:'eGFR', ldl:'LDL', hba1c:'HbA1c', other:'其他'};
     function labsRowsHtmlFromEntry(r){
       if(!r.labs) return '<div class="empty">—</div>';
       var rows = '';
@@ -702,37 +702,6 @@
     EDEMA_OPTIONS.forEach(function(e){ edemaOpts += '<option value="'+e+'">'+e+'</option>'; });
     var nyhaOptsForm = '<option value="">選擇</option>';
     NYHA_OPTIONS.forEach(function(n){ nyhaOptsForm += '<option value="'+n+'">'+n+'</option>'; });
-    var ekgOptsTracking = '<option value="">選擇心電圖</option>';
-    EKG_OPTIONS.forEach(function(e){ ekgOptsTracking += '<option value="'+esc(e)+'">'+esc(e)+'</option>'; });
-    var trackingLabFields = [
-      {key:'ntprobnp',label:'NT-proBNP',unit:'pg/mL',type:'number'},
-      {key:'bun',label:'BUN',unit:'mg/dL',type:'number'},
-      {key:'cr',label:'Cr',unit:'mg/dL',type:'number',step:'0.01'},
-      {key:'egfr',label:'eGFR',unit:'mL/min',type:'number'},
-      {key:'hba1c',label:'HbA1c',unit:'%',type:'number',step:'0.1'},
-      {key:'glucose',label:'Glucose',unit:'mg/dL',type:'number'},
-      {key:'hb',label:'Hb',unit:'g/dL',type:'number'},
-      {key:'wbc',label:'WBC',unit:'10³/µL',type:'number'},
-      {key:'crp',label:'CRP',unit:'mg/L',type:'number'},
-      {key:'tg',label:'TG',unit:'mg/dL',type:'number'},
-      {key:'ua',label:'UA',unit:'mg/dL',type:'number'},
-      {key:'hdl',label:'HDL',unit:'mg/dL',type:'number'},
-      {key:'ldl',label:'LDL',unit:'mg/dL',type:'number'},
-      {key:'fe',label:'Fe',unit:'µg/dL',type:'number'},
-      {key:'tibc',label:'TIBC',unit:'µg/dL',type:'number'},
-      {key:'ferritin',label:'Ferritin',unit:'ng/mL',type:'number'},
-      {key:'albumin',label:'Albumin',unit:'g/dL',type:'number',step:'0.1'},
-      {key:'got',label:'GOT',unit:'U/L',type:'number'},
-      {key:'gpt',label:'GPT',unit:'U/L',type:'number'},
-      {key:'tsh',label:'TSH',unit:'µIU/mL',type:'number'},
-      {key:'t4',label:'Free T4',unit:'ng/dL',type:'number'},
-      {key:'uacr',label:'UACR',unit:'mg/g',type:'number'},
-      {key:'lpa',label:'Lp(a)',unit:'mg/dL',type:'number'},
-      {key:'other',label:'其他',unit:'項目／數值',type:'text'}
-    ];
-    var trackingLabFieldsHtml = trackingLabFields.map(function(field){
-      return '<div class="tk-lab-field"><label>'+field.label+'</label><input type="'+field.type+'"'+(field.step?' step="'+field.step+'"':'')+' id="tk-'+field.key+'" placeholder="'+field.unit+'"></div>';
-    }).join('');
     var trackingDoctorOpts = '<option value="">請選擇醫師</option>';
     DOCTOR_OPTIONS.forEach(function(d){
       var selected = c.followUp && c.followUp.doctor===d ? ' selected' : '';
@@ -759,7 +728,6 @@
           '<div class="past-row"><span class="past-label">水腫</span><span class="past-value">'+esc(rec.edema||'—')+'</span></div>'+
           '<div class="past-row"><span class="past-label">呼吸喘</span><span class="past-value">'+esc(rec.dyspnea||'—')+'</span></div>'+
           '<div class="past-row"><span class="past-label">NYHA</span><span class="past-value">'+esc(rec.nyha||'—')+'</span></div>'+
-          '<div class="past-row"><span class="past-label">EKG</span><span class="past-value">'+esc(rec.ekg||'—')+'</span></div>'+
           '<div class="past-row"><span class="past-label">LVEF</span><span class="past-value">'+esc(rec.lvef||'—')+(rec.lvef?'%':'')+(rec.lvefDate?'（'+esc(rec.lvefDate)+'）':'')+'</span></div>'+
           '<div class="past-row"><span class="past-label">6MWT</span><span class="past-value">'+esc(rec.sixMwt||'—')+(rec.sixMwt?' m':'')+(rec.sixMwtDate?'（'+esc(rec.sixMwtDate)+'）':'')+'</span></div>'+
           '</div>'+
@@ -905,19 +873,6 @@
         '.tk-current{min-width:0; background:#FBEFF7; border:1.5px solid #EBB8DC; border-radius:12px; padding:22px 24px; box-sizing:border-box; overflow:hidden;}'+
         '.tk-current-title{font-size:19px; font-weight:700; color:#A0398A; margin-bottom:4px;}'+
         '.tkm-wrap{background:#fff; border-radius:9px; padding:4px 0;}'+
-        '.tk-top-assessment{display:grid;grid-template-columns:minmax(260px,.65fr) minmax(0,1.35fr);gap:18px;margin-bottom:18px;}'+
-        '.tk-top-assessment label.field-label{margin:0 0 7px;}'+
-        '.tk-assessment-columns{display:grid;grid-template-columns:minmax(420px,1fr) minmax(560px,1fr);gap:18px;align-items:start;}'+
-        '.tk-assessment-panel{min-width:0;background:rgba(255,255,255,.80);border:1px solid #cfe2e7;border-radius:12px;padding:15px;}'+
-        '.tk-assessment-panel h3{font-size:19px;color:#315f7d;margin:0 0 13px;padding-bottom:9px;border-bottom:1px solid #d8e8ec;}'+
-        '.tk-key-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:10px;}'+
-        '.tk-key-field{background:#e5f6f8;border-radius:10px;padding:7px;}'+
-        '.tk-key-field label,.tk-secondary-grid label,.tk-lab-field label{display:block;color:#287785;font-size:13px;font-weight:700;margin-bottom:5px;}'+
-        '.tk-key-field input,.tk-key-field select,.tk-secondary-grid input,.tk-secondary-grid select,.tk-lab-field input{padding:9px 10px;font-size:16px;}'+
-        '.tk-secondary-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-bottom:10px;}'+
-        '.tk-expanded-labs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;}'+
-        '.tk-lab-field{padding:5px;border-radius:9px;}'+
-        '.tk-lab-field:focus-within{background:#e8f7f5;}'+
         '.tkm-row{display:flex; gap:8px; margin-bottom:8px; align-items:center; flex-wrap:wrap;}'+
         '.tkm-toggle{flex:0 0 150px;padding:11px 8px;border-radius:8px;border:1px solid rgba(100,140,244,.18);font-size:15.5px;font-weight:700;background:linear-gradient(135deg,#eaf2ff,#e3faf5);color:#46658f;cursor:pointer;font-family:inherit;box-shadow:0 5px 14px rgba(82,120,223,.08);transition:.16s;}'+
         '.tkm-toggle.on{background:linear-gradient(112deg,#638cf2,#57bfdc 54%,#73d9bf);color:#fff;border-color:transparent;box-shadow:0 9px 22px rgba(82,120,223,.25);text-shadow:0 1px 2px rgba(43,72,139,.22);}'+
@@ -984,7 +939,7 @@
         '.basic-admission .admission-metrics>div{min-height:66px;justify-content:center;padding:9px 11px;background:linear-gradient(135deg,#edf8fb,#edfaf6);border-color:#cde4e6;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);}'+
         '.basic-admission .admission-metrics .qr-label{font-size:12px;line-height:1.25;color:#4e8790;}'+
         '.basic-admission .admission-metrics .qr-value{font-size:18px;line-height:1.2;color:#174f6c;}'+
-        '@media (max-width:1250px){.tk-assessment-columns{grid-template-columns:1fr;}.tk-key-grid,.tk-secondary-grid,.tk-expanded-labs{grid-template-columns:repeat(3,minmax(0,1fr));}}@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-medications{grid-column:1/-1;}.basic-history{grid-column:auto;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.tk-top-assessment{grid-template-columns:1fr;}.tk-key-grid,.tk-secondary-grid,.tk-expanded-labs{grid-template-columns:1fr 1fr;}.basic-columns{grid-template-columns:1fr;}.basic-history,.basic-medications{grid-column:auto;}.basic-patient-title{align-items:flex-start;}.patient-inline-meta{width:100%;}.admission-metrics,.stay-dates{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
+        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-medications{grid-column:1/-1;}.basic-history{grid-column:auto;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history,.basic-medications{grid-column:auto;}.basic-patient-title{align-items:flex-start;}.patient-inline-meta{width:100%;}.admission-metrics,.stay-dates{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style></head><body>'+
       basicPlatformHtml+
       '<div class="card"><h2>過往追蹤紀錄</h2><div class="hlist">'+historyHtml+'</div></div>'+
@@ -993,35 +948,39 @@
         '<div class="tk-layout">'+
           '<div class="tk-past"><div class="tk-past-title">↩ 上次評估</div>'+pastPanelHtml+'</div>'+
           '<div class="tk-current"><div class="tk-current-title">✎ 本次評估</div>'+
-            '<div class="tk-top-assessment">'+
-              '<div><label class="field-label">追蹤日期時間</label><input type="datetime-local" id="tk-time"></div>'+
-              '<div><label class="field-label">當次生命徵象</label><div class="field-grid vitals-grid">'+
-                '<input type="number" id="tk-sbp" placeholder="收縮壓 (mmHg)">'+
-                '<input type="number" id="tk-dbp" placeholder="舒張壓 (mmHg)">'+
-                '<input type="number" id="tk-hr" placeholder="心跳 (bpm)">'+
-                '<input type="number" id="tk-weight" placeholder="體重 (kg)" step="0.1">'+
-              '</div></div>'+
+            '<label class="field-label">追蹤日期時間</label>'+
+            '<input type="datetime-local" id="tk-time">'+
+            '<label class="field-label">當次生命徵象</label>'+
+            '<div class="field-grid vitals-grid">'+
+              '<input type="number" id="tk-sbp" placeholder="收縮壓 (mmHg)">'+
+              '<input type="number" id="tk-dbp" placeholder="舒張壓 (mmHg)">'+
+              '<input type="number" id="tk-hr" placeholder="心跳 (bpm)">'+
+              '<input type="number" id="tk-weight" placeholder="體重 (kg)" step="0.1">'+
             '</div>'+
-            '<div class="tk-assessment-columns">'+
-              '<section class="tk-assessment-panel tk-med-panel"><h3>目前用藥</h3><div class="tkm-wrap">'+tkmRowsHtml+'</div></section>'+
-              '<section class="tk-assessment-panel tk-clinical-panel"><h3>臨床評估與抽血數據</h3>'+
-                '<div class="tk-key-grid">'+
-                  '<div class="tk-key-field"><label>NYHA Fc 評估</label><select id="tk-nyha">'+nyhaOptsForm+'</select></div>'+
-                  '<div class="tk-key-field"><label>LVEF (%)</label><input type="number" id="tk-lvef" placeholder="%" step="0.1"></div>'+
-                  '<div class="tk-key-field"><label>EKG</label><select id="tk-ekg">'+ekgOptsTracking+'</select></div>'+
-                  '<div class="tk-key-field"><label>Na</label><input type="number" id="tk-na" placeholder="mmol/L"></div>'+
-                  '<div class="tk-key-field"><label>K</label><input type="number" id="tk-k" placeholder="mmol/L" step="0.1"></div>'+
-                '</div>'+
-                '<div class="tk-secondary-grid">'+
-                  '<div><label>6分鐘行走測試</label><input type="number" id="tk-sixmwt" placeholder="m" step="0.1"></div>'+
-                  '<div><label>6MWT 日期</label><input type="date" id="tk-sixmwt-date"></div>'+
-                  '<div><label>LVEF 日期</label><input type="date" id="tk-lvef-date"></div>'+
-                  '<div><label>呼吸喘</label><select id="tk-dyspnea"><option value="">選擇</option><option value="有">有</option><option value="無">無</option></select></div>'+
-                  '<div><label>水腫評估</label><select id="tk-edema">'+edemaOpts+'</select></div>'+
-                '</div>'+
-                '<div class="tk-expanded-labs">'+trackingLabFieldsHtml+'</div>'+
-              '</section>'+
+            '<label class="field-label">心功能評估</label>'+
+            '<div class="cardiac-grid">'+
+              '<div class="cardiac-pair"><input type="number" id="tk-lvef" placeholder="LVEF (%)" step="0.1"><input type="date" id="tk-lvef-date" title="LVEF檢查日期"></div>'+
+              '<div class="cardiac-pair"><input type="number" id="tk-sixmwt" placeholder="6分鐘行走測試 (m)" step="0.1"><input type="date" id="tk-sixmwt-date" title="6分鐘行走測試日期"></div>'+
             '</div>'+
+            '<div class="tri-row">'+
+              '<div class="tri-item"><label class="field-label">NYHA Fc</label><select id="tk-nyha">'+nyhaOptsForm+'</select></div>'+
+              '<div class="tri-item"><label class="field-label">呼吸喘</label><select id="tk-dyspnea"><option value="">選擇</option><option value="有">有</option><option value="無">無</option></select></div>'+
+              '<div class="tri-item"><label class="field-label">水腫評估</label><select id="tk-edema">'+edemaOpts+'</select></div>'+
+            '</div>'+
+            '<label class="field-label">抽血數據</label>'+
+            '<div class="field-grid lab-grid">'+
+              '<input type="number" id="tk-ntprobnp" placeholder="NT-proBNP (pg/mL)">'+
+              '<input type="number" id="tk-na" placeholder="Na (mmol/L)">'+
+              '<input type="number" id="tk-k" placeholder="K (mmol/L)" step="0.1">'+
+              '<input type="number" id="tk-bun" placeholder="BUN (mg/dL)">'+
+              '<input type="number" id="tk-cr" placeholder="Cr (mg/dL)" step="0.01">'+
+              '<input type="number" id="tk-egfr" placeholder="eGFR (mL/min)">'+
+              '<input type="number" id="tk-ldl" placeholder="LDL (mg/dL)">'+
+              '<input type="number" id="tk-hba1c" placeholder="HbA1c (%)" step="0.1">'+
+              '<input type="text" id="tk-lab-other" placeholder="其他（項目／數值）">'+
+            '</div>'+
+            '<label class="field-label">目前用藥</label>'+
+            '<div class="tkm-wrap">'+tkmRowsHtml+'</div>'+
             '<label class="field-label">衛教內容(可複選)</label>'+
             '<div class="edu-chips" id="tk-edu-chips">'+
               EDUCATION_OPTIONS.map(function(opt, i){
@@ -1091,8 +1050,17 @@
             'edema: document.getElementById("tk-edema").value,'+
             'dyspnea: document.getElementById("tk-dyspnea").value,'+
             'nyha: document.getElementById("tk-nyha").value,'+
-            'ekg: document.getElementById("tk-ekg").value,'+
-            'labs: (function(){var obj={na:document.getElementById("tk-na").value,k:document.getElementById("tk-k").value};'+JSON.stringify(labKeys)+'.forEach(function(key){obj[key]=document.getElementById("tk-"+key).value;});return obj;})(),'+
+            'labs: {'+
+              'ntprobnp: document.getElementById("tk-ntprobnp").value,'+
+              'bun: document.getElementById("tk-bun").value,'+
+              'cr: document.getElementById("tk-cr").value,'+
+              'egfr: document.getElementById("tk-egfr").value,'+
+              'na: document.getElementById("tk-na").value,'+
+              'k: document.getElementById("tk-k").value,'+
+              'ldl: document.getElementById("tk-ldl").value,'+
+              'hba1c: document.getElementById("tk-hba1c").value,'+
+              'other: document.getElementById("tk-lab-other").value'+
+            '},'+
             'meds: meds,'+
             'education: '+JSON.stringify(EDUCATION_OPTIONS)+'.filter(function(opt, i){ return document.getElementById("tk-edu-"+i).classList.contains("on"); }),'+
             'note: document.getElementById("tk-note").value,'+
@@ -1793,30 +1761,19 @@
     var frame = document.getElementById('hfb-tracking-system-frame');
     var c = state.cases.find(function(x){ return x.id===state.caseManagerFollowUpCaseId; });
     if(!frame || !c) return;
-
-    var paintTrackingSystem = function(){
-      if(!frame.isConnected || frame.dataset.trackingRendered==='1') return;
-      frame.dataset.trackingRendered = '1';
-      openTrackingWindow(c, frame.contentWindow);
-
-      var resizeFrame = function(){
-        try{
-          var doc = frame.contentDocument;
-          if(doc && doc.documentElement) frame.style.height = Math.max(900,doc.documentElement.scrollHeight+8)+'px';
-        }catch(error){}
-      };
-      setTimeout(resizeFrame,80);
-      setTimeout(resizeFrame,300);
+    openTrackingWindow(c, frame.contentWindow);
+    var resizeFrame = function(){
       try{
-        var observer = new ResizeObserver(resizeFrame);
-        observer.observe(frame.contentDocument.documentElement);
+        var doc = frame.contentDocument;
+        if(doc && doc.documentElement) frame.style.height = Math.max(900,doc.documentElement.scrollHeight+8)+'px';
       }catch(error){}
     };
-
-    /* Force a fresh iframe navigation, then render only after that navigation
-       finishes. This prevents the browser from clearing content written too early. */
-    frame.addEventListener('load', paintTrackingSystem, {once:true});
-    frame.src = 'about:blank#hfb-tracking-system';
+    setTimeout(resizeFrame,80);
+    setTimeout(resizeFrame,300);
+    try{
+      var observer = new ResizeObserver(resizeFrame);
+      observer.observe(frame.contentDocument.documentElement);
+    }catch(error){}
   }
 
   function followUpOverviewPage(){
