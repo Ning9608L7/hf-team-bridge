@@ -1813,10 +1813,10 @@
       }catch(error){}
     };
 
-    /* Wait until the newly inserted iframe has completed its initial about:blank
-       navigation. Writing synchronously here can be cleared by that navigation. */
+    /* Force a fresh iframe navigation, then render only after that navigation
+       finishes. This prevents the browser from clearing content written too early. */
     frame.addEventListener('load', paintTrackingSystem, {once:true});
-    setTimeout(paintTrackingSystem, 0);
+    frame.src = 'about:blank#hfb-tracking-system';
   }
 
   function followUpOverviewPage(){
