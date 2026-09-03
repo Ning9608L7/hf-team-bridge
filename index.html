@@ -1101,6 +1101,10 @@
         '@media(max-width:720px){body{padding:12px!important;}}'+
         '</style></head>');
     }
+    if(embedded && w.frameElement){
+      w.frameElement.srcdoc = html;
+      return;
+    }
     w.document.open();
     w.document.write(html);
     w.document.close();
