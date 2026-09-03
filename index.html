@@ -115,6 +115,7 @@
   .hfb-tab{padding:9px 14px; font-size:22px; color:var(--ink-soft); border:none; background:none; border-bottom:2px solid transparent; margin-bottom:-1px;}
   .hfb-tab.active{color:var(--primary-deep); border-bottom-color:var(--primary); font-weight:500;}
   .hfb-tab .hfb-count{display:inline-block; margin-left:5px; font-size:19.5px; background:var(--np-tint); color:var(--status-progress-ink); border-radius:10px; padding:1px 6px;}
+  .hfb-tracking-system-frame{display:block;width:100%;min-height:900px;border:1px solid #c7e3de;border-radius:16px;background:linear-gradient(145deg,#f3f8ff,#f0fbf8);box-shadow:0 10px 28px rgba(61,126,156,.10);}
 
   .hfb-body{display:flex; flex:1; min-height:0;}
   .hfb-main{flex:1; overflow-y:auto; padding:22px 26px; min-width:0;}
@@ -579,8 +580,9 @@
 
   var EDEMA_OPTIONS = ['無','1+','2+','3+','4+'];
 
-  function openTrackingWindow(c){
-    var w = window.open('', '_blank');
+  function openTrackingWindow(c, targetWindow){
+    var embedded = !!targetWindow;
+    var w = targetWindow || window.open('', '_blank');
     if(!w){ return; }
     var age = calcAge(c.birthday);
     var gender = genderFromId(c.idnumber);
@@ -895,7 +897,7 @@
         'document.getElementById("tk-time").value = (function(){var d=new Date();function p(n){return String(n).padStart(2,"0");}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());})();'+
         'function updateTkWeekday(){var v=document.getElementById("tk-nextvisit").value;var el=document.getElementById("tk-weekday");if(!v){el.textContent="";return;}var p=v.split("-");var d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));el.textContent="（"+["日","一","二","三","四","五","六"][d.getDay()]+"）";}'+
         'document.getElementById("tk-nextvisit").onchange=updateTkWeekday;updateTkWeekday();'+
-        'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if(window.opener&&window.opener.deleteTrackingRecord){window.opener.deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
+        'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if((window.opener||window.parent)&&(window.opener||window.parent).deleteTrackingRecord){(window.opener||window.parent).deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
           'var meds = {};'+
@@ -938,15 +940,39 @@
             'followUpSession: document.getElementById("tk-session").value,'+
             'followUpDoctor: document.getElementById("tk-doctor").value'+
           '};'+
-          'if(window.opener){ window.opener.postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
+          'if(window.opener||window.parent){ (window.opener||window.parent).postMessage({type:"hf-tracking-save", caseId:'+JSON.stringify(c.id)+', entry:entry}, "*"); }'+
           'document.getElementById("tk-msg").style.display = "flex";'+
         '};'+
         'document.getElementById("tk-refresh").onclick = function(){'+
-          'if(window.opener && window.opener.reopenTrackingWindow){ window.opener.reopenTrackingWindow('+JSON.stringify(c.id)+'); window.close(); }'+
+          'if((window.opener||window.parent) && (window.opener||window.parent).reopenTrackingWindow){ (window.opener||window.parent).reopenTrackingWindow('+JSON.stringify(c.id)+'); window.close(); }'+
           'else { alert("找不到原始視窗,請手動重新開啟。"); }'+
         '};'+
       '<\/script>'+
       '</body></html>';
+    if(embedded){
+      html = html.replace('個管師追蹤事項・獨立視窗','門診追蹤系統');
+      html = html.replace('</head>',
+        '<style>'+
+        'body{background:linear-gradient(145deg,#f3f8ff 0%,#f0fbf8 58%,#f8fcff 100%)!important;color:#17324d!important;padding:20px 22px!important;max-width:none!important;}'+
+        '.card{border-color:#c9dfec!important;box-shadow:0 8px 22px rgba(61,126,156,.08)!important;}'+
+        '.card h2,.tk-past-title,.tk-current-title,.mtag,.tk-weekday,.msg{color:#287b85!important;}'+
+        '.tag,.hdate-btn{color:#315f8d!important;background:#e7f1ff!important;border-color:#bdd8ee!important;}'+
+        '.hdate-btn:hover{background:#dbeaff!important;}'+
+        '.hdetail,.tk-past{background:#edf7fb!important;border-color:#c5e0e8!important;}'+
+        '.tk-current{background:#eefaf7!important;border-color:#b9e1d8!important;}'+
+        '.quickref .qr-item{background:#edf9f7!important;border-color:#bfe3dc!important;}'+
+        '.qr-label,.past-recorder{color:#348a88!important;}'+
+        '.qr-value,.past-time,.past-value,.mp-drug{color:#17324d!important;}'+
+        '.label,.hlabel,.past-label{color:#66859b!important;}'+
+        '.mp-pill,.edu-chip.on,button{background:linear-gradient(110deg,#5e8fe9,#55b8d5 58%,#69cfb7)!important;color:#fff!important;}'+
+        '.edu-chip{color:#386b88!important;border-color:#bcdde3!important;background:#f7fcfd!important;}'+
+        'input,select,textarea{border-color:#c8dce8!important;background:#fff!important;color:#17324d!important;}'+
+        'input:focus,select:focus,textarea:focus{outline:none!important;border-color:#5ba7ca!important;box-shadow:0 0 0 3px rgba(91,167,202,.14)!important;}'+
+        '.past-record{border-color:#c8e0e7!important;box-shadow:0 4px 12px rgba(55,123,151,.08)!important;}'+
+        '.past-delete{background:#fff2f3!important;color:#b63e49!important;border-color:#dc727b!important;}'+
+        '@media(max-width:720px){body{padding:12px!important;}}'+
+        '</style></head>');
+    }
     w.document.open();
     w.document.write(html);
     w.document.close();
@@ -985,13 +1011,21 @@
     c.trackingRecords.splice(idx,1);
     saveCases();
     if(state.loaded) render();
-    setTimeout(function(){ openTrackingWindow(c); }, 80);
+    if(state.view!=='case_manager_followup'){
+      setTimeout(function(){ openTrackingWindow(c); }, 80);
+    }
     return true;
   };
 
   window.reopenTrackingWindow = function(caseId){
     var c = state.cases.find(function(x){ return x.id===caseId; });
-    if(c) openTrackingWindow(c);
+    if(!c) return;
+    if(state.view==='case_manager_followup'){
+      state.caseManagerFollowUpCaseId = caseId;
+      render();
+    } else {
+      openTrackingWindow(c);
+    }
   };
 
   var DAILY_MESSAGES = [
@@ -1446,6 +1480,7 @@
     app.innerHTML = html;
     bindEvents();
     updateClock();
+    renderCaseManagerTrackingSystem();
   }
 
   function tabBtn(view,label,count,showZero){
@@ -1590,14 +1625,27 @@
     if(!c){
       return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">請從「門診追蹤總覽」點選一位病人。</div></div>';
     }
-    var fu = c.followUp || {};
-    return head +
-      '<div class="hfb-case-header">'+
-        '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</h2>'+
-        '<div class="sub">病歷號：'+esc(c.mrn||'—')+' ・ 編號：'+esc(c.caseNumber||'—')+'</div>'+
-        '<div class="sub">下次門診：'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+' ・ 追蹤醫師：'+esc(fu.doctor||'—')+'</div>'+
-      '</div>'+
-      '<div class="hfb-table-wrap"><div class="hfb-empty-side">已進入此病人的個管師門診追蹤頁面，後續可在此加入完整追蹤內容。</div></div>';
+    return head + '<iframe id="hfb-tracking-system-frame" class="hfb-tracking-system-frame" title="'+esc(c.name)+'門診追蹤系統"></iframe>';
+  }
+
+  function renderCaseManagerTrackingSystem(){
+    if(state.view!=='case_manager_followup') return;
+    var frame = document.getElementById('hfb-tracking-system-frame');
+    var c = state.cases.find(function(x){ return x.id===state.caseManagerFollowUpCaseId; });
+    if(!frame || !c) return;
+    openTrackingWindow(c, frame.contentWindow);
+    var resizeFrame = function(){
+      try{
+        var doc = frame.contentDocument;
+        if(doc && doc.documentElement) frame.style.height = Math.max(900,doc.documentElement.scrollHeight+8)+'px';
+      }catch(error){}
+    };
+    setTimeout(resizeFrame,80);
+    setTimeout(resizeFrame,300);
+    try{
+      var observer = new ResizeObserver(resizeFrame);
+      observer.observe(frame.contentDocument.documentElement);
+    }catch(error){}
   }
 
   function followUpOverviewPage(){
