@@ -1585,8 +1585,19 @@
   }
 
   function caseManagerFollowUpPage(){
-    return '<div class="hfb-overview-head"><h2>個管師門診追蹤</h2></div>'+
-      '<div class="hfb-table-wrap"><div class="hfb-empty-side">頁籤已建立，後續可在此加入個管師門診追蹤內容。</div></div>';
+    var c = state.cases.find(function(x){ return x.id===state.caseManagerFollowUpCaseId; });
+    var head = '<div class="hfb-overview-head"><h2>個管師門診追蹤</h2></div>';
+    if(!c){
+      return head + '<div class="hfb-table-wrap"><div class="hfb-empty-side">請從「門診追蹤」點選一位病人。</div></div>';
+    }
+    var fu = c.followUp || {};
+    return head +
+      '<div class="hfb-case-header">'+
+        '<h2>'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</h2>'+
+        '<div class="sub">病歷號：'+esc(c.mrn||'—')+' ・ 編號：'+esc(c.caseNumber||'—')+'</div>'+
+        '<div class="sub">下次門診：'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+' ・ 追蹤醫師：'+esc(fu.doctor||'—')+'</div>'+
+      '</div>'+
+      '<div class="hfb-table-wrap"><div class="hfb-empty-side">已進入此病人的個管師門診追蹤頁面，後續可在此加入完整追蹤內容。</div></div>';
   }
 
   function followUpOverviewPage(){
@@ -2241,7 +2252,10 @@
       row.onclick = function(){
         var cid = this.getAttribute('data-followup-case');
         var c = state.cases.find(function(x){ return x.id===cid; });
-        if(c) openTrackingWindow(c);
+        if(!c) return;
+        state.caseManagerFollowUpCaseId = cid;
+        state.view = 'case_manager_followup';
+        render();
       };
     });
 
