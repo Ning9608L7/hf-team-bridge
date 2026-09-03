@@ -720,7 +720,7 @@
         pastPanelHtml += '<div class="past-record">'+
           '<div class="past-time-row"><div class="past-time">'+esc((rec.recordedAt||'').replace('T',' '))+
             (rec.recordedByName ? '<span class="past-recorder">評估者:'+esc(rec.recordedByName)+(rec.recordedByRole?' '+esc(rec.recordedByRole):'')+'</span>' : '')+
-          '</div><button type="button" class="past-delete" data-delete-tracking="'+recordKey+'" title="刪除此筆評估">🗑 刪除</button></div>'+
+          '</div><div class="past-actions"><button type="button" class="past-edit" data-edit-tracking="'+recordKey+'" title="修改此筆評估">✎ 修改</button><button type="button" class="past-delete" data-delete-tracking="'+recordKey+'" title="刪除此筆評估">🗑 刪除</button></div></div>'+
           '<div class="past-rows">'+
           '<div class="past-row"><span class="past-label">血壓</span><span class="past-value">'+esc(rec.sbp||'—')+'/'+esc(rec.dbp||'—')+' mmHg</span></div>'+
           '<div class="past-row"><span class="past-label">心跳</span><span class="past-value">'+esc(rec.hr||'—')+' bpm</span></div>'+
@@ -854,7 +854,11 @@
         '.past-record:last-child{margin-bottom:0;}'+
         '.past-time-row{display:flex; align-items:flex-start; justify-content:space-between; gap:10px; padding-right:4px;}'+
         '.past-time{font-size:17px; font-weight:700; color:#4A2E52; margin-bottom:10px;}'+
-        '.past-delete{margin:0; padding:7px 11px; width:auto; flex:0 0 auto; font-size:15px; line-height:1.1; font-family:inherit; font-weight:700; color:#B63E49; background:#FFF1F2; border:1.5px solid #D85B65; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;}'+
+        '.past-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;}'+
+        '.past-edit,.past-delete{margin:0; padding:7px 11px; width:auto; flex:0 0 auto; font-size:15px; line-height:1.1; font-family:inherit; font-weight:700; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;}'+
+        '.past-edit{color:#287785;background:#E9F8F5;border:1.5px solid #58B8AC;}'+
+        '.past-edit:hover,.past-edit.saving{color:#fff;background:#389D92;}'+
+        '.past-delete{color:#B63E49; background:#FFF1F2; border:1.5px solid #D85B65;}'+
         '.past-delete:hover{color:#fff; background:#D85B65;}'+
         '.past-recorder{font-size:14px; font-weight:600; color:#A0398A; margin-left:10px;}'+
         '.past-rows{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:8px 10px;margin:4px 0 12px;}'+
@@ -1017,6 +1021,20 @@
           '[""].concat('+JSON.stringify(FREQ_OPTIONS)+').forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=v||"頻次";freq.appendChild(o);});'+
           'row.appendChild(toggle);row.appendChild(drug);row.appendChild(dose);row.appendChild(freq);document.getElementById("tkm-extra-rows").appendChild(row);drug.focus();'+
         '};'+
+        'var trackingHistoryForEdit='+JSON.stringify(history)+';'+
+        'function setTrackingValue(id,value){var el=document.getElementById(id);if(el)el.value=value==null?"":value;}'+
+        'function loadTrackingRecordForEdit(rec){'+
+          'var simple={time:"recordedAt",sbp:"sbp",dbp:"dbp",hr:"hr",weight:"weight",lvef:"lvef","lvef-date":"lvefDate",sixmwt:"sixMwt","sixmwt-date":"sixMwtDate",edema:"edema",dyspnea:"dyspnea",nyha:"nyha",note:"note",nextvisit:"nextVisitDate",session:"followUpSession",doctor:"followUpDoctor"};'+
+          'Object.keys(simple).forEach(function(k){setTrackingValue("tk-"+k,rec[simple[k]]);});'+
+          'var labs=rec.labs||{};["ntprobnp","bun","cr","egfr","na","k","ldl","hba1c"].forEach(function(k){setTrackingValue("tk-"+k,labs[k]);});setTrackingValue("tk-lab-other",labs.other);'+
+          'var meds=rec.meds||{};'+
+          JSON.stringify(MED_CLASSES.map(function(x){return x.key;}))+'.forEach(function(k){var m=meds[k]||{};var toggle=document.getElementById("tkm-toggle-"+k);if(toggle)toggle.classList.toggle("on",!!m.on);setTrackingValue("tkm-drug-"+k,m.drug);setTrackingValue("tkm-dose-"+k,m.dose);setTrackingValue("tkm-freq-"+k,m.freq);});'+
+          'document.querySelectorAll("[data-tkm-extra]").forEach(function(row){row.remove();});'+
+          '(meds.extraOthers||[]).forEach(function(m){document.getElementById("tkm-add-extra-other").click();var rows=document.querySelectorAll("[data-tkm-extra]");var row=rows[rows.length-1];row.setAttribute("data-extra-id",m.id||"");row.querySelector("[data-tkm-extra-toggle]").classList.toggle("on",!!m.on);row.querySelector("[data-tkm-extra-drug]").value=m.drug||"";row.querySelector("[data-tkm-extra-dose]").value=m.dose||"";row.querySelector("[data-tkm-extra-freq]").value=m.freq||"";});'+
+          'var edu=rec.education||[];'+JSON.stringify(EDUCATION_OPTIONS)+'.forEach(function(opt,i){var el=document.getElementById("tk-edu-"+i);if(el)el.classList.toggle("on",edu.indexOf(opt)>=0);});'+
+          'var current=document.querySelector(".tk-current");if(current)current.scrollIntoView({behavior:"smooth",block:"start"});'+
+        '}'+
+        'document.querySelectorAll("[data-edit-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-edit-tracking"));if(window.hfbEditingRecordKey===key){document.getElementById("tk-save").click();return;}var rec=trackingHistoryForEdit.find(function(r){return String(r.recordId||r.recordedAt||"")===String(key);});if(!rec)return;window.hfbEditingRecordKey=key;document.querySelectorAll("[data-edit-tracking]").forEach(function(b){b.classList.remove("saving");b.textContent="✎ 修改";});this.classList.add("saving");this.textContent="💾 存檔";loadTrackingRecordForEdit(rec);};});'+
         'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if((window.opener||window.parent)&&(window.opener||window.parent).deleteTrackingRecord){(window.opener||window.parent).deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
@@ -1038,6 +1056,7 @@
             'meds.extraOthers.push({id:row.getAttribute("data-extra-id")||("tracking-"+Date.now()+"-"+Math.random().toString(16).slice(2)),on:row.querySelector("[data-tkm-extra-toggle]").classList.contains("on"),drug:drug,dose:dose,freq:freq});'+
           '});'+
           'var entry = {'+
+            'recordId: window.hfbEditingRecordKey || "",'+
             'recordedAt: document.getElementById("tk-time").value,'+
             'sbp: document.getElementById("tk-sbp").value,'+
             'dbp: document.getElementById("tk-dbp").value,'+
@@ -1117,16 +1136,21 @@
     if(!c) return;
     if(!c.trackingRecords) c.trackingRecords = [];
     var entry = data.entry;
-    entry.recordedByName = (currentMember() && currentMember().name) || '';
+    var existingIndex = entry.recordId ? c.trackingRecords.findIndex(function(rec){
+      return String(rec.recordId || rec.recordedAt || '')===String(entry.recordId);
+    }) : -1;
+    var existingRecord = existingIndex>=0 ? c.trackingRecords[existingIndex] : null;
+    entry.recordedByName = (existingRecord && existingRecord.recordedByName) || (currentMember() && currentMember().name) || '';
     entry.recordId = entry.recordId || uid();
-    entry.recordedByRole = ROLES[state.identity] ? ROLES[state.identity].label : '';
+    entry.recordedByRole = (existingRecord && existingRecord.recordedByRole) || (ROLES[state.identity] ? ROLES[state.identity].label : '');
     if(!c.followUp) c.followUp = {nextVisitDate:'', doctor:'', session:'', note:'', trackingDone:false};
     c.followUp.nextVisitDate = entry.nextVisitDate || '';
     c.followUp.session = entry.followUpSession || '';
     c.followUp.doctor = entry.followUpDoctor || '';
     c.followUp.trackingDone = false;
     if(entry.lvef) c.lvef = entry.lvef;
-    c.trackingRecords.push(entry);
+    if(existingIndex>=0) c.trackingRecords[existingIndex] = entry;
+    else c.trackingRecords.push(entry);
     c.trackingRecords.sort(function(a,b){ return (b.recordedAt||'').localeCompare(a.recordedAt||''); });
     c.trackingRecords = c.trackingRecords.slice(0,2);
     saveCases();
