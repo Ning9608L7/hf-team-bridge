@@ -412,7 +412,8 @@
     {key:'sglt2', label:'SGLT2i'},
     {key:'glp1', label:'GLP-1 RA'},
     {key:'diuretic', label:'利尿劑'},
-    {key:'other', label:'其他'}
+    {key:'other', label:'其他'},
+    {key:'other2', label:'其他 2'}
   ];
   var LAB_FIELDS = [
     {key:'ntprobnp', label:'NT-proBNP', unit:'pg/mL'},
@@ -472,6 +473,7 @@
     showNewCase: false,
     editingCaseId: null,
     showFollowUp: {},
+    showExtraOtherMeds: {},
     overviewHfFilter: '',
     followUpHfFilter: '',
     showAssign: {},
@@ -608,16 +610,21 @@
       DOSE_OPTIONS.forEach(function(d){ doseOptsC += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>'; });
       var freqOptsC = '<option value="">頻次</option>';
       FREQ_OPTIONS.forEach(function(f){ freqOptsC += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>'; });
-      var isWideMed = cls.key==='glp1' || cls.key==='other';
+      var isWideMed = cls.key==='glp1' || cls.key==='other' || cls.key==='other2';
       var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
-      tkmRowsHtml += '<div class="tkm-row">'+
+      var extraOtherStyle = cls.key==='other2' && !m.on && !m.drug ? ' style="display:none"' : '';
+      tkmRowsHtml += '<div class="tkm-row" id="tkm-row-'+cls.key+'"'+extraOtherStyle+'>'+
         '<button type="button" id="tkm-toggle-'+cls.key+'" class="tkm-toggle'+(m.on?' on':'')+'" onclick="this.classList.toggle(\'on\')">'+cls.label+'</button>'+
         '<input class="tkm-drug'+(isWideMed?' tkm-drug-wide':'')+'" id="tkm-drug-'+cls.key+'" value="'+esc(m.drug||'')+'" placeholder="'+medPlaceholder+'">'+
         (isWideMed ? '' : '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select><select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>')+
       '</div>';
     });
+    var latestOther2 = latestMeds.other2 || {on:false,drug:'',dose:'',freq:''};
+    if(!latestOther2.on && !latestOther2.drug){
+      tkmRowsHtml += '<button type="button" class="tkm-add-other" id="tkm-add-other" onclick="document.getElementById(\'tkm-row-other2\').style.display=\'flex\';this.style.display=\'none\';">＋ 新增其他藥物</button>';
+    }
 
-    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他'};
+    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他', other2:'其他 2'};
     function medsRowsHtmlFromEntry(r){
       var medsObj = r.meds || null;
       if(!medsObj){
@@ -840,6 +847,7 @@
         '.tkm-drug{flex:1.3; min-width:120px;}'+
         '.tkm-drug-wide{flex:1 1 320px;}'+
         '.tkm-row select{flex:0 0 92px;}'+
+        '.tkm-add-other{margin:4px 0 8px;padding:9px 15px;font-size:15px;color:#386b88;background:linear-gradient(135deg,#eef7ff,#e8faf5);border:1px dashed #69b9c5;border-radius:9px;}'+
         '.edu-chips{display:flex; flex-wrap:wrap; gap:9px;}'+
         '.edu-chip{margin-top:0; flex:0 0 auto; width:auto; background:#fff; color:#7A4C9E; border:1.5px solid #D9BEEF; padding:10px 16px; font-size:16px; font-weight:600; border-radius:20px;}'+
         '.edu-chip.on{background:#7A4C9E; color:#fff; border-color:#7A4C9E;}'+
@@ -1818,7 +1826,8 @@
       sglt2:{on:false,drug:'',dose:'',freq:''},
       glp1:{on:false,drug:'',dose:'',freq:''},
       diuretic:{on:false,drug:'',dose:'',freq:''},
-      other:{on:false,drug:'',dose:'',freq:''}
+      other:{on:false,drug:'',dose:'',freq:''},
+      other2:{on:false,drug:'',dose:'',freq:''}
     };
   }
 
@@ -1832,6 +1841,7 @@
       '<div class="hfb-meds-card">';
     MED_CLASSES.forEach(function(cls){
       var m = c.meds[cls.key] || {on:false, drug:'', dose:'', freq:''};
+      if(cls.key==='other2' && !state.showExtraOtherMeds[c.id] && !m.on && !m.drug) return;
       var doseOpts = '<option value="">顆數</option>';
       DOSE_OPTIONS.forEach(function(d){
         doseOpts += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>';
@@ -1840,9 +1850,9 @@
       FREQ_OPTIONS.forEach(function(f){
         freqOpts += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>';
       });
-      var isWideMed = cls.key==='glp1' || cls.key==='other';
+      var isWideMed = cls.key==='glp1' || cls.key==='other' || cls.key==='other2';
       var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
-      var drugField = cls.key==='other'
+      var drugField = (cls.key==='other' || cls.key==='other2')
         ? '<textarea class="hfb-med-drug hfb-med-drug-lg hfb-med-other" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="藥物名稱（可輸入多項）"'+(canEdit?'':' disabled')+'>'+esc(m.drug)+'</textarea>'
         : '<input class="hfb-med-drug'+(isWideMed?' hfb-med-drug-lg':'')+'" data-med-drug="'+cls.key+'" data-case="'+c.id+'" placeholder="'+medPlaceholder+'"'+(canEdit?'':' disabled')+' value="'+esc(m.drug)+'">';
       html += '<div class="hfb-med-row">'+
@@ -1854,6 +1864,10 @@
         ) +
       '</div>';
     });
+    var other2 = c.meds.other2 || {on:false,drug:'',dose:'',freq:''};
+    if(canEdit && !state.showExtraOtherMeds[c.id] && !other2.on && !other2.drug){
+      html += '<button type="button" class="hfb-add-other-med" data-add-other-med="'+c.id+'">＋ 新增其他藥物</button>';
+    }
     html += (canEdit ? '<div class="row" style="display:flex; align-items:center; gap:10px; margin-top:12px;">'+
         '<button class="hfb-btn-primary-sm" data-confirm-meds="'+c.id+'">確認</button>'+
         '<span class="hfb-meds-saved-msg" id="meds-saved-'+c.id+'" style="display:none; color:var(--status-done-ink); font-size:17px; font-weight:600;">✓ 已儲存</span>'+
@@ -2500,6 +2514,19 @@
       b.onclick = function(){
         var val = this.getAttribute('data-followup-filter');
         state.followUpHfFilter = (state.followUpHfFilter===val) ? '' : val;
+        render();
+      };
+    });
+
+    root.querySelectorAll('[data-add-other-med]').forEach(function(b){
+      b.onclick = function(){
+        var cid = this.getAttribute('data-add-other-med');
+        state.showExtraOtherMeds[cid] = true;
+        var c = state.cases.find(function(x){ return x.id===cid; });
+        if(c){
+          if(!c.meds) c.meds = emptyMeds();
+          if(!c.meds.other2) c.meds.other2 = {on:false,drug:'',dose:'',freq:''};
+        }
         render();
       };
     });
@@ -4076,6 +4103,18 @@
       inset 0 1px 0 rgba(255,255,255,.28) !important;
     text-shadow: 0 1px 2px rgba(43,72,139,.22);
   }
+
+  .hfb-add-other-med {
+    margin: 6px 0 2px !important;
+    padding: 8px 14px !important;
+    border: 1px dashed #69b9c5 !important;
+    border-radius: 9px !important;
+    background: linear-gradient(135deg,#eef7ff,#e8faf5) !important;
+    color: #386b88 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+  .hfb-add-other-med:hover { background: linear-gradient(135deg,#e1efff,#d9f6ef) !important; }
 
   .hfb-med-toggle.on::before {
     content: "✓";
