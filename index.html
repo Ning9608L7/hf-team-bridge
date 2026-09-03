@@ -618,12 +618,7 @@
         (isWideMed ? '' : '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select><select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>')+
       '</div>';
     });
-    var latestOther2 = latestMeds.other2 || {on:false,drug:'',dose:'',freq:''};
-    if(!latestOther2.on && !latestOther2.drug){
-      tkmRowsHtml += '<button type="button" class="tkm-add-other" id="tkm-add-other" onclick="document.getElementById(\'tkm-row-other2\').style.display=\'flex\';this.style.display=\'none\';">＋ 新增其他藥物</button>';
-    }
-
-    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他', other2:'其他 2'};
+    var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他'};
     function medsRowsHtmlFromEntry(r){
       var medsObj = r.meds || null;
       if(!medsObj){
@@ -4191,10 +4186,19 @@
     font-weight: 700 !important;
   }
   .hfb-add-other-med:hover { background: linear-gradient(135deg,#e1efff,#d9f6ef) !important; }
-  .hfb-extra-med-row { grid-template-columns:190px minmax(180px,1fr) 110px 110px 38px !important; }
+  .hfb-extra-med-row { flex-wrap:nowrap !important; }
+  .hfb-extra-med-row .hfb-med-drug { flex:1 1 240px; }
+  .hfb-extra-med-row .hfb-med-dose,
+  .hfb-extra-med-row .hfb-med-freq { flex:0 0 110px; }
   .hfb-remove-extra-med { width:34px;height:34px;padding:0!important;border:1px solid #e2a4aa!important;border-radius:8px!important;background:#fff3f4!important;color:#b23b47!important;font-size:23px!important;line-height:1!important; }
   .hfb-remove-extra-med:hover { background:#d95d68!important;color:#fff!important; }
-  @media(max-width:760px){.hfb-extra-med-row{grid-template-columns:1fr!important;}.hfb-remove-extra-med{justify-self:end;}}
+  @media(max-width:760px){
+    .hfb-extra-med-row{flex-wrap:wrap!important;}
+    .hfb-extra-med-row .hfb-med-toggle{flex:1 1 100%;}
+    .hfb-extra-med-row .hfb-med-drug{flex:1 1 100%;}
+    .hfb-extra-med-row .hfb-med-dose,.hfb-extra-med-row .hfb-med-freq{flex:1 1 42%;}
+    .hfb-remove-extra-med{margin-left:auto;}
+  }
 
   .hfb-med-toggle.on::before {
     content: "✓";
