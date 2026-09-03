@@ -1697,8 +1697,6 @@
       '</div>'+
     '</div>';
 
-    body += followUpSection(c);
-
     body += '<div class="hfb-clinical-cols"><div class="hfb-clinical-col">'+medsSection(c)+'</div><div class="hfb-clinical-col">'+labsSection(c)+'</div></div>';
 
     body += '<div class="hfb-section-title"><span>各職類任務狀態</span>'+
@@ -1902,6 +1900,23 @@
     var historyOther = selectedHistory.indexOf('其他')!==-1
       ? '<input class="hfb-history-other" id="nc-history-other" value="'+esc(state.newCaseDraft.medicalHistoryOther||'')+'" placeholder="請輸入其他過去病史">'
       : '';
+    var followUpFields = '';
+    if(editing){
+      var doctorOpts = '<option value="">選擇醫師</option>';
+      DOCTOR_OPTIONS.forEach(function(d){
+        doctorOpts += '<option value="'+esc(d)+'"'+(state.newCaseDraft.followUpDoctor===d?' selected':'')+'>'+esc(d)+'</option>';
+      });
+      var sessionOpts = '<option value="">選擇時段</option>';
+      SESSION_OPTIONS.forEach(function(s){
+        sessionOpts += '<option value="'+esc(s)+'"'+(state.newCaseDraft.followUpSession===s?' selected':'')+'>'+esc(s)+'</option>';
+      });
+      followUpFields =
+        '<div class="hfb-section-title"><span>出院與門診追蹤資料</span></div>'+
+        '<div class="hfb-field"><label>出院日期</label><input type="date" id="nc-dischargedate" value="'+esc(state.newCaseDraft.dischargeDate||'')+'"></div>'+
+        '<div class="hfb-field"><label>下次門診追蹤日期</label><input type="date" id="nc-nextvisit" value="'+esc(state.newCaseDraft.followUpNextVisitDate||'')+'"></div>'+
+        '<div class="hfb-field"><label>追蹤門診醫師／時段</label><div class="hfb-doctor-row"><select id="nc-followup-doctor">'+doctorOpts+'</select><select id="nc-followup-session">'+sessionOpts+'</select></div></div>'+
+        '<div class="hfb-field"><label>追蹤重點備註</label><textarea id="nc-followup-note" placeholder="例如：返家後每日量體重、水分限制、用藥遵從性追蹤…">'+esc(state.newCaseDraft.followUpNote||'')+'</textarea></div>';
+    }
     return '<div class="hfb-modal-mask"><div class="hfb-modal">'+
       '<h3>'+(editing?'編輯個案基本資料':'建立新個案')+'</h3>'+
       (editing ? '<div class="hfb-edit-note">🔐 此為個管師/醫師專用的管理入口,一般職類無法進入編輯</div>' : '') +
@@ -1920,6 +1935,7 @@
       '<div class="hfb-field"><label>住院日期</label><input type="date" id="nc-admdate" value="'+esc(state.newCaseDraft.admissionDate)+'"></div>'+
       '<div class="hfb-field"><label>收案日期</label><input type="date" id="nc-date" value="'+esc(state.newCaseDraft.date)+'"></div>'+
       '<div class="hfb-field"><label>收案備註(選填)</label><textarea id="nc-note" placeholder="EF 30%,近期因心衰竭急性惡化入院…">'+esc(state.newCaseDraft.note)+'</textarea></div>'+
+      followUpFields+
       '<div class="row" style="display:flex; gap:8px; margin-top:4px;">'+
         '<button class="hfb-btn-primary-sm" id="nc-submit">'+(editing?'儲存修改':'建立個案')+'</button>'+
         '<button class="hfb-btn-sm" id="nc-cancel">取消</button>'+
@@ -2349,7 +2365,12 @@
         birthday: c.birthday || '', idnumber: c.idnumber || '', admissionDate: c.admissionDate || todayStr(),
         height: c.height || '', weight: c.weight || '',
         medicalHistory: Array.isArray(c.medicalHistory) ? c.medicalHistory.slice() : [],
-        medicalHistoryOther: c.medicalHistoryOther || ''
+        medicalHistoryOther: c.medicalHistoryOther || '',
+        dischargeDate: c.dischargeDate || '',
+        followUpNextVisitDate: (c.followUp && c.followUp.nextVisitDate) || '',
+        followUpDoctor: (c.followUp && c.followUp.doctor) || '',
+        followUpSession: (c.followUp && c.followUp.session) || '',
+        followUpNote: (c.followUp && c.followUp.note) || ''
       };
       state.showNewCase = true;
       render();
@@ -2546,6 +2567,11 @@
       }
       var idnumber = document.getElementById('nc-idnumber').value.trim();
       var admissionDate = document.getElementById('nc-admdate').value || '';
+      var dischargeDateEl = document.getElementById('nc-dischargedate');
+      var nextVisitEl = document.getElementById('nc-nextvisit');
+      var followUpDoctorEl = document.getElementById('nc-followup-doctor');
+      var followUpSessionEl = document.getElementById('nc-followup-session');
+      var followUpNoteEl = document.getElementById('nc-followup-note');
       var medicalHistory = (state.newCaseDraft.medicalHistory || []).slice();
       var medicalHistoryOther = (state.newCaseDraft.medicalHistoryOther || '').trim();
 
@@ -2566,6 +2592,15 @@
           existing.bmi = bmi;
           existing.medicalHistory = medicalHistory;
           existing.medicalHistoryOther = medicalHistoryOther;
+          existing.dischargeDate = dischargeDateEl ? dischargeDateEl.value : (existing.dischargeDate || '');
+          var previousFollowUp = existing.followUp || {};
+          existing.followUp = {
+            nextVisitDate: nextVisitEl ? nextVisitEl.value : (previousFollowUp.nextVisitDate || ''),
+            doctor: followUpDoctorEl ? followUpDoctorEl.value : (previousFollowUp.doctor || ''),
+            session: followUpSessionEl ? followUpSessionEl.value : (previousFollowUp.session || ''),
+            note: followUpNoteEl ? followUpNoteEl.value.trim() : (previousFollowUp.note || ''),
+            trackingDone: !!previousFollowUp.trackingDone
+          };
           saveCases();
         }
         state.activeCaseId = state.editingCaseId;
