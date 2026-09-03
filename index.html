@@ -740,8 +740,10 @@
         '<div class="basic-columns focused-columns">'+
           '<section class="basic-card basic-admission"><h2><span class="basic-icon">🏥</span>身體與住院資訊</h2>'+
             '<div class="body-metrics"><div><small>身高</small><strong>'+esc(c.height||'—')+'</strong><small>cm</small></div><div><small>體重</small><strong>'+esc(c.weight||'—')+'</strong><small>kg</small></div><div><small>BMI</small><strong>'+esc(c.bmi||calculateBmi(c.height,c.weight)||'—')+'</strong><small>kg/m²</small></div></div>'+
-            '<div class="basic-row"><span>住院日期</span><strong>'+esc(c.admissionDate||'—')+'</strong></div>'+
-            '<div class="basic-row"><span>出院日期</span><strong>'+esc(c.dischargeDate||'—')+'</strong></div>'+
+            '<div class="stay-dates">'+
+              '<div><span>住院日期</span><strong>'+esc(c.admissionDate||'—')+'</strong></div>'+
+              '<div><span>出院日期</span><strong>'+esc(c.dischargeDate||'—')+'</strong></div>'+
+            '</div>'+
             '<div class="admission-metrics">'+
               '<div><span class="qr-label">最近一次六分鐘行走測試</span><strong class="qr-value">'+sixMwtSummary+'</strong></div>'+
               '<div><span class="qr-label">最近一次 LVEF</span><strong class="qr-value">'+lvefSummary+'</strong></div>'+
@@ -891,7 +893,23 @@
         '.admission-metrics>div{display:flex;flex-direction:column;gap:4px;background:linear-gradient(135deg,#eaf6ff,#e8faf5);border:1px solid #c6e3e5;border-radius:10px;padding:10px 11px;}'+
         '.admission-metrics .qr-label{color:#43828d;font-size:13px;min-width:0;}'+
         '.admission-metrics .qr-value{color:#234f68;font-size:17px;}'+
-        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-medications{grid-column:1/-1;}.basic-history{grid-column:auto;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history,.basic-medications{grid-column:auto;}.basic-patient-title{align-items:flex-start;}.patient-inline-meta{width:100%;}.admission-metrics{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
+        '.basic-admission{padding:17px 18px 18px!important;background:linear-gradient(155deg,#fff 0%,#f8fcfc 100%)!important;}'+
+        '.basic-admission h2{margin-bottom:8px!important;}'+
+        '.basic-admission .body-metrics{gap:0;margin:0 0 12px;padding:8px 0 10px;border-bottom:1px solid #dce9ed;}'+
+        '.basic-admission .body-metrics div{position:relative;background:transparent;border-radius:0;padding:4px 8px;}'+
+        '.basic-admission .body-metrics div:not(:last-child):after{content:"";position:absolute;right:0;top:12%;height:76%;width:1px;background:#dce9ed;}'+
+        '.basic-admission .body-metrics strong{font-size:25px;line-height:1.05;color:#1f5f78;}'+
+        '.basic-admission .body-metrics small:first-child{font-size:13px;color:#6f8c99;margin-bottom:4px;}'+
+        '.basic-admission .body-metrics small:last-child{font-size:11px;color:#91a4ad;margin-top:3px;}'+
+        '.stay-dates{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}'+
+        '.stay-dates>div{display:flex;align-items:center;justify-content:space-between;gap:9px;padding:9px 11px;border-radius:9px;background:#f1f8f7;}'+
+        '.stay-dates span{color:#718b97;font-size:14px;}'+
+        '.stay-dates strong{color:#244b64;font-size:16px;}'+
+        '.basic-admission .admission-metrics{gap:9px;margin:0;}'+
+        '.basic-admission .admission-metrics>div{min-height:66px;justify-content:center;padding:9px 11px;background:linear-gradient(135deg,#edf8fb,#edfaf6);border-color:#cde4e6;box-shadow:inset 0 1px 0 rgba(255,255,255,.8);}'+
+        '.basic-admission .admission-metrics .qr-label{font-size:12px;line-height:1.25;color:#4e8790;}'+
+        '.basic-admission .admission-metrics .qr-value{font-size:18px;line-height:1.2;color:#174f6c;}'+
+        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-medications{grid-column:1/-1;}.basic-history{grid-column:auto;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history,.basic-medications{grid-column:auto;}.basic-patient-title{align-items:flex-start;}.patient-inline-meta{width:100%;}.admission-metrics,.stay-dates{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style></head><body>'+
       basicPlatformHtml+
       '<div class="card"><h2>過往追蹤紀錄</h2><div class="hlist">'+historyHtml+'</div></div>'+
