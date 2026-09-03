@@ -1936,7 +1936,6 @@
         '<input class="hfb-med-drug" data-extra-med-drug="'+m.id+'" data-case="'+c.id+'" value="'+esc(m.drug||'')+'" placeholder="藥物名稱"'+(canEdit?'':' disabled')+'>'+
         '<select class="hfb-med-dose" data-extra-med-dose="'+m.id+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+doseOpts+'</select>'+
         '<select class="hfb-med-freq" data-extra-med-freq="'+m.id+'" data-case="'+c.id+'"'+(canEdit?'':' disabled')+'>'+freqOpts+'</select>'+
-        (canEdit?'<button type="button" class="hfb-remove-extra-med" data-remove-extra-med="'+m.id+'" data-case="'+c.id+'" title="刪除此欄位">×</button>':'')+
       '</div>';
     });
     if(canEdit){
@@ -2635,15 +2634,6 @@
         m.freq=this.value; saveCases();
       };
     });
-    root.querySelectorAll('[data-remove-extra-med]').forEach(function(b){
-      b.onclick=function(){
-        var cid=this.getAttribute('data-case'), mid=this.getAttribute('data-remove-extra-med');
-        var c=state.cases.find(function(x){return x.id===cid;}); if(!c)return;
-        c.meds.extraOthers=extraOtherMeds(c.meds).filter(function(x){return x.id!==mid;});
-        saveCases(); render();
-      };
-    });
-
     root.querySelectorAll('[data-med-toggle]').forEach(function(b){
       b.onclick = function(){
         var key = this.getAttribute('data-med-toggle');
@@ -2697,7 +2687,20 @@
       b.onclick = function(){
         var cid = this.getAttribute('data-confirm-meds');
         var c = state.cases.find(function(x){ return x.id===cid; });
-        if(c) saveCases();
+        var removedBlankRows = false;
+        if(c){
+          var extras = extraOtherMeds(c.meds);
+          var cleaned = extras.filter(function(m){
+            return !!String(m.drug||'').trim() || !!String(m.dose||'').trim() || !!String(m.freq||'').trim();
+          });
+          removedBlankRows = cleaned.length!==extras.length;
+          c.meds.extraOthers = cleaned;
+          saveCases();
+        }
+        if(removedBlankRows){
+          render();
+          return;
+        }
         var msg = document.getElementById('meds-saved-'+cid);
         if(msg){
           msg.style.display = 'inline';
