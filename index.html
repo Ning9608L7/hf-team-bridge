@@ -1793,19 +1793,30 @@
     var frame = document.getElementById('hfb-tracking-system-frame');
     var c = state.cases.find(function(x){ return x.id===state.caseManagerFollowUpCaseId; });
     if(!frame || !c) return;
-    openTrackingWindow(c, frame.contentWindow);
-    var resizeFrame = function(){
+
+    var paintTrackingSystem = function(){
+      if(!frame.isConnected || frame.dataset.trackingRendered==='1') return;
+      frame.dataset.trackingRendered = '1';
+      openTrackingWindow(c, frame.contentWindow);
+
+      var resizeFrame = function(){
+        try{
+          var doc = frame.contentDocument;
+          if(doc && doc.documentElement) frame.style.height = Math.max(900,doc.documentElement.scrollHeight+8)+'px';
+        }catch(error){}
+      };
+      setTimeout(resizeFrame,80);
+      setTimeout(resizeFrame,300);
       try{
-        var doc = frame.contentDocument;
-        if(doc && doc.documentElement) frame.style.height = Math.max(900,doc.documentElement.scrollHeight+8)+'px';
+        var observer = new ResizeObserver(resizeFrame);
+        observer.observe(frame.contentDocument.documentElement);
       }catch(error){}
     };
-    setTimeout(resizeFrame,80);
-    setTimeout(resizeFrame,300);
-    try{
-      var observer = new ResizeObserver(resizeFrame);
-      observer.observe(frame.contentDocument.documentElement);
-    }catch(error){}
+
+    /* Wait until the newly inserted iframe has completed its initial about:blank
+       navigation. Writing synchronously here can be cleared by that navigation. */
+    frame.addEventListener('load', paintTrackingSystem, {once:true});
+    setTimeout(paintTrackingSystem, 0);
   }
 
   function followUpOverviewPage(){
