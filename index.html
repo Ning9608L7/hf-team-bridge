@@ -709,12 +709,12 @@
           '<div class="past-row"><span class="past-label">LVEF</span><span class="past-value">'+esc(rec.lvef||'—')+(rec.lvef?'%':'')+(rec.lvefDate?'（'+esc(rec.lvefDate)+'）':'')+'</span></div>'+
           '<div class="past-row"><span class="past-label">6MWT</span><span class="past-value">'+esc(rec.sixMwt||'—')+(rec.sixMwt?' m':'')+(rec.sixMwtDate?'（'+esc(rec.sixMwtDate)+'）':'')+'</span></div>'+
           '</div>'+
-          '<div class="past-row"><span class="past-label">抽血</span></div>'+
-          '<div class="mp-list mp-list-2col">'+labsRowsHtmlFromEntry(rec)+'</div>'+
-          '<div class="past-row"><span class="past-label">藥物</span></div>'+
-          '<div class="mp-list">'+medsRowsHtmlFromEntry(rec)+'</div>'+
-          '<div class="past-row"><span class="past-label">衛教</span><span class="past-value">'+esc((rec.education&&rec.education.length)?rec.education.join('、'):'—')+'</span></div>'+
-          '<div class="past-row"><span class="past-label">備註</span><span class="past-value">'+esc(rec.note||'—')+'</span></div>'+
+          '<div class="past-row past-section"><span class="past-label">抽血數據</span></div>'+
+          '<div class="mp-list mp-list-2col past-data-block">'+labsRowsHtmlFromEntry(rec)+'</div>'+
+          '<div class="past-row past-section"><span class="past-label">目前用藥</span></div>'+
+          '<div class="mp-list past-med-block">'+medsRowsHtmlFromEntry(rec)+'</div>'+
+          '<div class="past-row past-wide-row"><span class="past-label">衛教</span><span class="past-value">'+esc((rec.education&&rec.education.length)?rec.education.join('、'):'—')+'</span></div>'+
+          '<div class="past-row past-wide-row"><span class="past-label">備註</span><span class="past-value">'+esc(rec.note||'—')+'</span></div>'+
           '</div>';
       });
     } else {
@@ -833,10 +833,18 @@
         '.past-delete{margin:0; padding:7px 11px; width:auto; flex:0 0 auto; font-size:15px; line-height:1.1; font-family:inherit; font-weight:700; color:#B63E49; background:#FFF1F2; border:1.5px solid #D85B65; border-radius:8px; cursor:pointer; display:inline-flex; align-items:center; gap:4px;}'+
         '.past-delete:hover{color:#fff; background:#D85B65;}'+
         '.past-recorder{font-size:14px; font-weight:600; color:#A0398A; margin-left:10px;}'+
-        '.past-rows{display:grid; grid-template-columns:1fr 1fr; gap:4px 16px;}'+
-        '.past-row{display:flex; gap:8px; font-size:18px; margin-bottom:4px;}'+
-        '.past-label{color:#8B6FA3; min-width:56px; flex-shrink:0;}'+
+        '.past-rows{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr));gap:8px 10px;margin:4px 0 12px;}'+
+        '.past-row{display:grid;grid-template-columns:62px minmax(0,1fr);align-items:center;gap:8px;font-size:17px;margin:0;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,.70);}'+
+        '.past-label{color:#658399;min-width:0;flex-shrink:0;font-size:15px;}'+
         '.past-value{font-weight:600; color:#4A2E52; min-width:0; overflow-wrap:anywhere; word-break:break-word;}'+
+        '.past-section{display:block;margin:12px 0 6px;padding:8px 10px;border-radius:8px;background:linear-gradient(90deg,#dff1f7,#e5f7f1);border-left:4px solid #58abc0;}'+
+        '.past-section .past-label{color:#287785;font-size:16px;font-weight:800;}'+
+        '.past-data-block,.past-med-block{margin:0 0 8px;padding:10px 12px;border:1px solid #d5e6eb;border-radius:9px;background:rgba(255,255,255,.62);}'+
+        '.past-med-block{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;}'+
+        '.past-record .mp-row{grid-template-columns:64px minmax(120px,1fr) 44px 44px;gap:6px 8px;width:100%;font-size:16px;}'+
+        '.past-record .mp-pill{min-width:58px;padding:3px 8px;font-size:13px;}'+
+        '.past-record .mp-dose,.past-record .mp-freq{font-size:15px;white-space:nowrap;}'+
+        '.past-wide-row{grid-template-columns:62px minmax(0,1fr);margin-top:7px;border:1px solid #d9e8ec;background:#f8fcfc;}'+
         '.past-divider{display:none;}'+
         '.tk-current{min-width:0; background:#FBEFF7; border:1.5px solid #EBB8DC; border-radius:12px; padding:22px 24px; box-sizing:border-box; overflow:hidden;}'+
         '.tk-current-title{font-size:19px; font-weight:700; color:#A0398A; margin-bottom:4px;}'+
@@ -880,7 +888,7 @@
         '.admission-metrics>div{display:flex;flex-direction:column;gap:4px;background:linear-gradient(135deg,#eaf6ff,#e8faf5);border:1px solid #c6e3e5;border-radius:10px;padding:10px 11px;}'+
         '.admission-metrics .qr-label{color:#43828d;font-size:13px;min-width:0;}'+
         '.admission-metrics .qr-value{color:#234f68;font-size:17px;}'+
-        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-history{grid-column:1/-1;}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history{grid-column:auto;}.admission-metrics{grid-template-columns:1fr;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
+        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-history{grid-column:1/-1;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history{grid-column:auto;}.admission-metrics{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style></head><body>'+
       basicPlatformHtml+
       '<div class="card"><h2>出院時用藥</h2><div class="mgrid">'+medsHtml+'</div></div>'+
