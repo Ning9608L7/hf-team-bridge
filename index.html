@@ -732,15 +732,14 @@
     var collectorText = (c.initiatorName?esc(c.initiatorName)+'・':'')+esc(ROLES[c.initiator]?ROLES[c.initiator].label:'');
     var basicPlatformHtml =
       '<div class="basic-platform">'+
-        '<div class="basic-title-row"><h1>'+esc(c.name)+(gender?'<span class="gender-badge">'+esc(gender)+'</span>':'')+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1><span class="basic-system-label">門診追蹤系統</span></div>'+
-        '<div class="basic-columns">'+
-          '<section class="basic-card basic-person"><h2><span class="basic-icon">👤</span>個人與身體資料</h2>'+
-            '<div class="basic-row"><span>病歷號</span><strong>'+esc(c.mrn||'—')+'</strong></div>'+
-            '<div class="basic-row"><span>生日</span><strong>'+esc(c.birthday||'—')+(age!==null?'（'+age+'歲）':'')+'</strong></div>'+
+        '<div class="basic-title-row">'+
+          '<div class="basic-patient-title"><h1>'+esc(c.name)+(gender?'<span class="gender-badge">'+esc(gender)+'</span>':'')+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1>'+
+          '<div class="patient-inline-meta"><span>病歷號 <strong>'+esc(c.mrn||'—')+'</strong></span><span>生日 <strong>'+esc(c.birthday||'—')+(age!==null?'（'+age+'歲）':'')+'</strong></span></div></div>'+
+          '<span class="basic-system-label">門診追蹤系統</span>'+
+        '</div>'+
+        '<div class="basic-columns focused-columns">'+
+          '<section class="basic-card basic-admission"><h2><span class="basic-icon">🏥</span>身體與住院資訊</h2>'+
             '<div class="body-metrics"><div><small>身高</small><strong>'+esc(c.height||'—')+'</strong><small>cm</small></div><div><small>體重</small><strong>'+esc(c.weight||'—')+'</strong><small>kg</small></div><div><small>BMI</small><strong>'+esc(c.bmi||calculateBmi(c.height,c.weight)||'—')+'</strong><small>kg/m²</small></div></div>'+
-          '</section>'+
-          '<section class="basic-card basic-admission"><h2><span class="basic-icon">🏥</span>住院資訊</h2>'+
-            '<div class="basic-row"><span>床號</span><strong>'+esc(c.ward||'—')+'</strong></div>'+
             '<div class="basic-row"><span>住院日期</span><strong>'+esc(c.admissionDate||'—')+'</strong></div>'+
             '<div class="basic-row"><span>出院日期</span><strong>'+esc(c.dischargeDate||'—')+'</strong></div>'+
             '<div class="admission-metrics">'+
@@ -752,6 +751,7 @@
             '<div class="basic-stack"><span>過去病史</span><strong>'+historyText+'</strong></div>'+
             '<div class="basic-stack"><span>收案備註</span><strong>'+esc(c.note||'—')+'</strong></div>'+
           '</section>'+
+          '<section class="basic-card basic-medications"><h2><span class="basic-icon">💊</span>出院時用藥</h2><div class="mgrid">'+medsHtml+'</div></section>'+
         '</div>'+
       '</div>';
 
@@ -859,13 +859,22 @@
         '.basic-platform{background:linear-gradient(135deg,#f5f9ff,#f0fbf8);border:1px solid #bfe0e4;border-radius:18px;padding:22px;margin-bottom:22px;box-shadow:0 10px 28px rgba(61,126,156,.10);}'+
         '.basic-title-row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px;}'+
         '.basic-title-row h1{color:#173a5e;}'+
+        '.basic-patient-title{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}'+
+        '.patient-inline-meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}'+
+        '.patient-inline-meta span{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:rgba(255,255,255,.76);border:1px solid #cbe1e7;color:#718a9a;font-size:15px;}'+
+        '.patient-inline-meta strong{color:#244c68;font-size:16px;}'+
         '.basic-system-label{font-size:16px;color:#5b88a0;}'+
         '.gender-badge{font-size:16px;color:#b84f78;background:#fdebf2;border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;}'+
         '.basic-columns{display:grid;grid-template-columns:1fr 1fr 1.12fr;gap:14px;}'+
+        '.focused-columns{grid-template-columns:1.08fr 1fr 1.12fr;}'+
         '.basic-card{position:relative;overflow:hidden;background:rgba(255,255,255,.94);border:1px solid #cddfeb;border-radius:15px;padding:15px 17px;box-shadow:0 6px 18px rgba(45,103,136,.08);}'+
         '.basic-card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(#43b8b0,#5d92e7);}'+
         '.basic-admission:before{background:linear-gradient(#5bb7df,#68d3c0);}'+
         '.basic-history:before{background:linear-gradient(#72b8cc,#83d2bb);}'+
+        '.basic-medications:before{background:linear-gradient(#5e8fe9,#68d3c0);}'+
+        '.basic-medications .mgrid{display:flex;flex-direction:column;gap:7px;}'+
+        '.basic-medications .mrow{display:grid;grid-template-columns:minmax(92px,auto) minmax(0,1fr);gap:8px;margin:0;padding:6px 8px;border-radius:8px;background:#f5fbfa;font-size:15px;line-height:1.35;}'+
+        '.basic-medications .mtag{min-width:0;color:#287785!important;font-size:14px;}'+
         '.basic-card h2{display:flex;align-items:center;gap:8px;color:#315f7d!important;font-size:18px!important;margin:0 0 10px!important;padding-bottom:9px;border-bottom:1px solid #d9e7ed;}'+
         '.basic-icon{display:inline-flex;width:31px;height:31px;align-items:center;justify-content:center;border-radius:9px;background:#edf7fa;}'+
         '.basic-row{display:flex;gap:10px;align-items:baseline;padding:5px 7px;border-radius:8px;}'+
@@ -882,10 +891,9 @@
         '.admission-metrics>div{display:flex;flex-direction:column;gap:4px;background:linear-gradient(135deg,#eaf6ff,#e8faf5);border:1px solid #c6e3e5;border-radius:10px;padding:10px 11px;}'+
         '.admission-metrics .qr-label{color:#43828d;font-size:13px;min-width:0;}'+
         '.admission-metrics .qr-value{color:#234f68;font-size:17px;}'+
-        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-history{grid-column:1/-1;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history{grid-column:auto;}.admission-metrics{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
+        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-medications{grid-column:1/-1;}.basic-history{grid-column:auto;}.past-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history,.basic-medications{grid-column:auto;}.basic-patient-title{align-items:flex-start;}.patient-inline-meta{width:100%;}.admission-metrics{grid-template-columns:1fr;}.past-rows,.past-med-block{grid-template-columns:1fr;}.past-record .mp-row{grid-template-columns:58px minmax(0,1fr) 40px 40px;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style></head><body>'+
       basicPlatformHtml+
-      '<div class="card"><h2>出院時用藥</h2><div class="mgrid">'+medsHtml+'</div></div>'+
       '<div class="card"><h2>過往追蹤紀錄</h2><div class="hlist">'+historyHtml+'</div></div>'+
       '<div class="card">'+
         '<h2>個管師追蹤事項</h2>'+
