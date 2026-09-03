@@ -732,23 +732,20 @@
     var basicPlatformHtml =
       '<div class="basic-platform">'+
         '<div class="basic-title-row"><h1>'+esc(c.name)+(gender?'<span class="gender-badge">'+esc(gender)+'</span>':'')+(c.hfType?'<span class="tag">'+esc(c.hfType)+'</span>':'')+'</h1><span class="basic-system-label">門診追蹤系統</span></div>'+
-        '<div class="quickref">'+
-          '<div class="qr-item"><span class="qr-label">最近一次六分鐘行走測試</span><span class="qr-value">'+sixMwtSummary+'</span></div>'+
-          '<div class="qr-item"><span class="qr-label">最近一次 LVEF</span><span class="qr-value">'+lvefSummary+'</span></div>'+
-        '</div>'+
         '<div class="basic-columns">'+
           '<section class="basic-card basic-person"><h2><span class="basic-icon">👤</span>個人與身體資料</h2>'+
             '<div class="basic-row"><span>病歷號</span><strong>'+esc(c.mrn||'—')+'</strong></div>'+
             '<div class="basic-row"><span>生日</span><strong>'+esc(c.birthday||'—')+(age!==null?'（'+age+'歲）':'')+'</strong></div>'+
-            '<div class="basic-row"><span>身分證字號</span><strong>'+esc(c.idnumber||'—')+(gender?'（'+gender+'）':'')+'</strong></div>'+
             '<div class="body-metrics"><div><small>身高</small><strong>'+esc(c.height||'—')+'</strong><small>cm</small></div><div><small>體重</small><strong>'+esc(c.weight||'—')+'</strong><small>kg</small></div><div><small>BMI</small><strong>'+esc(c.bmi||calculateBmi(c.height,c.weight)||'—')+'</strong><small>kg/m²</small></div></div>'+
           '</section>'+
-          '<section class="basic-card basic-admission"><h2><span class="basic-icon">🏥</span>住院與收案資訊</h2>'+
+          '<section class="basic-card basic-admission"><h2><span class="basic-icon">🏥</span>住院資訊</h2>'+
             '<div class="basic-row"><span>床號</span><strong>'+esc(c.ward||'—')+'</strong></div>'+
             '<div class="basic-row"><span>住院日期</span><strong>'+esc(c.admissionDate||'—')+'</strong></div>'+
             '<div class="basic-row"><span>出院日期</span><strong>'+esc(c.dischargeDate||'—')+'</strong></div>'+
-            '<div class="basic-row"><span>收案日期</span><strong>'+esc(c.caseDate||'—')+'</strong></div>'+
-            '<div class="basic-row"><span>收案人</span><strong>'+collectorText+'</strong></div>'+
+            '<div class="admission-metrics">'+
+              '<div><span class="qr-label">最近一次六分鐘行走測試</span><strong class="qr-value">'+sixMwtSummary+'</strong></div>'+
+              '<div><span class="qr-label">最近一次 LVEF</span><strong class="qr-value">'+lvefSummary+'</strong></div>'+
+            '</div>'+
           '</section>'+
           '<section class="basic-card basic-history"><h2><span class="basic-icon">📋</span>病史與備註</h2>'+
             '<div class="basic-stack"><span>過去病史</span><strong>'+historyText+'</strong></div>'+
@@ -871,7 +868,11 @@
         '.body-metrics div{display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(#e8f7f4,#fff);border-radius:10px;padding:8px 4px;}'+
         '.body-metrics strong{font-size:23px;color:#285f78;}'+
         '.body-metrics small{font-size:12px;color:#78909e;}'+
-        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-history{grid-column:1/-1;}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history{grid-column:auto;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
+        '.admission-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}'+
+        '.admission-metrics>div{display:flex;flex-direction:column;gap:4px;background:linear-gradient(135deg,#eaf6ff,#e8faf5);border:1px solid #c6e3e5;border-radius:10px;padding:10px 11px;}'+
+        '.admission-metrics .qr-label{color:#43828d;font-size:13px;min-width:0;}'+
+        '.admission-metrics .qr-value{color:#234f68;font-size:17px;}'+
+        '@media (max-width:1100px){.tk-layout{grid-template-columns:minmax(0,1fr);}.mp-list-2col{grid-template-columns:minmax(0,1fr);}.basic-columns{grid-template-columns:1fr 1fr;}.basic-history{grid-column:1/-1;}}@media (max-width:720px){.basic-columns{grid-template-columns:1fr;}.basic-history{grid-column:auto;}.admission-metrics{grid-template-columns:1fr;}.tri-row,.vitals-grid,.lab-grid,.tk-appointment-row,.cardiac-grid{grid-template-columns:minmax(0,1fr);}.mp-row{grid-template-columns:auto minmax(0,1fr);}.mp-dose,.mp-freq{grid-column:2;}.info-grid{grid-template-columns:minmax(0,1fr);}}'+
       '</style></head><body>'+
       basicPlatformHtml+
       '<div class="card"><h2>出院時用藥</h2><div class="mgrid">'+medsHtml+'</div></div>'+
