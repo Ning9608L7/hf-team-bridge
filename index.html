@@ -615,15 +615,28 @@
       DOSE_OPTIONS.forEach(function(d){ doseOptsC += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>'; });
       var freqOptsC = '<option value="">頻次</option>';
       FREQ_OPTIONS.forEach(function(f){ freqOptsC += '<option value="'+f+'"'+(m.freq===f?' selected':'')+'>'+f+'</option>'; });
-      var isWideMed = cls.key==='glp1' || cls.key==='other' || cls.key==='other2';
+      var isWideMed = cls.key==='glp1';
       var medPlaceholder = cls.key==='glp1' ? '藥物名稱/劑量/頻次' : '藥物名稱';
-      var extraOtherStyle = cls.key==='other2' && !m.on && !m.drug ? ' style="display:none"' : '';
-      tkmRowsHtml += '<div class="tkm-row" id="tkm-row-'+cls.key+'"'+extraOtherStyle+'>'+
+      tkmRowsHtml += '<div class="tkm-row">'+
         '<button type="button" id="tkm-toggle-'+cls.key+'" class="tkm-toggle'+(m.on?' on':'')+'" onclick="this.classList.toggle(\'on\')">'+cls.label+'</button>'+
         '<input class="tkm-drug'+(isWideMed?' tkm-drug-wide':'')+'" id="tkm-drug-'+cls.key+'" value="'+esc(m.drug||'')+'" placeholder="'+medPlaceholder+'">'+
         (isWideMed ? '' : '<select id="tkm-dose-'+cls.key+'">'+doseOptsC+'</select><select id="tkm-freq-'+cls.key+'">'+freqOptsC+'</select>')+
       '</div>';
     });
+    var trackingExtras = extraOtherMeds(latestMeds);
+    trackingExtras.forEach(function(m,idx){
+      var doseOptsC = '<option value="">顆數</option>';
+      DOSE_OPTIONS.forEach(function(d){ doseOptsC += '<option value="'+d+'"'+(m.dose===d?' selected':'')+'>'+d+'顆</option>'; });
+      var freqOptsC = '<option value="">頻次</option>';
+      FREQ_OPTIONS.forEach(function(freq){ freqOptsC += '<option value="'+freq+'"'+(m.freq===freq?' selected':'')+'>'+freq+'</option>'; });
+      tkmRowsHtml += '<div class="tkm-row" data-tkm-extra="1" data-extra-id="'+esc(m.id||'')+'">'+
+        '<button type="button" class="tkm-toggle'+(m.on?' on':'')+'" data-tkm-extra-toggle onclick="this.classList.toggle(\'on\')">其他 '+(idx+2)+'</button>'+
+        '<input class="tkm-drug" data-tkm-extra-drug value="'+esc(m.drug||'')+'" placeholder="藥物名稱">'+
+        '<select data-tkm-extra-dose>'+doseOptsC+'</select>'+
+        '<select data-tkm-extra-freq>'+freqOptsC+'</select>'+
+      '</div>';
+    });
+    tkmRowsHtml += '<div id="tkm-extra-rows"></div><button type="button" class="tkm-add-other" id="tkm-add-extra-other">＋ 新增其他藥物</button>';
     var MED_SHORT_LABEL = {acei:'ACEI', bb:'BB', mra:'MRA', sglt2:'SGLT2i', glp1:'GLP-1 RA', diuretic:'利尿劑', other:'其他'};
     function medsRowsHtmlFromEntry(r){
       var medsObj = r.meds || null;
@@ -866,7 +879,8 @@
         '.tkm-drug{flex:1.3; min-width:120px;}'+
         '.tkm-drug-wide{flex:1 1 320px;}'+
         '.tkm-row select{flex:0 0 92px;}'+
-        '.tkm-add-other{margin:4px 0 8px;padding:9px 15px;font-size:15px;color:#386b88;background:linear-gradient(135deg,#eef7ff,#e8faf5);border:1px dashed #69b9c5;border-radius:9px;}'+
+        '.tkm-add-other{display:inline-flex;margin:6px 0 8px;padding:9px 15px;font-size:15px;font-weight:700;color:#386b88;background:linear-gradient(135deg,#eef7ff,#e8faf5);border:1px dashed #69b9c5;border-radius:9px;}'+
+        '.tkm-add-other:hover{background:linear-gradient(135deg,#dfedff,#d9f6ef);color:#275b78;}'+
         '.edu-chips{display:flex; flex-wrap:wrap; gap:9px;}'+
         '.edu-chip{margin-top:0; flex:0 0 auto; width:auto; background:#fff; color:#7A4C9E; border:1.5px solid #D9BEEF; padding:10px 16px; font-size:16px; font-weight:600; border-radius:20px;}'+
         '.edu-chip.on{background:#7A4C9E; color:#fff; border-color:#7A4C9E;}'+
@@ -991,6 +1005,18 @@
         'document.getElementById("tk-time").value = (function(){var d=new Date();function p(n){return String(n).padStart(2,"0");}return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());})();'+
         'function updateTkWeekday(){var v=document.getElementById("tk-nextvisit").value;var el=document.getElementById("tk-weekday");if(!v){el.textContent="";return;}var p=v.split("-");var d=new Date(Number(p[0]),Number(p[1])-1,Number(p[2]));el.textContent="（"+["日","一","二","三","四","五","六"][d.getDay()]+"）";}'+
         'document.getElementById("tk-nextvisit").onchange=updateTkWeekday;updateTkWeekday();'+
+        'var tkExtraCount=document.querySelectorAll("[data-tkm-extra]").length;'+
+        'document.getElementById("tkm-add-extra-other").onclick=function(){'+
+          'tkExtraCount++;'+
+          'var row=document.createElement("div");row.className="tkm-row";row.setAttribute("data-tkm-extra","1");row.setAttribute("data-extra-id","tracking-"+Date.now()+"-"+Math.random().toString(16).slice(2));'+
+          'var toggle=document.createElement("button");toggle.type="button";toggle.className="tkm-toggle on";toggle.setAttribute("data-tkm-extra-toggle","");toggle.textContent="其他 "+(tkExtraCount+1);toggle.onclick=function(){this.classList.toggle("on");};'+
+          'var drug=document.createElement("input");drug.className="tkm-drug";drug.setAttribute("data-tkm-extra-drug","");drug.placeholder="藥物名稱";'+
+          'var dose=document.createElement("select");dose.setAttribute("data-tkm-extra-dose","");'+
+          '[""].concat('+JSON.stringify(DOSE_OPTIONS)+').forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=v?v+"顆":"顆數";dose.appendChild(o);});'+
+          'var freq=document.createElement("select");freq.setAttribute("data-tkm-extra-freq","");'+
+          '[""].concat('+JSON.stringify(FREQ_OPTIONS)+').forEach(function(v){var o=document.createElement("option");o.value=v;o.textContent=v||"頻次";freq.appendChild(o);});'+
+          'row.appendChild(toggle);row.appendChild(drug);row.appendChild(dose);row.appendChild(freq);document.getElementById("tkm-extra-rows").appendChild(row);drug.focus();'+
+        '};'+
         'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if((window.opener||window.parent)&&(window.opener||window.parent).deleteTrackingRecord){(window.opener||window.parent).deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
@@ -1002,6 +1028,14 @@
               'dose: document.getElementById("tkm-dose-"+k) ? document.getElementById("tkm-dose-"+k).value : "",'+
               'freq: document.getElementById("tkm-freq-"+k) ? document.getElementById("tkm-freq-"+k).value : ""'+
             '};'+
+          '});'+
+          'meds.extraOthers=[];'+
+          'document.querySelectorAll("[data-tkm-extra]").forEach(function(row){'+
+            'var drug=row.querySelector("[data-tkm-extra-drug]").value.trim();'+
+            'var dose=row.querySelector("[data-tkm-extra-dose]").value;'+
+            'var freq=row.querySelector("[data-tkm-extra-freq]").value;'+
+            'if(!drug&&!dose&&!freq)return;'+
+            'meds.extraOthers.push({id:row.getAttribute("data-extra-id")||("tracking-"+Date.now()+"-"+Math.random().toString(16).slice(2)),on:row.querySelector("[data-tkm-extra-toggle]").classList.contains("on"),drug:drug,dose:dose,freq:freq});'+
           '});'+
           'var entry = {'+
             'recordedAt: document.getElementById("tk-time").value,'+
