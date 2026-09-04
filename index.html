@@ -143,17 +143,16 @@
   .hfb-table tr.hfb-case-closed .pname{color:#53677f;}
   .hfb-case-number-input::placeholder{color:#6b9f97; font-weight:500;}
   .hfb-case-number-input:focus{outline:none; background:#fff; border-color:var(--primary); box-shadow:0 0 0 3px rgba(47,158,148,.16);}
-  .hfb-role-dots{display:grid; grid-template-columns:repeat(2,minmax(106px,1fr)); gap:5px 7px; min-width:226px;}
-  .hfb-role-dot{min-height:25px; border-radius:9px; border:1px solid #d6e5ea; background:#f7fafc; display:flex; align-items:center; gap:5px; padding:3px 7px; color:#38536b; font-size:12px; line-height:1.15; white-space:nowrap;}
-  .hfb-role-dot-mark{width:14px; height:14px; border-radius:50%; background:var(--dot-color); display:inline-flex; align-items:center; justify-content:center; flex:0 0 14px; color:#fff; font-size:9px; font-weight:800;}
-  .hfb-role-dot-name{font-weight:700;}
-  .hfb-role-dot-status{margin-left:auto; color:#71869a; font-size:10px;}
-  .hfb-role-dot.done{background:#eef9f6; border-color:#c8e6dd;}
-  .hfb-role-dot.done .hfb-role-dot-status{color:#237d70; font-weight:700;}
-  .hfb-role-dot.pending .hfb-role-dot-mark{opacity:.5;}
-  .hfb-role-dot.in_progress .hfb-role-dot-mark{opacity:.82;}
-  .hfb-role-dot.none .hfb-role-dot-mark{opacity:.25;}
-  @media(max-width:900px){.hfb-role-dots{grid-template-columns:1fr; min-width:116px;}.hfb-role-dot-status{display:none;}}
+  .hfb-role-dots{display:grid;grid-template-columns:repeat(2,minmax(96px,1fr));gap:4px 6px;min-width:204px;}
+  .hfb-role-dot{min-height:25px;border:0;background:transparent;display:flex;align-items:center;gap:6px;padding:2px 4px;color:#53677f;font-size:12px;line-height:1.15;white-space:nowrap;}
+  .hfb-role-dot-mark{width:16px;height:16px;border-radius:50%;border:1.5px solid var(--dot-color);background:#fff;display:inline-flex;align-items:center;justify-content:center;flex:0 0 16px;color:var(--dot-color);font-size:10px;font-weight:900;}
+  .hfb-role-dot-name{font-weight:650;}
+  .hfb-role-dot.done{color:#1f6f67;}
+  .hfb-role-dot.done .hfb-role-dot-mark{background:var(--dot-color);color:#fff;}
+  .hfb-role-dot.in_progress .hfb-role-dot-mark{background:color-mix(in srgb,var(--dot-color) 14%,#fff);}
+  .hfb-role-dot.pending,.hfb-role-dot.none{color:#7b8b9a;}
+  .hfb-role-dot.pending .hfb-role-dot-mark,.hfb-role-dot.none .hfb-role-dot-mark{opacity:.65;}
+  @media(max-width:900px){.hfb-role-dots{grid-template-columns:1fr;min-width:112px;}}
   .hfb-mini-progress{width:90px; height:6px; background:var(--line); border-radius:4px; overflow:hidden;}
   .hfb-mini-progress-fill{height:100%; background:linear-gradient(90deg, var(--primary), var(--secondary));}
   .hfb-td-nowrap{white-space:nowrap;}
@@ -1784,9 +1783,8 @@
         }
         var statusText = cls==='done' ? '已完成' : (cls==='in_progress' ? '處理中' : (cls==='pending' ? '待處理' : '未指派'));
         dots += '<span class="hfb-role-dot '+cls+'" style="--dot-color:'+ROLES[r].color+'" title="'+esc(ROLES[r].label)+'・'+statusText+'">'+
-          '<span class="hfb-role-dot-mark">'+(mark||'•')+'</span>'+
+          '<span class="hfb-role-dot-mark">'+(mark||(cls==='in_progress'?'◐':'○'))+'</span>'+
           '<span class="hfb-role-dot-name">'+esc(ROLES[r].label)+'</span>'+
-          '<span class="hfb-role-dot-status">'+statusText+'</span>'+
         '</span>';
       });
       var canManage = isInitiator(state.identity);
@@ -1814,7 +1812,7 @@
     });
 
     return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
-      '<thead><tr><th>編號</th><th>個案</th><th>收案人</th><th>住院日期</th><th>出院日期</th><th>住院天數</th><th>收案日期</th><th>各職類狀態</th><th>整體進度</th><th></th></tr></thead>'+
+      '<thead><tr><th>編號</th><th>個案</th><th>收案人</th><th>住院日期</th><th>出院日期</th><th>住院天數</th><th>收案日期</th><th>各職類狀態<br><small style="font-weight:400;color:#7b8b9a;">✓ 完成　○ 待處理</small></th><th>整體進度</th><th></th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table></div>';
   }
 
