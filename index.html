@@ -138,6 +138,9 @@
   .hfb-table .pmeta{font-size:19px; color:var(--ink-mute); margin-top:2px;}
   .hfb-case-number-input{width:112px; max-width:100%; border:1.5px solid #8fcfc5; border-radius:9px; padding:9px 10px; font-size:20px; font-weight:600; color:var(--primary-deep); background:var(--primary-tint); text-align:center;}
   .hfb-followup-case-number{display:inline-flex; min-width:88px; min-height:42px; padding:7px 12px; border-radius:9px; align-items:center; justify-content:center; background:var(--primary-tint); color:var(--primary-deep); font-size:20px; font-weight:700; white-space:nowrap;}
+  .hfb-closed-tag{display:inline-flex;align-items:center;margin-left:7px;padding:3px 9px;border-radius:999px;background:#53677f;color:#fff;font-size:14px;font-weight:800;vertical-align:middle;box-shadow:0 3px 8px rgba(52,72,96,.16);}
+  .hfb-table tr.hfb-case-closed{background:linear-gradient(90deg,rgba(233,239,245,.58),rgba(245,248,250,.45));}
+  .hfb-table tr.hfb-case-closed .pname{color:#53677f;}
   .hfb-case-number-input::placeholder{color:#6b9f97; font-weight:500;}
   .hfb-case-number-input:focus{outline:none; background:#fff; border-color:var(--primary); box-shadow:0 0 0 3px rgba(47,158,148,.16);}
   .hfb-role-dots{display:grid; grid-template-columns:repeat(2,minmax(106px,1fr)); gap:5px 7px; min-width:226px;}
@@ -999,7 +1002,7 @@
                 '<div class="tk-appointment-field"><label class="field-label" for="tk-session">看診時段</label><select id="tk-session">'+trackingSessionOpts+'</select></div>'+
                 '<div class="tk-appointment-field"><label class="field-label" for="tk-doctor">追蹤醫師</label><select id="tk-doctor">'+trackingDoctorOpts+'</select></div>'+
               '</div>'+
-              '<button id="tk-save">儲存追蹤事項</button>'+
+              '<div class="tk-final-actions"><button type="button" id="tk-close-case" class="tk-close-case'+(c.closed?' is-closed':'')+'">'+(c.closed?'取消結案':'結案')+'</button><button id="tk-save">儲存追蹤事項</button></div>'+
             '</div>'+
             '<div class="msg" id="tk-msg">已送出,可關閉此視窗 <button type="button" id="tk-refresh" class="tk-refresh-btn">立即更新頁面</button></div>'+
           '</div>'+
@@ -1036,6 +1039,7 @@
         '}'+
         'document.querySelectorAll("[data-edit-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-edit-tracking"));if(window.hfbEditingRecordKey===key){document.getElementById("tk-save").click();return;}var rec=trackingHistoryForEdit.find(function(r){return String(r.recordId||r.recordedAt||"")===String(key);});if(!rec)return;window.hfbEditingRecordKey=key;document.querySelectorAll("[data-edit-tracking]").forEach(function(b){b.classList.remove("saving");b.textContent="✎ 修改";});this.classList.add("saving");this.textContent="💾 存檔";loadTrackingRecordForEdit(rec);};});'+
         'document.querySelectorAll("[data-delete-tracking]").forEach(function(btn){btn.onclick=function(){var key=decodeURIComponent(this.getAttribute("data-delete-tracking"));if(!window.confirm("確定要刪除這筆追蹤評估嗎？刪除後無法復原。"))return;if((window.opener||window.parent)&&(window.opener||window.parent).deleteTrackingRecord){(window.opener||window.parent).deleteTrackingRecord('+JSON.stringify(c.id)+',key);window.close();}else{alert("找不到原始視窗，無法刪除。");}};});'+
+        'document.getElementById("tk-close-case").onclick=function(){var closing=!this.classList.contains("is-closed");var message=closing?"確定將此病人結案嗎？所有紀錄都會保留。":"確定取消結案並恢復追蹤嗎？";if(!window.confirm(message))return;if(window.opener||window.parent){(window.opener||window.parent).postMessage({type:"hf-case-closure",caseId:'+JSON.stringify(c.id)+',closed:closing},"*");}};'+
         'document.getElementById("tk-save").onclick = function(){'+
           'var medsKeys = '+JSON.stringify(MED_CLASSES.map(function(x){ return x.key; }))+';'+
           'var meds = {};'+
@@ -1139,6 +1143,10 @@
         '.past-wide-row{background:linear-gradient(90deg,#f7fbff,#f5fbf9)!important;border-color:#d1e4e8!important;}'+
         '.past-edit{box-shadow:0 4px 10px rgba(56,157,146,.12)!important;}'+
         '.past-delete{background:#fff2f3!important;color:#b63e49!important;border-color:#dc727b!important;box-shadow:0 4px 10px rgba(182,62,73,.08)!important;}'+
+        '.tk-final-actions{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex:0 0 auto;}'+
+        '.tk-close-case{padding:11px 20px!important;border-radius:10px!important;border:1.5px solid #71869a!important;background:#fff!important;color:#53677f!important;font-weight:800!important;box-shadow:0 5px 12px rgba(69,91,116,.10)!important;}'+
+        '.tk-close-case:hover{background:#53677f!important;color:#fff!important;}'+
+        '.tk-close-case.is-closed{background:#e8eef4!important;color:#42566c!important;border-color:#8092a5!important;}'+
         '@media(max-width:720px){body{padding:12px!important;}}'+
         '</style></head>');
     }
@@ -1150,6 +1158,19 @@
     w.document.write(html);
     w.document.close();
   }
+
+  window.addEventListener('message', function(e){
+    var data = e.data;
+    if(!data || data.type!=='hf-case-closure') return;
+    var c = state.cases.find(function(x){ return x.id===data.caseId; });
+    if(!c) return;
+    c.closed = !!data.closed;
+    c.closedAt = c.closed ? nowLocalStr() : '';
+    c.closedBy = c.closed ? ((currentMember() && currentMember().name) || '') : '';
+    if(c.closed && c.followUp) c.followUp.trackingDone = true;
+    saveCases();
+    if(state.loaded) render();
+  });
 
   window.addEventListener('message', function(e){
     var data = e.data;
@@ -1775,9 +1796,9 @@
       var caseNumberHtml = canManage
         ? '<input type="text" class="hfb-case-number-input" data-case-number="'+c.id+'" value="'+esc(c.caseNumber||'')+'" aria-label="'+esc(c.name)+'的編號" placeholder="編號">'
         : esc(c.caseNumber||'—');
-      rows += '<tr data-case="'+c.id+'">'+
+      rows += '<tr class="'+(c.closed?'hfb-case-closed':'')+'" data-case="'+c.id+'">'+
         '<td class="hfb-td-nowrap">'+caseNumberHtml+'</td>'+
-        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+(c.closed?'<span class="hfb-closed-tag">已結案</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+
           (function(){ var a=calcAge(c.birthday); var g=genderFromId(c.idnumber); var extra=[]; if(a!==null) extra.push(a+'歲'); if(g) extra.push(g); return extra.length ? ' ・ '+extra.join(' '):''; })()+
         '</div></td>'+
         '<td>'+(c.initiatorName?esc(c.initiatorName):ROLES[c.initiator].label)+'</td>'+
