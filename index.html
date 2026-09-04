@@ -2373,36 +2373,9 @@
         window.alert('僅限管理員匯出資料。');
         return;
       }
-      var exportPassword = await requestExcelPassword();
-      if(exportPassword === null) return;
       var originalTitle = exportCsvBtn.title;
       exportCsvBtn.disabled = true;
-      exportCsvBtn.title = '驗證中…';
-      try{
-        var exportClient = window.hfbSupabaseClient;
-        if(!exportClient) throw new Error('登入連線尚未就緒');
-        var sessionResult = await exportClient.auth.getSession();
-        var authUser = sessionResult.data && sessionResult.data.session && sessionResult.data.session.user;
-        if(sessionResult.error || !authUser || !authUser.email) throw new Error('登入狀態已失效，請重新登入');
-        var verifyResult = await exportClient.auth.signInWithPassword({
-          email: authUser.email,
-          password: exportPassword
-        });
-        exportPassword = '';
-        if(verifyResult.error || !verifyResult.data || !verifyResult.data.user){
-          throw new Error('登入密碼錯誤，無法匯出');
-        }
-        if(String(verifyResult.data.user.id)!==String(state.authUserId)){
-          throw new Error('驗證帳號與目前登入帳號不一致');
-        }
-      }catch(error){
-        exportPassword = '';
-        window.alert((error && error.message) || 'Excel 匯出驗證失敗，請稍後再試。');
-        return;
-      }finally{
-        exportCsvBtn.disabled = false;
-        exportCsvBtn.title = originalTitle;
-      }
+      exportCsvBtn.title = '正在產生 Excel…';
       function csvCell(v){
         v = v==null ? '' : String(v);
         if(/[",\n]/.test(v)) v = '"'+v.replace(/"/g,'""')+'"';
@@ -2441,7 +2414,9 @@
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      exportCsvBtn.disabled = false;
+      exportCsvBtn.title = originalTitle;
     };
 
     var mmAdd = document.getElementById('mm-add');
