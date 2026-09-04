@@ -2328,8 +2328,8 @@
         overlay.innerHTML =
           '<div style="width:min(420px,100%);background:#fff;border:1px solid #c7e3de;border-radius:16px;padding:24px;box-shadow:0 18px 48px rgba(0,0,0,.22);font-family:inherit;color:#183d38;">'+
             '<h3 style="margin:0 0 8px;font-size:22px;">Excel 匯出二次驗證</h3>'+
-            '<p style="margin:0 0 16px;color:#668a84;font-size:16px;line-height:1.55;">請輸入下載專用密碼。驗證成功後才會產生檔案。</p>'+
-            '<label for="hfb-export-password" style="display:block;font-size:16px;font-weight:600;margin-bottom:6px;">下載專用密碼</label>'+
+            '<p style="margin:0 0 16px;color:#668a84;font-size:16px;line-height:1.55;">請再次輸入目前的登入密碼，驗證成功後才會產生檔案。</p>'+
+            '<label for="hfb-export-password" style="display:block;font-size:16px;font-weight:600;margin-bottom:6px;">登入密碼</label>'+
             '<input id="hfb-export-password" type="password" autocomplete="new-password" style="width:100%;box-sizing:border-box;border:1px solid #bddbd6;border-radius:9px;padding:11px 12px;font-size:17px;outline:none;">'+
             '<div id="hfb-export-password-error" role="alert" style="min-height:22px;margin-top:8px;color:#bb3d4a;font-size:14px;"></div>'+
             '<div style="display:flex;justify-content:flex-end;gap:9px;margin-top:10px;">'+
@@ -2350,7 +2350,7 @@
         function confirmPassword(){
           var value = input.value;
           if(!value){
-            errorEl.textContent = '請輸入下載專用密碼。';
+            errorEl.textContent = '請輸入登入密碼。';
             input.focus();
             return;
           }
@@ -2381,22 +2381,19 @@
       try{
         var exportClient = window.hfbSupabaseClient;
         if(!exportClient) throw new Error('登入連線尚未就緒');
-        var verifyResult = await exportClient.functions.invoke('secure-excel-export', {
-          body: { password: exportPassword, rowCount: state.cases.length }
+        var sessionResult = await exportClient.auth.getSession();
+        var authUser = sessionResult.data && sessionResult.data.session && sessionResult.data.session.user;
+        if(sessionResult.error || !authUser || !authUser.email) throw new Error('登入狀態已失效，請重新登入');
+        var verifyResult = await exportClient.auth.signInWithPassword({
+          email: authUser.email,
+          password: exportPassword
         });
         exportPassword = '';
-        if(verifyResult.error){
-          var functionMessage = verifyResult.error.message || '';
-          if(verifyResult.error.context && verifyResult.error.context.json){
-            try{
-              var errorBody = await verifyResult.error.context.json();
-              functionMessage = errorBody.error || functionMessage;
-            }catch(ignore){}
-          }
-          throw new Error(functionMessage || '驗證失敗');
+        if(verifyResult.error || !verifyResult.data || !verifyResult.data.user){
+          throw new Error('登入密碼錯誤，無法匯出');
         }
-        if(!verifyResult.data || verifyResult.data.authorized !== true){
-          throw new Error((verifyResult.data && verifyResult.data.error) || '未取得匯出授權');
+        if(String(verifyResult.data.user.id)!==String(state.authUserId)){
+          throw new Error('驗證帳號與目前登入帳號不一致');
         }
       }catch(error){
         exportPassword = '';
