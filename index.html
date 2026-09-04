@@ -138,6 +138,12 @@
   .hfb-table .pmeta{font-size:19px; color:var(--ink-mute); margin-top:2px;}
   .hfb-case-number-input{width:112px; max-width:100%; border:1.5px solid #8fcfc5; border-radius:9px; padding:9px 10px; font-size:20px; font-weight:600; color:var(--primary-deep); background:var(--primary-tint); text-align:center;}
   .hfb-followup-case-number{display:inline-flex; min-width:88px; min-height:42px; padding:7px 12px; border-radius:9px; align-items:center; justify-content:center; background:var(--primary-tint); color:var(--primary-deep); font-size:20px; font-weight:700; white-space:nowrap;}
+  .hfb-followup-table{table-layout:fixed;}
+  .hfb-followup-table th:nth-child(1){width:11%;}
+  .hfb-followup-table th:nth-child(2){width:29%;}
+  .hfb-followup-table th:nth-child(3){width:18%;}
+  .hfb-followup-table th:nth-child(4){width:24%;}
+  .hfb-followup-table th:nth-child(5){width:18%;}
   .hfb-closed-tag{display:inline-flex;align-items:center;margin-left:7px;padding:3px 9px;border-radius:999px;background:#53677f;color:#fff;font-size:14px;font-weight:800;vertical-align:middle;box-shadow:0 3px 8px rgba(52,72,96,.16);}
   .hfb-table tr.hfb-case-closed{background:linear-gradient(90deg,rgba(233,239,245,.58),rgba(245,248,250,.45));}
   .hfb-table tr.hfb-case-closed .pname{color:#53677f;}
@@ -1640,6 +1646,7 @@
 
     var today = normalizeDateKey(todayStr());
     var followUpCount = state.cases.reduce(function(total,c){
+      if(c.closed) return total;
       var nextVisitDate = c.followUp ? normalizeDateKey(c.followUp.nextVisitDate) : '';
       return total + (nextVisitDate && nextVisitDate===today ? 1 : 0);
     },0);
@@ -1869,27 +1876,27 @@
     }
     var rows = '';
     list.slice().sort(function(a,b){
-      var da = (a.followUp && a.followUp.nextVisitDate) || '9999-99-99';
-      var db = (b.followUp && b.followUp.nextVisitDate) || '9999-99-99';
-      return da.localeCompare(db);
+      var numberA = String(a.caseNumber||'').trim();
+      var numberB = String(b.caseNumber||'').trim();
+      if(!numberA && numberB) return 1;
+      if(numberA && !numberB) return -1;
+      if(!numberA && !numberB) return (Number(b.createdAt)||0)-(Number(a.createdAt)||0);
+      var numericA = parseInt((numberA.match(/\d+/g)||['-1']).join(''),10);
+      var numericB = parseInt((numberB.match(/\d+/g)||['-1']).join(''),10);
+      if(numericA!==numericB) return numericB-numericA;
+      return numberB.localeCompare(numberA,undefined,{numeric:true,sensitivity:'base'});
     }).forEach(function(c){
       var fu = c.followUp || {};
-      var noteText = fu.note ? (fu.note.length>20 ? fu.note.slice(0,20)+'…' : fu.note) : '—';
-      var noteHtml = fu.trackingDone
-        ? '<span class="hfb-note-done">'+esc(noteText)+'</span>'
-        : esc(noteText);
       rows += '<tr data-followup-case="'+c.id+'">'+
         '<td class="hfb-td-nowrap"><span class="hfb-followup-case-number">'+esc(c.caseNumber||'—')+'</span></td>'+
-        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+' ・ '+esc(c.ward||'—')+'</div></td>'+
-        '<td class="pmeta">'+esc(c.dischargeDate||'—')+'</td>'+
-        '<td class="pmeta">'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+'</td>'+
-        '<td class="pmeta">'+(fu.doctor?esc(fu.doctor)+(fu.session?' ('+esc(fu.session)+')':''):'—')+'</td>'+
-        '<td class="pmeta">'+noteHtml+'</td>'+
-        '<td><label class="hfb-fu-done"><input type="checkbox" data-fu-done="'+c.id+'"'+(fu.trackingDone?' checked':'')+'> 完成</label></td>'+
+        '<td><div class="pname">'+esc(c.name)+(c.hfType?'<span class="hfb-hftype-tag'+hfTypeClass(c.hfType)+'">'+esc(c.hfType)+'</span>':'')+(c.closed?'<span class="hfb-closed-tag">已結案</span>':'')+'</div><div class="pmeta">'+esc(c.mrn||'未填病歷號')+'</div></td>'+
+        '<td class="pmeta hfb-td-nowrap">'+esc(c.dischargeDate||'—')+'</td>'+
+        '<td class="pmeta hfb-td-nowrap">'+esc(fu.nextVisitDate ? formatDateWithWeekday(fu.nextVisitDate)+(fu.session?' '+fu.session:'') : '—')+'</td>'+
+        '<td class="pmeta">'+(fu.doctor?esc(fu.doctor):'—')+'</td>'+
       '</tr>';
     });
-    return head + '<div class="hfb-table-wrap"><table class="hfb-table">'+
-      '<thead><tr><th>編號</th><th>個案</th><th>出院日期</th><th>下次門診</th><th>追蹤醫師</th><th>追蹤備註</th><th>完成</th></tr></thead>'+
+    return head + '<div class="hfb-table-wrap"><table class="hfb-table hfb-followup-table">'+
+      '<thead><tr><th>編號</th><th>個案</th><th>出院日期</th><th>下次門診</th><th>醫師</th></tr></thead>'+
       '<tbody>'+rows+'</tbody></table></div>';
   }
 
